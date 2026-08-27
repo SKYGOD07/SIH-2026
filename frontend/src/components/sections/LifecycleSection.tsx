@@ -3,13 +3,14 @@
 import { useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { gsap, SCRUB } from '@/lib/gsap';
+import { gsap, ScrollTrigger, SCRUB } from '@/lib/gsap';
 import { SceneCanvas } from '@/components/three/SceneCanvas';
 import { SceneFallback } from '@/components/three/SceneFallback';
 import { LazyLifecycleOrbit } from '@/components/three/scenes';
 import { Label } from '@/components/typography';
 import { LIFECYCLE } from '@/data/lifecycle';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { useLenis } from '@/lib/lenis/SmoothScrollProvider';
 import { cn, clamp } from '@/lib/utils';
 
 /**
@@ -25,6 +26,26 @@ export function LifecycleSection() {
   const sceneProgress = useRef(0);
   const [active, setActive] = useState(0);
   const reduced = usePrefersReducedMotion();
+  const lenis = useLenis();
+  /** The live pinned trigger, so the stage register can seek within it. */
+  const triggerRef = useRef<ScrollTrigger | null>(null);
+
+  /**
+   * Clicking a stage seeks the pinned scroll range rather than setting state:
+   * with a scrubbed timeline, state set directly would be overwritten by the
+   * next scroll frame, and the 3D would not follow.
+   */
+  const seekToStage = (index: number) => {
+    const st = triggerRef.current;
+    if (!st) {
+      setActive(index);
+      return;
+    }
+    const ratio = index / (LIFECYCLE.length - 1);
+    const target = st.start + (st.end - st.start) * ratio;
+    if (lenis) lenis.scrollTo(target, { duration: 1.1 });
+    else window.scrollTo({ top: target, behavior: 'smooth' });
+  };
 
   useGSAP(
     () => {
@@ -50,14 +71,9 @@ export function LifecycleSection() {
             scrub: SCRUB,
             anticipatePin: 1,
             invalidateOnRefresh: true,
-            // Snapping to stage centres makes the mechanism feel detented
-            // rather than loose — the one place on the page snapping earns itself.
-            snap: {
-              snapTo: (v) => Math.round(v * (LIFECYCLE.length - 1)) / (LIFECYCLE.length - 1),
-              duration: { min: 0.15, max: 0.4 },
-              delay: 0.05,
-              ease: 'power2.inOut',
-            },
+            // No snapping here: ScrollTrigger's snap drives the scroll position
+            // itself, which fights Lenis for control of the same value. The
+            // stage register below gives the reader discrete targets instead.
             onUpdate: (self) => {
               sceneProgress.current = self.progress;
               const next = clamp(
@@ -70,7 +86,9 @@ export function LifecycleSection() {
           },
         });
         st.to({}, { duration: 1 });
+        triggerRef.current = st.scrollTrigger ?? null;
         return () => {
+          triggerRef.current = null;
           st.scrollTrigger?.kill();
           st.kill();
         };
@@ -129,7 +147,8 @@ export function LifecycleSection() {
                         ? 'text-ivory/55'
                         : 'text-ivory/25',
                   )}
-                  onClick={() => setActive(i)}
+                  onClick={() => seekToStage(i)}
+                  data-cursor="go"
                 >
                   <span>{s.index}</span>
                   <span>{s.label}</span>

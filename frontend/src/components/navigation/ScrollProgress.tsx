@@ -6,11 +6,12 @@ import { cn, clamp } from '@/lib/utils';
 
 /**
  * Global progress indicator, expressed as the lifecycle rather than as a
- * scrollbar: the reader always knows which stage of the pathway the page is in.
+ * scrollbar: the reader always knows which stage of the pathway they are in.
  *
- * Reads scroll position directly in a rAF-throttled listener rather than
- * creating eight ScrollTriggers, and only renders on the landing story where
- * the stage mapping is meaningful.
+ * The desktop rail is deliberately narrow — eight ticks and one rotated stage
+ * name, together under 3rem wide — so it sits inside the page gutter and never
+ * collides with the content column, which starts at 5vw. Position is read in a
+ * rAF-throttled scroll listener rather than through eight ScrollTriggers.
  */
 export function ScrollProgress({ enabled = true }: { enabled?: boolean }) {
   const [progress, setProgress] = useState(0);
@@ -39,50 +40,46 @@ export function ScrollProgress({ enabled = true }: { enabled?: boolean }) {
   if (!enabled) return null;
 
   const active = clamp(Math.floor(progress * LIFECYCLE.length), 0, LIFECYCLE.length - 1);
+  const stage = LIFECYCLE[active];
 
   return (
     <>
-      {/* Desktop: vertical rail on the left edge */}
+      {/* Desktop: narrow tick rail inside the left gutter */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed left-[max(1rem,calc((100vw-110rem)/2+1.25rem))] top-1/2 z-40 hidden -translate-y-1/2 flex-col gap-3 lg:flex"
+        className="pointer-events-none fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-start gap-3 lg:flex"
       >
-        {LIFECYCLE.map((stage, i) => {
-          const isActive = i === active;
-          const isPast = i < active;
-          return (
-            <div key={stage.id} className="flex items-center gap-3">
+        <ol className="flex flex-col gap-2.5">
+          {LIFECYCLE.map((s, i) => (
+            <li key={s.id}>
               <span
                 className={cn(
                   'block h-px transition-all duration-700 ease-editorial',
-                  isActive ? 'w-7 bg-saffron' : isPast ? 'w-4 bg-ivory/45' : 'w-2.5 bg-ivory/20',
+                  i === active
+                    ? 'w-6 bg-saffron'
+                    : i < active
+                      ? 'w-3.5 bg-ivory/45'
+                      : 'w-2 bg-ivory/20',
                 )}
               />
-              <span
-                className={cn(
-                  'font-mono text-[0.5625rem] uppercase tracking-[0.18em] transition-all duration-700 ease-editorial',
-                  isActive
-                    ? 'text-saffron opacity-100'
-                    : isPast
-                      ? 'text-ivory/45 opacity-100'
-                      : 'text-ivory/25 opacity-70',
-                )}
-              >
-                {stage.label}
-              </span>
-            </div>
-          );
-        })}
+            </li>
+          ))}
+        </ol>
+
+        {/* Rotated so the rail stays inside the gutter at any viewport width. */}
+        <span
+          className="mt-4 whitespace-nowrap font-mono text-[0.5625rem] uppercase tracking-[0.2em] text-saffron transition-opacity duration-500"
+          style={{ writingMode: 'vertical-rl' }}
+        >
+          {stage.index} {stage.label}
+        </span>
       </div>
 
       {/* Mobile / tablet: a single hairline with the active stage named */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-40 lg:hidden"
-      >
+      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 lg:hidden">
         <div className="flex items-center gap-3 bg-gradient-to-t from-ink via-ink/80 to-transparent px-[var(--edge)] pb-3 pt-6">
           <span className="font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-saffron">
-            {LIFECYCLE[active].index} {LIFECYCLE[active].label}
+            {stage.index} {stage.label}
           </span>
           <span className="relative h-px flex-1 bg-ivory/15">
             <span
@@ -95,7 +92,7 @@ export function ScrollProgress({ enabled = true }: { enabled?: boolean }) {
 
       {/* Announced to assistive tech without the visual rail. */}
       <p className="sr-only" aria-live="polite">
-        Lifecycle stage {LIFECYCLE[active].index}: {LIFECYCLE[active].label}
+        Lifecycle stage {stage.index}: {stage.label}
       </p>
     </>
   );
