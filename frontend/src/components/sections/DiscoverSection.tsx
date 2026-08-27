@@ -97,7 +97,7 @@ export function DiscoverSection() {
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(7,8,10,0.9)_0%,rgba(7,8,10,0.25)_45%,rgba(7,8,10,0.85)_100%)]"
       />
 
-      <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
+      <div className="edge relative z-10 mx-auto flex h-full min-h-0 max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div>
             <Label index="02">Discover</Label>

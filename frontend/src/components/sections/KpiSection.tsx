@@ -148,7 +148,7 @@ export function KpiSection() {
         </h2>
       </div>
 
-      <div className="edge mx-auto grid w-full max-w-[110rem] flex-1 content-center gap-8 py-6 lg:grid-cols-[0.9fr_1.4fr]">
+      <div className="edge mx-auto grid w-full min-h-0 max-w-[110rem] flex-1 content-center gap-8 py-6 lg:grid-cols-[0.9fr_1.4fr]">
         {/* --- the numbers --- */}
         <div className="flex flex-col justify-center gap-10">
           <div data-kpi-baseline>
@@ -188,7 +188,7 @@ export function KpiSection() {
 
           <svg
             viewBox="0 0 1000 280"
-            className="h-auto w-full"
+            className="h-auto max-h-[34svh] w-full"
             preserveAspectRatio="none"
             aria-hidden="true"
           >

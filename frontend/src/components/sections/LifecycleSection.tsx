@@ -122,7 +122,7 @@ export function LifecycleSection() {
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,rgba(7,8,10,0)_25%,rgba(7,8,10,0.82)_80%)]"
       />
 
-      <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
+      <div className="edge relative z-10 mx-auto flex h-full min-h-0 max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <div className="flex items-start justify-between gap-8">
           <div>
             <Label index="—">The pathway</Label>

@@ -144,7 +144,7 @@ export function DefineSection() {
         </h2>
       </div>
 
-      <div className="edge mx-auto grid w-full max-w-[110rem] flex-1 content-center gap-x-12 gap-y-10 py-8 lg:grid-cols-[1.05fr_0.75fr_1fr]">
+      <div className="edge mx-auto grid w-full min-h-0 max-w-[110rem] flex-1 content-center gap-x-12 gap-y-10 overflow-y-auto py-8 lg:grid-cols-[1.05fr_0.75fr_1fr]">
         {/* --- the note as written --- */}
         <div data-note className="relative">
           <Label className="mb-5">Departmental note</Label>
