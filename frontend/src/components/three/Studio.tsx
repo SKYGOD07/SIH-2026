@@ -15,7 +15,7 @@ export function Studio({ intensity = 1 }: { intensity?: number }) {
     <>
       <ambientLight intensity={0.35 * intensity} color="#d8d3c8" />
       <directionalLight position={[6, 9, 6]} intensity={1.15 * intensity} color="#fdf6ea" />
-      <directionalLight position={[-7, 3, -5]} intensity={0.4 * intensity} color="#9fb0c4" />
+      <directionalLight position={[-7, 3, -5]} intensity={0.4 * intensity} color="#8fa9bc" />
 
       <Environment resolution={128} frames={1}>
         {/* broad soft key */}
@@ -40,7 +40,7 @@ export function Studio({ intensity = 1 }: { intensity?: number }) {
         <Lightformer
           form="rect"
           intensity={1.2 * intensity}
-          color="#aebdd0"
+          color="#8fa9bc"
           position={[7, 0, -2]}
           rotation={[0, -Math.PI / 2.6, 0]}
           scale={[8, 6, 1]}
@@ -69,4 +69,7 @@ export const SCENE_COLORS = {
   saffronLight: '#f79a44',
   validated: '#5f9070',
   risk: '#c0524a',
+  /* The cool complement, matching the AmbientBackdrop pools. */
+  abyss: '#0e1b22',
+  abyssGlow: '#1e4152',
 } as const;

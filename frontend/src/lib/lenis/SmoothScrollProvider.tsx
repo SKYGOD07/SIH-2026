@@ -22,8 +22,11 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (reduced) return; // native scrolling for reduced-motion users
     const instance = new Lenis({
-      duration: 1.05,
-      // Heavy but responsive: fast approach, long settle, no rubber-band lag.
+      // Heavy but responsive. A shorter duration than the default keeps the
+      // page answering the wheel on the first frame; the exponential easing
+      // supplies the weight on the way out. Longer than this and the smoothing
+      // reads as lag, which is the usual reason "smooth scroll" feels broken.
+      duration: 0.85,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       wheelMultiplier: 1,
       touchMultiplier: 1.6,

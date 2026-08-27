@@ -30,5 +30,11 @@ export const EASE = {
   editorial: 'cubic-bezier(0.16, 1, 0.3, 1)',
 } as const;
 
-/** Standard scrub value. Slight lag = weight, without input lag. */
-export const SCRUB = 0.85;
+/**
+ * Standard scrub value.
+ *
+ * Kept deliberately low. Lenis already interpolates the scroll position, so a
+ * high scrub smooths an already-smoothed value — the result reads as input lag,
+ * not as weight. Lenis supplies the heft; ScrollTrigger just takes the edge off.
+ */
+export const SCRUB = 0.5;
