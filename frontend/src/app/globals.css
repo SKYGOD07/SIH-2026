@@ -5,30 +5,32 @@
 @layer base {
   :root {
     /* shadcn bridge tokens, retuned to the MahaInnovate palette */
-    --background: 60 6% 4%;
-    --foreground: 40 24% 94%;
-    --card: 50 6% 7%;
-    --card-foreground: 40 24% 94%;
-    --popover: 60 6% 4%;
-    --popover-foreground: 40 24% 94%;
-    --primary: 24 78% 53%;
-    --primary-foreground: 60 6% 4%;
-    --secondary: 48 5% 14%;
-    --secondary-foreground: 40 24% 94%;
-    --muted: 48 5% 14%;
-    --muted-foreground: 45 7% 64%;
-    --accent: 48 5% 14%;
-    --accent-foreground: 40 24% 94%;
-    --destructive: 5 50% 47%;
-    --destructive-foreground: 40 24% 94%;
-    --border: 48 5% 16%;
-    --input: 48 5% 16%;
-    --ring: 24 78% 53%;
+    --background: 220 12% 5%;
+    --foreground: 44 30% 95%;
+    --card: 220 11% 8%;
+    --card-foreground: 44 30% 95%;
+    --popover: 220 12% 5%;
+    --popover-foreground: 44 30% 95%;
+    --primary: 24 81% 54%;
+    --primary-foreground: 220 12% 5%;
+    --secondary: 220 9% 14%;
+    --secondary-foreground: 44 30% 95%;
+    --muted: 220 9% 14%;
+    --muted-foreground: 45 6% 63%;
+    --accent: 220 9% 14%;
+    --accent-foreground: 44 30% 95%;
+    --destructive: 4 47% 52%;
+    --destructive-foreground: 44 30% 95%;
+    --border: 220 9% 17%;
+    --input: 220 9% 17%;
+    --ring: 24 81% 54%;
     --radius: 0.25rem;
 
     /* experience tokens */
     --nav-h: 4.5rem;
     --edge: clamp(1.25rem, 5vw, 5rem);
+    /* Vertical safe area under the fixed nav, used by every full-height section. */
+    --nav-safe: calc(var(--nav-h) + clamp(0.75rem, 2vh, 1.75rem));
   }
 
   * {
@@ -57,10 +59,16 @@
   }
 
   body {
-    background: #0a0a09;
-    color: #f5f2ec;
+    /* Never a flat fill: the page ground is itself a slow vertical gradient. */
+    background-color: #0a0b0d;
+    color: #f6f3ec;
     font-family: var(--font-body), Inter, system-ui, sans-serif;
     overflow-x: hidden;
+  }
+
+  /* While the preloader is up, nothing behind it may scroll or paint through. */
+  body[data-loading='true'] {
+    overflow: hidden;
   }
 
   /* Custom cursor active: hide native pointer on fine-pointer devices only */
@@ -70,12 +78,12 @@
   }
 
   ::selection {
-    background: rgba(228, 118, 42, 0.28);
-    color: #f5f2ec;
+    background: rgba(232, 118, 43, 0.3);
+    color: #f6f3ec;
   }
 
   :focus-visible {
-    outline: 2px solid #e4762a;
+    outline: 2px solid #e8762b;
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -92,8 +100,9 @@
     padding-right: var(--edge);
   }
 
-  .rule {
-    @apply border-t border-white/10;
+  /* Full-height sections that must clear the fixed navigation. */
+  .nav-safe {
+    padding-top: var(--nav-safe);
   }
 
   .label {
@@ -104,27 +113,51 @@
     @apply font-mono text-meta uppercase text-saffron;
   }
 
-  /* Editorial grain — flat, cheap, no repaint cost */
+  /**
+   * Section grounds. Each is a gradient between two members of the same tonal
+   * family, so adjacent sections read as one continuous surface changing
+   * temperature rather than as a stack of separate black boxes.
+   */
+  .ground-ink {
+    background-image: linear-gradient(180deg, #07080a 0%, #0a0b0d 22%, #0e1013 60%, #0a0b0d 100%);
+  }
+  .ground-abyss {
+    background-image: linear-gradient(180deg, #0a0b0d 0%, #0c161c 38%, #0e1b22 62%, #0a0b0d 100%);
+  }
+  .ground-ivory {
+    background-image: linear-gradient(180deg, #f6f3ec 0%, #efebe1 55%, #e9e4d8 100%);
+  }
+
+  /* Scrim behind the navigation so type never collides with it visually. */
+  .nav-scrim {
+    background-image: linear-gradient(
+      180deg,
+      rgba(7, 8, 10, 0.92) 0%,
+      rgba(7, 8, 10, 0.66) 45%,
+      rgba(7, 8, 10, 0) 100%
+    );
+  }
+
+  /* Editorial grain — one static layer, never animated. */
   .grain::after {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.5;
+    opacity: 0.4;
     mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
   }
 
   .hairline-grid {
     background-image:
-      linear-gradient(to right, rgba(245, 242, 236, 0.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(245, 242, 236, 0.055) 1px, transparent 1px);
+      linear-gradient(to right, rgba(246, 243, 236, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(246, 243, 236, 0.05) 1px, transparent 1px);
     background-size: 7.5rem 7.5rem;
   }
 
-  /* Panel used across product UI + floating evidence cards */
   .panel {
-    @apply border border-white/10 bg-white/[0.025] backdrop-blur-[2px];
+    @apply border border-white/10 bg-white/[0.025];
   }
 }
 
@@ -143,9 +176,24 @@
     will-change: transform, opacity;
   }
 
+  /**
+   * Overflow-hidden line box that does not clip descenders.
+   * The padding gives the "g" and "y" room; the negative margin takes the
+   * space back out of the layout so line rhythm is unchanged.
+   */
+  .line-mask {
+    overflow: hidden;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+
+  /**
+   * Promotion hint for elements a scrubbed timeline transforms every frame.
+   * Applied narrowly — a page full of `will-change` is its own performance bug.
+   */
   .will-3d {
-    will-change: transform;
-    transform: translateZ(0);
+    will-change: transform, opacity;
+    transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
   }
 
