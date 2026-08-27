@@ -2,8 +2,12 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Logistics Management Platform',
-  description: 'Enterprise Real-Time Logistics, Dispatching, and Live Fleet Tracking Platform',
+  title: 'SetuBharat (SIH26136) — Digital Startup Verification & Government Collaboration Platform',
+  description:
+    'A unified digital platform connecting startups and government departments across the innovation lifecycle: Discover, Verify, Evaluate, Pilot, Fund, Monitor, Procure, and Scale.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -12,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 antialiased min-h-screen">
+    <html lang="en">
+      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen selection:bg-govblue-100 selection:text-govblue-900">
         {children}
       </body>
     </html>
