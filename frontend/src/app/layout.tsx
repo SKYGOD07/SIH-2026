@@ -1,24 +1,83 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Archivo, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+import { SmoothScrollProvider } from '@/lib/lenis/SmoothScrollProvider';
+import { AudienceProvider } from '@/components/motion/AudienceProvider';
+import { Nav } from '@/components/navigation/Nav';
+import { CustomCursor } from '@/components/navigation/CustomCursor';
+import { SiteFooter } from '@/components/navigation/SiteFooter';
+
+/**
+ * Type system: a grotesk for display, a neutral sans for reading, a monospace
+ * for metadata. All three are variable fonts loaded through next/font, so they
+ * are self-hosted, preloaded and subset — no external stylesheet, no FOUT
+ * mid-animation, and no render-blocking request to a font CDN.
+ */
+const display = Archivo({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-display',
+  display: 'swap',
+});
+
+const body = Inter({
+  subsets: ['latin'],
+  variable: '--font-body',
+  display: 'swap',
+});
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
-  title: 'SetuBharat (SIH26136) — Digital Startup Verification & Government Collaboration Platform',
-  description:
-    'A unified digital platform connecting startups and government departments across the innovation lifecycle: Discover, Verify, Evaluate, Pilot, Fund, Monitor, Procure, and Scale.',
-  icons: {
-    icon: '/favicon.ico',
+  title: {
+    default: 'MahaInnovate — Innovation Procurement Intelligence Platform',
+    template: '%s · MahaInnovate',
   },
+  description:
+    'A transparent, competitive and legally compliant innovation-procurement pathway: define the challenge, discover startups, verify eligibility against sources, evaluate, pilot, measure, procure and scale.',
+  applicationName: 'MahaInnovate',
+  keywords: [
+    'innovation procurement',
+    'government challenges',
+    'startup pilots',
+    'milestone contracting',
+    'evidence-based procurement',
+  ],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const viewport: Viewport = {
+  themeColor: '#0A0A09',
+  colorScheme: 'dark',
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen selection:bg-govblue-100 selection:text-govblue-900">
-        {children}
+    <html
+      lang="en"
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-ink font-sans text-ivory antialiased">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-saffron focus:px-4 focus:py-2 focus:font-mono focus:text-meta focus:uppercase focus:text-ink"
+        >
+          Skip to content
+        </a>
+
+        <SmoothScrollProvider>
+          <AudienceProvider>
+            <CustomCursor />
+            <Nav />
+            <main id="main">{children}</main>
+            <SiteFooter />
+          </AudienceProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );
