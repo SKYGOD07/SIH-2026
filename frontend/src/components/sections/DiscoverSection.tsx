@@ -94,7 +94,7 @@ export function DiscoverSection() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(10,10,9,0.9)_0%,rgba(10,10,9,0.25)_45%,rgba(10,10,9,0.85)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(7,8,10,0.9)_0%,rgba(7,8,10,0.25)_45%,rgba(7,8,10,0.85)_100%)]"
       />
 
       <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">

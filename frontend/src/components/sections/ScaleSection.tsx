@@ -124,8 +124,8 @@ export function ScaleSection() {
         >
           <defs>
             <radialGradient id="scale-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#e4762a" stopOpacity="0.32" />
-              <stop offset="100%" stopColor="#e4762a" stopOpacity="0" />
+              <stop offset="0%" stopColor="#e8762b" stopOpacity="0.32" />
+              <stop offset="100%" stopColor="#e8762b" stopOpacity="0" />
             </radialGradient>
           </defs>
 
@@ -135,7 +135,7 @@ export function ScaleSection() {
               data-map-interior
               d={d}
               fill="none"
-              stroke="#f5f2ec"
+              stroke="#f6f3ec"
               strokeOpacity="0.1"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
@@ -148,8 +148,8 @@ export function ScaleSection() {
           <path
             data-map-outline
             d={MAHARASHTRA_PATH}
-            fill="rgba(245,242,236,0.02)"
-            stroke="#a9a69c"
+            fill="rgba(246,243,236,0.02)"
+            stroke="#a6a49c"
             strokeOpacity="0.55"
             strokeWidth="1.5"
             vectorEffect="non-scaling-stroke"
@@ -168,7 +168,7 @@ export function ScaleSection() {
                 y1={e.y1}
                 x2={e.x2}
                 y2={e.y2}
-                stroke="#e4762a"
+                stroke="#e8762b"
                 strokeOpacity="0.42"
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
@@ -206,7 +206,7 @@ export function ScaleSection() {
                     fillOpacity: live ? 1 : 0.22,
                   }}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  fill={live ? '#e4762a' : '#a9a69c'}
+                  fill={live ? '#e8762b' : '#a6a49c'}
                 />
                 {live ? (
                   <motion.text
@@ -218,7 +218,7 @@ export function ScaleSection() {
                     className="font-mono"
                     fontSize="13"
                     letterSpacing="1.6"
-                    fill="#f5f2ec"
+                    fill="#f6f3ec"
                     fillOpacity="0.75"
                   >
                     {d.label.toUpperCase()}
@@ -232,7 +232,7 @@ export function ScaleSection() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(10,10,9,0.82)_0%,rgba(10,10,9,0)_28%,rgba(10,10,9,0)_62%,rgba(10,10,9,0.9)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,8,10,0.82)_0%,rgba(7,8,10,0)_28%,rgba(7,8,10,0)_62%,rgba(7,8,10,0.9)_100%)]"
       />
 
       <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">

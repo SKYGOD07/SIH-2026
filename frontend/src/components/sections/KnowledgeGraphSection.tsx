@@ -25,12 +25,12 @@ const W = 1000;
 const H = 620;
 
 const KIND_COLOR: Record<GraphNodeKind, string> = {
-  problem: '#A9A69C',
-  startup: '#F2933F',
-  pilot: '#E4762A',
-  result: '#5E8B6A',
-  lesson: '#F5F2EC',
-  challenge: '#A9A69C',
+  problem: '#A6A49C',
+  startup: '#F79A44',
+  pilot: '#E8762B',
+  result: '#5F9070',
+  lesson: '#F6F3EC',
+  challenge: '#A6A49C',
 };
 
 const KIND_LABEL: Record<GraphNodeKind, string> = {
@@ -170,7 +170,7 @@ export function KnowledgeGraphSection() {
                     y1={e.y1}
                     x2={e.x2}
                     y2={e.y2}
-                    stroke="#f5f2ec"
+                    stroke="#f6f3ec"
                     strokeOpacity={dim ? 0.06 : 0.22}
                     strokeWidth="1"
                     vectorEffect="non-scaling-stroke"
@@ -213,7 +213,7 @@ export function KnowledgeGraphSection() {
                       y={py(n.y) + 4}
                       fontSize="13"
                       letterSpacing="0.6"
-                      fill="#f5f2ec"
+                      fill="#f6f3ec"
                       fillOpacity={dim ? 0.25 : isActive ? 0.95 : 0.6}
                       className="pointer-events-none transition-[fill-opacity] duration-300"
                     >

@@ -97,9 +97,9 @@ export function DecisionSection() {
             aria-hidden="true"
           >
             {[
-              { d: 'M 500 0 C 500 60, 167 60, 167 120', tone: '#5E8B6A', width: 2.5 },
-              { d: 'M 500 0 L 500 120', tone: '#A9A69C', width: 1 },
-              { d: 'M 500 0 C 500 60, 833 60, 833 120', tone: '#B4483C', width: 1 },
+              { d: 'M 500 0 C 500 60, 167 60, 167 120', tone: '#5F9070', width: 2.5 },
+              { d: 'M 500 0 L 500 120', tone: '#A6A49C', width: 1 },
+              { d: 'M 500 0 C 500 60, 833 60, 833 120', tone: '#C0524A', width: 1 },
             ].map((b) => (
               <path
                 key={b.d}

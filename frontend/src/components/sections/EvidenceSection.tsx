@@ -109,7 +109,7 @@ export function EvidenceSection() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(10,10,9,0.85)_0%,rgba(10,10,9,0.2)_35%,rgba(10,10,9,0.92)_85%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,8,10,0.85)_0%,rgba(7,8,10,0.2)_35%,rgba(7,8,10,0.92)_85%)]"
       />
 
       <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">

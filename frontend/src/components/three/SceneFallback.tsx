@@ -22,9 +22,9 @@ export function SceneFallback({
       <svg viewBox="0 0 400 400" className="h-[70%] w-auto max-w-[70%] opacity-70">
         <defs>
           <radialGradient id="sf-core" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#f5f2ec" stopOpacity="0.5" />
-            <stop offset="70%" stopColor="#e4762a" stopOpacity="0.14" />
-            <stop offset="100%" stopColor="#0a0a09" stopOpacity="0" />
+            <stop offset="0%" stopColor="#f6f3ec" stopOpacity="0.5" />
+            <stop offset="70%" stopColor="#e8762b" stopOpacity="0.14" />
+            <stop offset="100%" stopColor="#0a0b0d" stopOpacity="0" />
           </radialGradient>
         </defs>
 
@@ -38,7 +38,7 @@ export function SceneFallback({
               rx="140"
               ry="58"
               fill="none"
-              stroke="#a9a69c"
+              stroke="#a6a49c"
               strokeOpacity="0.35"
             />
             {Array.from({ length: 8 }, (_, i) => {
@@ -49,11 +49,11 @@ export function SceneFallback({
                   cx={200 + Math.cos(a) * 140}
                   cy={200 + Math.sin(a) * 58}
                   r={i === 0 ? 8 : 4.5}
-                  fill={i === 0 ? '#e4762a' : '#a9a69c'}
+                  fill={i === 0 ? '#e8762b' : '#a6a49c'}
                 />
               );
             })}
-            <circle cx="200" cy="200" r="34" fill="none" stroke="#f5f2ec" strokeOpacity="0.4" />
+            <circle cx="200" cy="200" r="34" fill="none" stroke="#f6f3ec" strokeOpacity="0.4" />
           </>
         ) : null}
 
@@ -68,13 +68,13 @@ export function SceneFallback({
                   cx={200 + Math.cos(a) * r}
                   cy={200 + Math.sin(a) * r * 0.6}
                   r={1.6}
-                  fill="#a9a69c"
+                  fill="#a6a49c"
                   fillOpacity={0.5}
                 />
               );
             })}
             {[-70, 0, 70].map((dx) => (
-              <circle key={dx} cx={200 + dx} cy={200} r="10" fill="#e4762a" />
+              <circle key={dx} cx={200 + dx} cy={200} r="10" fill="#e8762b" />
             ))}
           </>
         ) : null}
@@ -91,14 +91,14 @@ export function SceneFallback({
                   y={200 + Math.sin(a) * r - 15}
                   width="22"
                   height="30"
-                  fill="#f5f2ec"
+                  fill="#f6f3ec"
                   fillOpacity="0.22"
                 />
               );
             })}
-            <circle cx="200" cy="200" r="46" fill="none" stroke="#e4762a" strokeOpacity="0.7" />
+            <circle cx="200" cy="200" r="46" fill="none" stroke="#e8762b" strokeOpacity="0.7" />
             {[-58, 0, 58].map((dx) => (
-              <rect key={dx} x={200 + dx - 15} y="292" width="30" height="40" fill="#e4762a" fillOpacity="0.75" />
+              <rect key={dx} x={200 + dx - 15} y="292" width="30" height="40" fill="#e8762b" fillOpacity="0.75" />
             ))}
           </>
         ) : null}
@@ -116,18 +116,18 @@ export function SceneFallback({
                   y={286 - h + iz * 14}
                   width="30"
                   height={h}
-                  fill="#3a3934"
+                  fill="#33363b"
                 />
               );
             })}
             <path
               d="M 60 300 L 340 300 M 60 320 L 340 320"
-              stroke="#e4762a"
+              stroke="#e8762b"
               strokeOpacity="0.5"
               strokeWidth="1.5"
             />
             {[100, 170, 240, 310].map((x) => (
-              <circle key={x} cx={x} cy="310" r="5" fill="#e4762a" />
+              <circle key={x} cx={x} cy="310" r="5" fill="#e8762b" />
             ))}
           </>
         ) : null}

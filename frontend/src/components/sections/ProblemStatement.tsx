@@ -155,7 +155,7 @@ export function ProblemStatement() {
               y1={y}
               x2="50"
               y2="50"
-              stroke="#e4762a"
+              stroke="#e8762b"
               strokeOpacity="0.4"
               strokeWidth="0.12"
               vectorEffect="non-scaling-stroke"

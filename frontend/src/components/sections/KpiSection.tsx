@@ -194,8 +194,8 @@ export function KpiSection() {
           >
             <defs>
               <linearGradient id="kpi-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#e4762a" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#e4762a" stopOpacity="0" />
+                <stop offset="0%" stopColor="#e8762b" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#e8762b" stopOpacity="0" />
               </linearGradient>
             </defs>
 
@@ -209,7 +209,7 @@ export function KpiSection() {
                     y1={y}
                     x2="1000"
                     y2={y}
-                    stroke="#f5f2ec"
+                    stroke="#f6f3ec"
                     strokeOpacity="0.08"
                     vectorEffect="non-scaling-stroke"
                   />
@@ -222,7 +222,7 @@ export function KpiSection() {
               data-kpi-line
               d={linePath}
               fill="none"
-              stroke="#e4762a"
+              stroke="#e8762b"
               strokeWidth="2.5"
               vectorEffect="non-scaling-stroke"
               pathLength={1}
@@ -230,8 +230,8 @@ export function KpiSection() {
               strokeDashoffset={1}
               strokeLinecap="round"
             />
-            <circle data-kpi-marker cx="0" cy={280 - ((water.baseline - 18) / 16) * 280} r="5" fill="#a9a69c" opacity="0" />
-            <circle data-kpi-marker cx="1000" cy={280 - ((water.result - 18) / 16) * 280} r="6" fill="#e4762a" opacity="0" />
+            <circle data-kpi-marker cx="0" cy={280 - ((water.baseline - 18) / 16) * 280} r="5" fill="#a6a49c" opacity="0" />
+            <circle data-kpi-marker cx="1000" cy={280 - ((water.result - 18) / 16) * 280} r="6" fill="#e8762b" opacity="0" />
           </svg>
 
           <div className="mt-3 flex justify-between font-mono text-meta uppercase text-silver">

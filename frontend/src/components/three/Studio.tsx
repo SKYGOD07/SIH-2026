@@ -49,7 +49,7 @@ export function Studio({ intensity = 1 }: { intensity?: number }) {
         <Lightformer
           form="rect"
           intensity={0.6 * intensity}
-          color="#3a3934"
+          color="#33363b"
           position={[0, -5, 2]}
           rotation={[Math.PI / 2, 0, 0]}
           scale={[12, 6, 1]}
@@ -61,12 +61,12 @@ export function Studio({ intensity = 1 }: { intensity?: number }) {
 
 /** Palette shared between the DOM and the scenes, so they never drift apart. */
 export const SCENE_COLORS = {
-  ivory: '#f5f2ec',
-  silver: '#a9a69c',
-  graphite: '#3a3934',
-  ink: '#0a0a09',
-  saffron: '#e4762a',
-  saffronLight: '#f2933f',
-  validated: '#5e8b6a',
-  risk: '#b4483c',
+  ivory: '#f6f3ec',
+  silver: '#a6a49c',
+  graphite: '#33363b',
+  ink: '#0a0b0d',
+  saffron: '#e8762b',
+  saffronLight: '#f79a44',
+  validated: '#5f9070',
+  risk: '#c0524a',
 } as const;

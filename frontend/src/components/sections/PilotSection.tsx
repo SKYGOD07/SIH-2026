@@ -97,7 +97,7 @@ export function PilotSection() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(10,10,9,0.8)_0%,rgba(10,10,9,0.1)_40%,rgba(10,10,9,0.94)_88%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,8,10,0.8)_0%,rgba(7,8,10,0.1)_40%,rgba(7,8,10,0.94)_88%)]"
       />
 
       <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">

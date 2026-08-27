@@ -53,7 +53,7 @@ export function DefineSection() {
       if (!root) return;
 
       if (reduced) {
-        gsap.set('[data-mark]', { backgroundColor: 'rgba(228,118,42,0.16)', color: '#f5f2ec' });
+        gsap.set('[data-mark]', { backgroundColor: 'rgba(232,118,43,0.16)', color: '#f6f3ec' });
         gsap.set('[data-extract]', { autoAlpha: 1, y: 0 });
         gsap.set('[data-structured]', { autoAlpha: 1, y: 0 });
         return;
@@ -87,8 +87,8 @@ export function DefineSection() {
           tl.to(
             `[data-mark="${h.key}"]`,
             {
-              backgroundColor: 'rgba(228,118,42,0.2)',
-              color: '#f5f2ec',
+              backgroundColor: 'rgba(232,118,43,0.2)',
+              color: '#f6f3ec',
               duration: 0.3,
               ease: 'power2.out'
             },

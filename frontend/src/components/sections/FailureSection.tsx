@@ -111,7 +111,7 @@ export function FailureSection() {
                   data-lesson-trace
                   d="M 4 4 C 4 30, 200 10, 396 36"
                   fill="none"
-                  stroke="#e4762a"
+                  stroke="#e8762b"
                   strokeOpacity="0.5"
                   strokeWidth="1"
                   vectorEffect="non-scaling-stroke"
