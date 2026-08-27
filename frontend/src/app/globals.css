@@ -114,16 +114,39 @@
   }
 
   /**
-   * Section grounds. Each is a gradient between two members of the same tonal
-   * family, so adjacent sections read as one continuous surface changing
-   * temperature rather than as a stack of separate black boxes.
+   * Section grounds.
+   *
+   * Dark sections are deliberately NOT opaque. The page's colour comes from one
+   * fixed backdrop of drifting gradient pools (see AmbientBackdrop), and an
+   * opaque section would simply hide it — which is how the first pass ended up
+   * as a stack of identical black rectangles. These grounds only seal the top
+   * and bottom edges so section boundaries stay crisp, and leave the middle
+   * open for the backdrop to show through.
    */
   .ground-ink {
-    background-image: linear-gradient(180deg, #07080a 0%, #0a0b0d 22%, #0e1013 60%, #0a0b0d 100%);
+    background-image: linear-gradient(
+      180deg,
+      rgba(7, 8, 10, 0.82) 0%,
+      rgba(7, 8, 10, 0.12) 22%,
+      rgba(7, 8, 10, 0.12) 78%,
+      rgba(7, 8, 10, 0.82) 100%
+    );
   }
+
+  /* Same seal, plus a cool pool of its own — used where the story turns analytical. */
   .ground-abyss {
-    background-image: linear-gradient(180deg, #0a0b0d 0%, #0c161c 38%, #0e1b22 62%, #0a0b0d 100%);
+    background-image:
+      radial-gradient(ellipse 90% 60% at 50% 50%, rgba(30, 65, 82, 0.26) 0%, rgba(10, 11, 13, 0) 72%),
+      linear-gradient(
+        180deg,
+        rgba(7, 8, 10, 0.82) 0%,
+        rgba(9, 20, 25, 0.2) 26%,
+        rgba(9, 20, 25, 0.2) 74%,
+        rgba(7, 8, 10, 0.82) 100%
+      );
   }
+
+  /* Inverted sections are the intentional breaks in the run, so these are opaque. */
   .ground-ivory {
     background-image: linear-gradient(180deg, #f6f3ec 0%, #efebe1 55%, #e9e4d8 100%);
   }
