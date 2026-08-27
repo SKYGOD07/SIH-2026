@@ -47,14 +47,23 @@ export function Nav() {
       <motion.header
         initial={false}
         animate={{
-          backgroundColor: scrolled ? 'rgba(10,10,9,0.72)' : 'rgba(10,10,9,0)',
-          borderBottomColor: scrolled ? 'rgba(245,242,236,0.09)' : 'rgba(245,242,236,0)',
-          backdropFilter: scrolled ? 'blur(14px)' : 'blur(0px)',
+          backgroundColor: scrolled ? 'rgba(7,8,10,0.78)' : 'rgba(7,8,10,0)',
+          borderBottomColor: scrolled ? 'rgba(246,243,236,0.1)' : 'rgba(246,243,236,0)',
+          backdropFilter: scrolled ? 'blur(16px)' : 'blur(0px)',
         }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="fixed inset-x-0 top-0 z-50 border-b"
         style={{ height: 'var(--nav-h)' }}
       >
+        {/*
+          Always-on scrim. Even before the solid background fades in, this keeps
+          the wordmark and links legible over whatever is behind them and gives
+          the type below the nav a clear edge to stop against.
+        */}
+        <div
+          aria-hidden="true"
+          className="nav-scrim pointer-events-none absolute inset-x-0 top-0 -z-10 h-[calc(var(--nav-h)*1.7)]"
+        />
         <nav
           aria-label="Primary"
           className="edge mx-auto flex h-full max-w-[110rem] items-center justify-between gap-6"
@@ -142,7 +151,7 @@ export function Nav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduceMotion ? 0 : -12 }}
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-0 top-[var(--nav-h)] z-40 border-b border-ivory/10 bg-ink/95 backdrop-blur-xl md:hidden"
+            className="fixed inset-x-0 top-[var(--nav-h)] z-40 border-b border-ivory/10 bg-ink-950/97 backdrop-blur-xl md:hidden"
           >
             <ul className="edge flex flex-col py-6">
               {[...LINKS, { href: '/dashboard', label: 'Enter platform' }].map((link, i) => (

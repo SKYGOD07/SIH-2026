@@ -3,6 +3,9 @@ import { Archivo, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { SmoothScrollProvider } from '@/lib/lenis/SmoothScrollProvider';
 import { AudienceProvider } from '@/components/motion/AudienceProvider';
+import { IntroProvider } from '@/components/motion/IntroProvider';
+import { Preloader } from '@/components/motion/Preloader';
+import { AmbientBackdrop } from '@/components/motion/AmbientBackdrop';
 import { Nav } from '@/components/navigation/Nav';
 import { CustomCursor } from '@/components/navigation/CustomCursor';
 import { SiteFooter } from '@/components/navigation/SiteFooter';
@@ -62,7 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${display.variable} ${body.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-ink font-sans text-ivory antialiased">
+      <body className="min-h-screen bg-ink-950 font-sans text-ivory antialiased">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-saffron focus:px-4 focus:py-2 focus:font-mono focus:text-meta focus:uppercase focus:text-ink"
@@ -71,12 +74,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
 
         <SmoothScrollProvider>
-          <AudienceProvider>
-            <CustomCursor />
-            <Nav />
-            <main id="main">{children}</main>
-            <SiteFooter />
-          </AudienceProvider>
+          <IntroProvider>
+            <AudienceProvider>
+              {/*
+                Stacking order, bottom to top:
+                  AmbientBackdrop (z-0, fixed)  — the drifting colour ground
+                  content         (z-10)        — sections, transparent over it
+                  Nav             (z-50)
+                  Preloader       (z-120)
+                Dark sections are intentionally not opaque so the backdrop reads
+                through them; see `.ground-ink` in globals.css.
+              */}
+              <AmbientBackdrop />
+              <CustomCursor />
+              <Nav />
+              <div className="relative z-10">
+                <main id="main">{children}</main>
+                <SiteFooter />
+              </div>
+              <Preloader />
+            </AudienceProvider>
+          </IntroProvider>
         </SmoothScrollProvider>
       </body>
     </html>
