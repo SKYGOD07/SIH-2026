@@ -10,39 +10,59 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        /* --- MahaInnovate restrained palette --- */
+        /**
+         * Three tonal families, not one.
+         *
+         *  ink    — the near-black ground, faintly cool so it reads as depth
+         *           rather than as switched-off black.
+         *  abyss  — a desaturated blue-teal used only in gradients and backdrop
+         *           pools. It is the complement of saffron, which is what makes
+         *           the accent register as warm instead of as orange-on-grey.
+         *  ivory  — the paper family for inverted sections and all type.
+         *
+         * Flat #000 appears nowhere: every dark surface is a gradient between
+         * two of these, which is what stops the page looking like a black void.
+         */
         ink: {
-          DEFAULT: '#0A0A09',
-          900: '#0E0E0C',
-          800: '#141412',
-          700: '#1C1C19',
-          600: '#26251F',
+          DEFAULT: '#0A0B0D',
+          950: '#07080A',
+          900: '#0E1013',
+          800: '#141619',
+          700: '#1B1E22',
+          600: '#24282D',
+        },
+        abyss: {
+          DEFAULT: '#0E1B22',
+          light: '#162C36',
+          deep: '#091419',
+          glow: '#1E4152',
         },
         graphite: {
-          DEFAULT: '#3A3934',
-          light: '#57564F',
-          dark: '#2A2926',
+          DEFAULT: '#33363B',
+          light: '#565A61',
+          dark: '#25282C',
         },
         ivory: {
-          DEFAULT: '#F5F2EC',
-          soft: '#EAE6DD',
-          dim: '#D6D1C6',
+          DEFAULT: '#F6F3EC',
+          soft: '#EAE5D9',
+          dim: '#D3CDBF',
         },
         silver: {
-          DEFAULT: '#A9A69C',
-          dark: '#7C7A72',
+          DEFAULT: '#A6A49C',
+          dark: '#78766F',
         },
         saffron: {
-          DEFAULT: '#E4762A',
-          light: '#F2933F',
-          deep: '#C25C18',
+          DEFAULT: '#E8762B',
+          light: '#F79A44',
+          deep: '#BE5714',
+          ember: '#FFB870',
         },
         validated: {
-          DEFAULT: '#5E8B6A',
-          light: '#7BA487',
+          DEFAULT: '#5F9070',
+          light: '#84B294',
         },
         risk: {
-          DEFAULT: '#B4483C',
+          DEFAULT: '#C0524A',
         },
 
         /* shadcn bridge tokens, kept so the existing ui/ primitives still work */
@@ -68,17 +88,29 @@ const config: Config = {
         mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       fontSize: {
-        /* editorial display ramp — clamped, viewport-fluid */
-        'display-xs': ['clamp(1.75rem, 3.2vw, 2.75rem)', { lineHeight: '0.98', letterSpacing: '-0.02em' }],
-        'display-sm': ['clamp(2.25rem, 5vw, 4rem)', { lineHeight: '0.94', letterSpacing: '-0.028em' }],
-        'display-md': ['clamp(3rem, 8vw, 7rem)', { lineHeight: '0.9', letterSpacing: '-0.035em' }],
-        'display-lg': ['clamp(3.5rem, 11.5vw, 11rem)', { lineHeight: '0.86', letterSpacing: '-0.04em' }],
-        'display-xl': ['clamp(4rem, 15vw, 16rem)', { lineHeight: '0.82', letterSpacing: '-0.045em' }],
+        /**
+         * Display ramp bound to BOTH axes.
+         *
+         * The previous ramp scaled on vw alone, so a five-line block at 11.5vw
+         * was taller than the viewport on any normal laptop — which is what put
+         * the hero under the navigation. Every display size now clamps against
+         * `svh` as well, so a short viewport shrinks the type instead of
+         * overflowing it, and multi-line blocks stay inside the frame.
+         */
+        'display-xs': ['clamp(1.15rem, min(2.1vw, 3.2svh), 1.9rem)', { lineHeight: '1.02', letterSpacing: '-0.018em' }],
+        'display-sm': ['clamp(1.6rem, min(3.4vw, 5.4svh), 3rem)', { lineHeight: '0.96', letterSpacing: '-0.026em' }],
+        'display-md': ['clamp(2rem, min(5.2vw, 8.4svh), 4.75rem)', { lineHeight: '0.92', letterSpacing: '-0.032em' }],
+        'display-lg': ['clamp(2.4rem, min(7vw, 11svh), 6.5rem)', { lineHeight: '0.88', letterSpacing: '-0.038em' }],
+        'display-xl': ['clamp(2.8rem, min(9.5vw, 15svh), 9rem)', { lineHeight: '0.85', letterSpacing: '-0.042em' }],
+        /** Hero only: five stacked lines have to fit between nav and footer rail. */
+        'hero-line': ['clamp(2rem, min(7.4vw, 10.2svh), 6.75rem)', { lineHeight: '0.86', letterSpacing: '-0.04em' }],
         meta: ['0.6875rem', { lineHeight: '1.2', letterSpacing: '0.18em' }],
         'meta-lg': ['0.8125rem', { lineHeight: '1.2', letterSpacing: '0.16em' }],
       },
       spacing: {
         section: 'clamp(6rem, 14vh, 12rem)',
+        /** Height of the fixed navigation, so sections can reserve it. */
+        nav: 'var(--nav-h)',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -93,9 +125,14 @@ const config: Config = {
           '0%,100%': { transform: 'translate3d(0,0,0)' },
           '50%': { transform: 'translate3d(0,-8px,0)' },
         },
+        'sheen': {
+          '0%': { transform: 'translateX(-120%)' },
+          '100%': { transform: 'translateX(320%)' },
+        },
       },
       animation: {
         drift: 'drift 7s ease-in-out infinite',
+        sheen: 'sheen 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
       },
     },
   },
