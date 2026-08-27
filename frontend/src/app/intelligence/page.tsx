@@ -27,7 +27,7 @@ export default function IntelligencePage() {
       {/* --- the corpus every conclusion is cited against --- */}
       <section
         aria-label="Policy corpus"
-        className="relative w-full bg-ink py-[clamp(5rem,12vh,9rem)]"
+        className="relative w-full ground-ink py-[clamp(5rem,12vh,9rem)]"
       >
         <div className="edge mx-auto max-w-[110rem]">
           <Label index="—">Policy corpus</Label>

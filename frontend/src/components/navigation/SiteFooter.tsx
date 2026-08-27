@@ -19,7 +19,7 @@ const ROUTES = [
  */
 export function SiteFooter() {
   return (
-    <footer className="relative border-t border-ivory/10 bg-ink py-[clamp(3.5rem,8vh,6rem)]">
+    <footer className="relative border-t border-ivory/10 ground-ink py-[clamp(3.5rem,8vh,6rem)]">
       <div className="edge mx-auto max-w-[110rem]">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_0.9fr_0.9fr]">
           <div>
