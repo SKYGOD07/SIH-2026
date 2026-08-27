@@ -1,4 +1,3 @@
-export * from './Section';
 export * from './Hero';
 export * from './ProblemStatement';
 export * from './LifecycleSection';

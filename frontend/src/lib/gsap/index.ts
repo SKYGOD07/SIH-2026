@@ -5,11 +5,9 @@
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Observer } from 'gsap/Observer';
-import { Flip } from 'gsap/Flip';
 
 if (typeof window !== 'undefined' && !(gsap.core as any).__mahaRegistered) {
-  gsap.registerPlugin(ScrollTrigger, Observer, Flip);
+  gsap.registerPlugin(ScrollTrigger);
   gsap.defaults({ ease: 'power3.out', duration: 0.9 });
   gsap.config({ nullTargetWarn: false });
   // ScrollTrigger recalculates on resize; debounce so mobile URL-bar
@@ -18,7 +16,11 @@ if (typeof window !== 'undefined' && !(gsap.core as any).__mahaRegistered) {
   (gsap.core as any).__mahaRegistered = true;
 }
 
-export { gsap, ScrollTrigger, Observer, Flip };
+// Observer and Flip are deliberately not registered: Lenis owns input handling,
+// and the shared-layout transitions (nav underline, audience toggle, list
+// reordering) are Framer Motion's `layout`/`layoutId`, which is the better tool
+// for React-owned DOM. Registering them unused would only add bundle weight.
+export { gsap, ScrollTrigger };
 
 /** Shared easing vocabulary — keeps timing consistent across sections. */
 export const EASE = {
