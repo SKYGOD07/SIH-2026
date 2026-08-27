@@ -232,7 +232,7 @@ export function Hero() {
             <div
               key={verb}
               data-hero-verb
-              className="edge absolute inset-x-0 mx-auto max-w-[110rem] will-3d"
+              className="edge absolute inset-x-0 mx-auto max-w-[110rem] will-3d opacity-0"
             >
               <span className="block font-mono text-meta uppercase text-saffron">
                 {String(i + 1).padStart(2, '0')} / 04
