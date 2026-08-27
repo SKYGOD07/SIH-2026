@@ -78,9 +78,11 @@ export function ProblemStatement() {
           { autoAlpha: 1, duration: 0.5 },
           0.55,
         );
+        // `pathLength={1}` normalises every thread, so one dashoffset tween
+        // draws them all regardless of their actual length — no Club plugin needed.
         tl.fromTo(
           '[data-thread]',
-          { drawSVG: 0, strokeDashoffset: (i, t: SVGPathElement) => t.getTotalLength() },
+          { strokeDashoffset: 1 },
           { strokeDashoffset: 0, duration: 1.4, stagger: 0.03, ease: 'power2.inOut' },
           0.6,
         );
