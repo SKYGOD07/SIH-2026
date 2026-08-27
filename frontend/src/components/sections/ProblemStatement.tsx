@@ -63,8 +63,8 @@ export function ProblemStatement() {
             pin: true,
             scrub: SCRUB,
             anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
+            invalidateOnRefresh: true
+          }
         });
 
         // The scattered words drift before anything pulls them.
@@ -96,18 +96,18 @@ export function ProblemStatement() {
             opacity: 0.32,
             duration: 1.6,
             ease: 'power2.inOut',
-            stagger: { amount: 0.5, from: 'edges' },
+            stagger: { amount: 0.5, from: 'edges' }
           },
           0.7,
         );
 
-        tl.to(heading, { autoAlpha: 0, scale: 0.94, filter: 'blur(6px)', duration: 0.6 }, 1.5);
+        tl.to(heading, { autoAlpha: 0, scale: 0.94, duration: 0.6 }, 1.5);
         tl.to(words, { opacity: 0, scale: 0.1, duration: 0.5 }, 2.1);
         tl.to(linesRef.current, { autoAlpha: 0, duration: 0.4 }, 2.1);
         tl.fromTo(
           resolve,
-          { autoAlpha: 0, scale: 1.18, filter: 'blur(10px)' },
-          { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.9, ease: 'expo.out' },
+          { autoAlpha: 0, scale: 1.18 },
+          { autoAlpha: 1, scale: 1, duration: 0.9, ease: 'expo.out' },
           2.35,
         );
         tl.to({}, { duration: 0.6 });
@@ -128,9 +128,9 @@ export function ProblemStatement() {
       ref={rootRef}
       id="problem"
       aria-label="A problem exists"
-      className="relative h-[100svh] w-full overflow-hidden bg-ink"
+      className="relative h-[100svh] w-full overflow-hidden ground-ink"
     >
-      <div className="edge absolute inset-x-0 top-0 z-20 mx-auto max-w-[110rem] pt-[clamp(5.5rem,11vh,8rem)]">
+      <div className="edge absolute inset-x-0 top-0 z-20 mx-auto max-w-[110rem] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <Label index="00">The problem before the platform</Label>
       </div>
 

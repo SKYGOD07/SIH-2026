@@ -21,7 +21,7 @@ export function ModeSection() {
     <section
       id="modes"
       aria-label="Government and startup views"
-      className="relative w-full bg-ivory py-[clamp(6rem,14vh,11rem)] text-ink"
+      className="relative w-full ground-ivory py-[clamp(6rem,14vh,11rem)] text-ink"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <div className="flex flex-wrap items-end justify-between gap-8">

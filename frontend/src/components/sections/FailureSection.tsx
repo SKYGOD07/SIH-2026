@@ -53,7 +53,7 @@ export function FailureSection() {
       ref={rootRef}
       id="failure"
       aria-label="Failure registry"
-      className="relative w-full bg-ink py-[clamp(5rem,12vh,9rem)]"
+      className="relative w-full ground-ink py-[clamp(5rem,12vh,9rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <div className="flex flex-wrap items-end justify-between gap-8 border-t border-risk/40 pt-8">

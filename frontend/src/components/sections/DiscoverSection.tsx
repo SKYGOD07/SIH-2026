@@ -81,7 +81,7 @@ export function DiscoverSection() {
       ref={rootRef}
       id="discover"
       aria-label="Discover — finding candidate startups"
-      className="relative h-[100svh] w-full overflow-hidden bg-ink"
+      className="relative h-[100svh] w-full overflow-hidden ground-abyss"
     >
       <div className="absolute inset-0" aria-hidden="true">
         <SceneCanvas
@@ -97,7 +97,7 @@ export function DiscoverSection() {
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(10,10,9,0.9)_0%,rgba(10,10,9,0.25)_45%,rgba(10,10,9,0.85)_100%)]"
       />
 
-      <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[clamp(5.5rem,11vh,8rem)]">
+      <div className="edge relative z-10 mx-auto flex h-full max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div>
             <Label index="02">Discover</Label>

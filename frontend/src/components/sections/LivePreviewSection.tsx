@@ -55,7 +55,7 @@ export function LivePreviewSection() {
       ref={rootRef}
       id="platform"
       aria-label="The platform"
-      className="relative w-full bg-ink py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-ink py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <div className="flex flex-wrap items-end justify-between gap-8">

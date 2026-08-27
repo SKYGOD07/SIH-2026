@@ -81,7 +81,7 @@ export function EvaluationSection() {
       ref={rootRef}
       id="evaluate"
       aria-label="Evaluate — assisted analysis, human decision"
-      className="relative w-full bg-ivory py-[clamp(6rem,14vh,11rem)] text-ink"
+      className="relative w-full ground-ivory py-[clamp(6rem,14vh,11rem)] text-ink"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="04" className="text-graphite-light">

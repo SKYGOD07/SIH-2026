@@ -82,7 +82,7 @@ export function StartupProfileSection() {
       ref={rootRef}
       id="verify"
       aria-label="Verify — the evidence behind a candidate"
-      className="relative w-full bg-ink py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-ink py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="03">Verify</Label>

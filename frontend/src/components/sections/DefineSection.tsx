@@ -72,8 +72,8 @@ export function DefineSection() {
             pin: true,
             scrub: SCRUB,
             anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
+            invalidateOnRefresh: true
+          }
         });
 
         tl.from('[data-note]', { autoAlpha: 0, y: 24, duration: 0.6 }, 0);
@@ -90,14 +90,14 @@ export function DefineSection() {
               backgroundColor: 'rgba(228,118,42,0.2)',
               color: '#f5f2ec',
               duration: 0.3,
-              ease: 'power2.out',
+              ease: 'power2.out'
             },
             at,
           );
           tl.fromTo(
             `[data-extract="${h.key}"]`,
-            { autoAlpha: 0, y: 16, filter: 'blur(4px)' },
-            { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.45, ease: 'expo.out' },
+            { autoAlpha: 0, y: 16 },
+            { autoAlpha: 1, y: 0, duration: 0.45, ease: 'expo.out' },
             at + 0.06,
           );
         });
@@ -107,14 +107,13 @@ export function DefineSection() {
         // The measurable challenge assembles last, out of what was extracted.
         tl.fromTo(
           '[data-structured]',
-          { autoAlpha: 0, y: 34, filter: 'blur(8px)' },
+          { autoAlpha: 0, y: 34 },
           {
             autoAlpha: 1,
             y: 0,
-            filter: 'blur(0px)',
             duration: 0.7,
             stagger: 0.12,
-            ease: 'expo.out',
+            ease: 'expo.out'
           },
           3.05,
         );
@@ -136,9 +135,9 @@ export function DefineSection() {
       ref={rootRef}
       id="define"
       aria-label="Define — turning a note into a measurable challenge"
-      className="relative flex h-[100svh] w-full flex-col overflow-hidden bg-ink"
+      className="relative flex h-[100svh] w-full flex-col overflow-hidden ground-ink"
     >
-      <div className="edge mx-auto w-full max-w-[110rem] pt-[clamp(5.5rem,11vh,8rem)]">
+      <div className="edge mx-auto w-full max-w-[110rem] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <Label index="01">Define</Label>
         <h2 className="mt-5 max-w-[20ch] font-display text-display-sm font-medium uppercase leading-[0.92] text-ivory">
           Ambiguity in. Measurement out.

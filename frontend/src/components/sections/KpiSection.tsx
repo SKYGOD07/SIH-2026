@@ -81,8 +81,8 @@ export function KpiSection() {
             pin: true,
             scrub: SCRUB,
             anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
+            invalidateOnRefresh: true
+          }
         });
 
         tl.from('[data-kpi-baseline]', { autoAlpha: 0, y: 24, duration: 0.6 }, 0);
@@ -112,8 +112,8 @@ export function KpiSection() {
         // The headline lands last, after the evidence for it is on screen.
         tl.fromTo(
           '[data-kpi-headline]',
-          { autoAlpha: 0, scale: 1.16, filter: 'blur(12px)' },
-          { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 0.85, ease: 'expo.out' },
+          { autoAlpha: 0, scale: 1.16 },
+          { autoAlpha: 1, scale: 1, duration: 0.85, ease: 'expo.out' },
           3.1,
         );
         tl.from(
@@ -139,9 +139,9 @@ export function KpiSection() {
       ref={rootRef}
       id="kpi"
       aria-label="Measured pilot outcome"
-      className="relative flex h-[100svh] w-full flex-col overflow-hidden bg-ink"
+      className="relative flex h-[100svh] w-full flex-col overflow-hidden ground-abyss"
     >
-      <div className="edge mx-auto w-full max-w-[110rem] pt-[clamp(5.5rem,11vh,8rem)]">
+      <div className="edge mx-auto w-full max-w-[110rem] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <Label index="06">Outcome</Label>
         <h2 className="mt-5 max-w-[15ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory">
           Don’t ask whether it works. Measure it.

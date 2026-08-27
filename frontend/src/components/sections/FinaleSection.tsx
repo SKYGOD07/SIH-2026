@@ -50,8 +50,8 @@ export function FinaleSection() {
             pin: true,
             scrub: SCRUB,
             anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
+            invalidateOnRefresh: true
+          }
         });
 
         // Residue of the earlier sections dissolving.
@@ -62,13 +62,13 @@ export function FinaleSection() {
           const at = 0.5 + i * 1.15;
           tl.fromTo(
             el,
-            { autoAlpha: 0, y: 44, filter: 'blur(9px)' },
-            { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.6, ease: 'expo.out' },
+            { autoAlpha: 0, y: 44 },
+            { autoAlpha: 1, y: 0, duration: 0.6, ease: 'expo.out' },
             at,
           );
           tl.to(
             el,
-            { autoAlpha: 0, y: -34, filter: 'blur(7px)', duration: 0.5, ease: 'power2.in' },
+            { autoAlpha: 0, y: -34, duration: 0.5, ease: 'power2.in' },
             at + 0.78,
           );
         });
@@ -76,8 +76,8 @@ export function FinaleSection() {
         // The name, then the line under it, then the way in. Nothing after.
         tl.fromTo(
           '[data-wordmark]',
-          { autoAlpha: 0, scale: 1.1, filter: 'blur(12px)' },
-          { autoAlpha: 1, scale: 1, filter: 'blur(0px)', duration: 1, ease: 'expo.out' },
+          { autoAlpha: 0, scale: 1.1 },
+          { autoAlpha: 1, scale: 1, duration: 1, ease: 'expo.out' },
           4.1,
         );
         tl.fromTo(
@@ -104,7 +104,7 @@ export function FinaleSection() {
       ref={rootRef}
       id="finale"
       aria-label="From problem to scale"
-      className="relative h-[100svh] w-full overflow-hidden bg-ink"
+      className="relative h-[100svh] w-full overflow-hidden ground-ink"
     >
       {/* the last of the network, fading out */}
       <div

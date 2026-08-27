@@ -31,7 +31,7 @@ export function DecisionSection() {
         duration: 0.9,
         stagger: 0.12,
         ease: 'expo.out',
-        scrollTrigger: { trigger: '[data-branches]', start: 'top 80%', once: true },
+        scrollTrigger: { trigger: '[data-branches]', start: 'top 80%', once: true }
       });
 
       // The branch paths draw outward from a single point, then one thickens.
@@ -43,7 +43,7 @@ export function DecisionSection() {
           duration: 1.2,
           stagger: 0.12,
           ease: 'power2.inOut',
-          scrollTrigger: { trigger: '[data-branches]', start: 'top 80%', once: true },
+          scrollTrigger: { trigger: '[data-branches]', start: 'top 80%', once: true }
         },
       );
 
@@ -53,19 +53,18 @@ export function DecisionSection() {
         duration: 0.65,
         stagger: 0.08,
         ease: 'expo.out',
-        scrollTrigger: { trigger: '[data-decision-evidence]', start: 'top 86%', once: true },
+        scrollTrigger: { trigger: '[data-decision-evidence]', start: 'top 86%', once: true }
       });
 
       gsap.fromTo(
         '[data-verdict]',
-        { autoAlpha: 0, scale: 1.1, filter: 'blur(10px)' },
+        { autoAlpha: 0, scale: 1.1 },
         {
           autoAlpha: 1,
           scale: 1,
-          filter: 'blur(0px)',
           duration: 1,
           ease: 'expo.out',
-          scrollTrigger: { trigger: '[data-verdict]', start: 'top 88%', once: true },
+          scrollTrigger: { trigger: '[data-verdict]', start: 'top 88%', once: true }
         },
       );
     },
@@ -77,7 +76,7 @@ export function DecisionSection() {
       ref={rootRef}
       id="procure"
       aria-label="Procurement decision"
-      className="relative w-full bg-ink py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-ink py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="07">Procure</Label>
