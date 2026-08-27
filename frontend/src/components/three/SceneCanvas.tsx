@@ -7,8 +7,19 @@ import { useDeviceTier } from '@/hooks/useDeviceTier';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { cn } from '@/lib/utils';
 
-export interface SceneCanvasProps extends Omit<CanvasProps, 'children' | 'dpr'> {
+/** Only the camera fields the scenes actually set. */
+export interface SceneCamera {
+  position?: [number, number, number];
+  fov?: number;
+  near?: number;
+  far?: number;
+}
+
+export interface SceneCanvasProps
+  extends Omit<CanvasProps, 'children' | 'dpr' | 'camera' | 'frameloop' | 'gl'> {
   children: ReactNode;
+  /** Narrowed from R3F's camera union — the scenes only ever set these. */
+  camera?: SceneCamera;
   className?: string;
   /** Rendered instead of the canvas under reduced-motion / no-WebGL. */
   fallback?: ReactNode;
