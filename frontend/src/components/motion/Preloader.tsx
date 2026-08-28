@@ -138,16 +138,17 @@ export function Preloader() {
     requestAnimationFrame(() => requestAnimationFrame(() => bump('frame')));
 
     /**
-     * Failsafe for a readiness signal that never arrives.
+     * Watchdog.
      *
-     * It must not fire while the hand-off is already playing — forcing
-     * `complete()` mid-flight unmounts the preloader and the mark never lands.
-     * If the flight has started, the timeline owns completion from there.
+     * Long enough that a healthy sequence has already completed and unmounted
+     * this component — which clears the timer through the cleanup below — so it
+     * only ever fires when something genuinely stalled: a readiness signal that
+     * never arrived, or a hand-off that never finished. In either case the page
+     * is released rather than left behind a curtain.
      */
     const failsafe = window.setTimeout(() => {
       if (!alive) return;
       setDone(true);
-      if (flightStarted.current) return;
       beginReveal();
       complete();
     }, 9000);
