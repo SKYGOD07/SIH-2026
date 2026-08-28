@@ -239,24 +239,32 @@ export function Hero() {
           <div
             ref={verbsRef}
             aria-hidden="true"
-            className="edge pointer-events-none absolute inset-0 z-[4] mx-auto flex w-full max-w-[110rem] items-center"
+            className="edge pointer-events-none absolute inset-0 z-[4] mx-auto flex w-full max-w-[110rem] items-center justify-center"
           >
             {VERBS.map((verb, i) => (
-              <div key={verb} data-hero-verb className="absolute inset-x-0 will-3d">
-                <span className="block font-mono text-meta uppercase text-saffron">
-                  {String(i + 1).padStart(2, '0')} / 04
-                </span>
-                <span className="mt-4 block font-display text-display-xl font-normal uppercase text-ink">
-                  {verb}
-                </span>
-                <span className="mt-3 block max-w-[32ch] text-sm leading-relaxed text-ink-muted">
-                  {[
-                    'Surface real departmental problems. Match them to startups that can solve them.',
-                    'Run the pilot through a RAG-enabled sandbox. Every recommendation traceable to evidence.',
-                    'Milestone-based contracts. KPIs measured, not promised. Independent validation.',
-                    'What works in one ward works statewide. Evidence-based procurement at scale.',
-                  ][i]}
-                </span>
+              <div
+                key={verb}
+                data-hero-verb
+                className="absolute inset-x-0 flex flex-col items-center justify-center text-center px-4 sm:px-8 md:px-12 will-3d"
+              >
+                <div className="max-w-2xl w-full mx-auto flex flex-col items-center justify-center p-8 sm:p-10 md:p-14 rounded-3xl bg-bone-light/65 backdrop-blur-xl border border-ink/10 shadow-2xl transition-all duration-300">
+                  <span className="inline-flex items-center justify-center font-mono text-xs sm:text-sm font-semibold uppercase tracking-[0.25em] text-saffron px-4 py-1.5 rounded-full bg-saffron/10 border border-saffron/25 backdrop-blur-sm shadow-xs mb-3 sm:mb-4">
+                    {String(i + 1).padStart(2, '0')} / 04
+                  </span>
+                  
+                  <span className="block font-display text-[3.25rem] sm:text-[4.5rem] md:text-[5.75rem] lg:text-[6.75rem] font-medium uppercase tracking-tight text-ink leading-none py-1 sm:py-2 drop-shadow-xs">
+                    {verb}
+                  </span>
+                  
+                  <span className="mt-4 sm:mt-6 block max-w-[46ch] text-base sm:text-lg md:text-xl leading-relaxed text-ink/85 font-sans font-normal mx-auto">
+                    {[
+                      'Surface real departmental problems. Match them to startups that can solve them.',
+                      'Run the pilot through a RAG-enabled sandbox. Every recommendation traceable to evidence.',
+                      'Milestone-based contracts. KPIs measured, not promised. Independent validation.',
+                      'What works in one ward works statewide. Evidence-based procurement at scale.',
+                    ][i]}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

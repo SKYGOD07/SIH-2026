@@ -117,7 +117,7 @@ export function Nav() {
             transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
               'relative flex h-[3.125rem] items-center overflow-hidden rounded-full transition-colors duration-500',
-              expanded ? 'gap-3 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-2.5' : 'px-3',
+              expanded ? 'gap-3 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-2.5' : 'px-4 sm:px-5',
             )}
             style={{
               // The reference recipe: hairline border, heavy blur with
@@ -145,29 +145,21 @@ export function Nav() {
               />
             </span>
 
-            {/* --- the mark: present in both states --- */}
+            {/* --- the mark: present in both states with written name --- */}
             <Link
               href="/"
               data-cursor="home"
               aria-label="MahaInnovate home"
-              className="relative flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-70"
+              className="relative flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-80"
             >
               {/* Wrapped so the preloader can measure this exact box. */}
               <span data-nav-mark className="block w-[1.35rem] shrink-0">
                 <Mark radius="22%" />
               </span>
 
-              <AnimatePresence initial={false}>
-                {expanded ? (
-                  <motion.span
-                    key="wordmark"
-                    {...reveal}
-                    className="overflow-hidden whitespace-nowrap font-display text-[0.8125rem] font-bold uppercase tracking-[0.2em] text-ink"
-                  >
-                    MahaInnovate
-                  </motion.span>
-                ) : null}
-              </AnimatePresence>
+              <span className="whitespace-nowrap font-display text-[0.8125rem] font-bold uppercase tracking-[0.2em] text-ink">
+                MahaInnovate
+              </span>
             </Link>
 
             {/* --- links and CTA: only once the hero is past --- */}
