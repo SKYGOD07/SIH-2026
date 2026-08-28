@@ -11,7 +11,7 @@ import dynamic from 'next/dynamic';
  * that guarantee in one place.
  */
 
-export const LazyProblemNode = dynamic(() => import('./ProblemNode'), { ssr: false });
+export const LazyProblemForms = dynamic(() => import('./ProblemForms'), { ssr: false });
 export const LazyLifecycleOrbit = dynamic(() => import('./LifecycleOrbit'), { ssr: false });
 export const LazyStartupNetwork = dynamic(() => import('./StartupNetwork'), { ssr: false });
 export const LazyEvidenceField = dynamic(() => import('./EvidenceField'), { ssr: false });
