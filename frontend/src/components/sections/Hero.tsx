@@ -91,7 +91,7 @@ export function Hero() {
         },
         (context) => {
           const { desktop, tablet } = context.conditions as Record<string, boolean>;
-          const length = desktop ? 5.6 : tablet ? 4.4 : 3;
+          const length = desktop ? 3.2 : tablet ? 2.6 : 1.9;
 
           const tl = gsap.timeline({
             scrollTrigger: {

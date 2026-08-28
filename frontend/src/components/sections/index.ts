@@ -1,18 +1,12 @@
 export * from './Hero';
-export * from './ProblemStatement';
-export * from './LifecycleSection';
-export * from './DefineSection';
-export * from './DiscoverSection';
-export * from './StartupProfileSection';
+export * from './ProblemSection';
+export * from './PathwaySection';
+export * from './SimulatorSection';
 export * from './EvidenceSection';
-export * from './EvaluationSection';
-export * from './PilotSection';
-export * from './MilestonePaymentSection';
-export * from './KpiSection';
-export * from './DecisionSection';
-export * from './ScaleSection';
+export * from './OutcomeSection';
+export * from './BackendPlanSection';
+export * from './FinaleSection';
+
+/* Used by product routes only, not by the landing story. */
 export * from './KnowledgeGraphSection';
 export * from './FailureSection';
-export * from './LivePreviewSection';
-export * from './ModeSection';
-export * from './FinaleSection';

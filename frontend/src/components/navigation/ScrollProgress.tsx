@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { LIFECYCLE } from '@/data/lifecycle';
 import { cn, clamp } from '@/lib/utils';
+import { useIntro } from '@/components/motion/IntroProvider';
 
 /**
  * Global progress indicator, expressed as the lifecycle rather than as a
@@ -16,6 +18,12 @@ import { cn, clamp } from '@/lib/utils';
 export function ScrollProgress({ enabled = true }: { enabled?: boolean }) {
   const [progress, setProgress] = useState(0);
   const frame = useRef(0);
+  const pathname = usePathname();
+  const { heroComplete } = useIntro();
+
+  // On the landing page, hide until hero scroll animation finishes.
+  const isLanding = pathname === '/';
+  const shouldShow = enabled && (!isLanding || heroComplete);
 
   useEffect(() => {
     if (!enabled) return;
@@ -37,7 +45,7 @@ export function ScrollProgress({ enabled = true }: { enabled?: boolean }) {
     };
   }, [enabled]);
 
-  if (!enabled) return null;
+  if (!shouldShow) return null;
 
   const active = clamp(Math.floor(progress * LIFECYCLE.length), 0, LIFECYCLE.length - 1);
   const stage = LIFECYCLE[active];

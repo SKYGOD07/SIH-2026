@@ -51,8 +51,8 @@ export function EvidenceSection() {
       }
 
       const mm = gsap.matchMedia();
-      mm.add('(min-width: 768px)', () => build(6));
-      mm.add('(max-width: 767px)', () => build(4));
+      mm.add('(min-width: 768px)', () => build(2.8));
+      mm.add('(max-width: 767px)', () => build(2));
 
       function build(length: number) {
         const tl = gsap.timeline({

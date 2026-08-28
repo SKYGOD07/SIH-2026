@@ -1,66 +1,49 @@
-import { ScrollProgress } from '@/components/navigation/ScrollProgress';
 import {
   Hero,
-  ProblemStatement,
-  LifecycleSection,
-  DefineSection,
-  DiscoverSection,
-  StartupProfileSection,
+  ProblemSection,
+  PathwaySection,
+  SimulatorSection,
   EvidenceSection,
-  EvaluationSection,
-  PilotSection,
-  MilestonePaymentSection,
-  KpiSection,
-  DecisionSection,
-  ScaleSection,
-  KnowledgeGraphSection,
-  FailureSection,
-  LivePreviewSection,
-  ModeSection,
+  OutcomeSection,
+  BackendPlanSection,
   FinaleSection,
 } from '@/components/sections';
 
 /**
  * The landing story.
  *
- * The order is the argument, and it is the same order the product enforces:
+ * Eight sections, one argument:
  *
- *   problem → define → discover → verify → evaluate → pilot → measure →
- *   procure → scale → learn
+ *   problem -> the mechanism -> the simulator -> evidence -> outcome -> next
  *
- * Each section owns its own scroll choreography; this file only sequences them.
- * Sections that pin are interleaved with sections that scroll normally, so the
- * page never feels like an unbroken run of hijacked scroll.
+ * The simulator is the centre. Everything before it establishes why a pilot
+ * needs designing from evidence; everything after shows what that produces.
+ *
+ * Only the hero, the evidence sequence and the finale pin. An earlier build
+ * pinned fourteen sections across twenty screens, which made the page long
+ * without making the argument clearer.
  */
 export default function LandingPage() {
   return (
     <>
-      <ScrollProgress />
-
-      {/* the problem */}
+      {/* why the pathway is needed */}
       <Hero />
-      <ProblemStatement />
-      <LifecycleSection />
+      <ProblemSection />
 
-      {/* the pathway, stage by stage */}
-      <DefineSection />
-      <DiscoverSection />
-      <StartupProfileSection />
+      {/* the compliant end-to-end mechanism the PS asks for */}
+      <PathwaySection />
+
+      {/* our addition: design the pilot from evidence before funding it */}
+      <SimulatorSection />
+
+      {/* how any conclusion is grounded, and who decides */}
       <EvidenceSection />
-      <EvaluationSection />
-      <PilotSection />
-      <MilestonePaymentSection />
-      <KpiSection />
-      <DecisionSection />
-      <ScaleSection />
 
-      {/* what the pathway leaves behind */}
-      <KnowledgeGraphSection />
-      <FailureSection />
+      {/* contract, measure, pay, validate, scale */}
+      <OutcomeSection />
 
-      {/* the product underneath */}
-      <LivePreviewSection />
-      <ModeSection />
+      {/* honest scope, and the services still to build */}
+      <BackendPlanSection />
       <FinaleSection />
     </>
   );

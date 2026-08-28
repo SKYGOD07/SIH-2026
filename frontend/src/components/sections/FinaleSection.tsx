@@ -38,8 +38,8 @@ export function FinaleSection() {
       }
 
       const mm = gsap.matchMedia();
-      mm.add('(min-width: 768px)', () => build(5.5));
-      mm.add('(max-width: 767px)', () => build(3.8));
+      mm.add('(min-width: 768px)', () => build(2.2));
+      mm.add('(max-width: 767px)', () => build(1.6));
 
       function build(length: number) {
         const tl = gsap.timeline({
