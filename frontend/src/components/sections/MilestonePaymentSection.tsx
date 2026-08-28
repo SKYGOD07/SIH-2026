@@ -79,7 +79,7 @@ export function MilestonePaymentSection() {
       ref={rootRef}
       id="payments"
       aria-label="Milestone-based payment"
-      className="relative w-full ground-ink py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-bone py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <div className="flex flex-wrap items-end justify-between gap-8">
@@ -88,7 +88,7 @@ export function MilestonePaymentSection() {
             <SplitText
               as="h2"
               type="lines"
-              className="mt-6 max-w-[17ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory"
+              className="mt-6 max-w-[17ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ink"
             >
               Payment follows evidence. Never the other way round.
             </SplitText>
@@ -96,24 +96,24 @@ export function MilestonePaymentSection() {
 
           <div data-release className="min-w-[16rem]">
             <Label>Pilot value</Label>
-            <p className="mt-3 font-display text-display-xs font-medium leading-none text-ivory">
+            <p className="mt-3 font-display text-display-xs font-medium leading-none text-ink">
               {formatLakh(total)}
             </p>
-            <div className="mt-5 h-[3px] w-full bg-ivory/12">
+            <div className="mt-5 h-[3px] w-full bg-ink/12">
               <span
                 data-release-bar
                 className="block h-[3px] origin-left bg-saffron"
                 style={{ width: (released / total) * 100 + '%' }}
               />
             </div>
-            <p className="mt-3 font-mono text-meta uppercase text-silver">
+            <p className="mt-3 font-mono text-meta uppercase text-stone">
               {formatLakh(released)} released against approved evidence
             </p>
           </div>
         </div>
 
         {/* --- the tranches --- */}
-        <ol data-tranches className="mt-16 grid gap-px border-t border-ivory/10 md:grid-cols-4">
+        <ol data-tranches className="mt-16 grid gap-px border-t border-ink/12 md:grid-cols-4">
           {pilot.milestones.map((m) => {
             const status = STATUS_COPY[m.status];
             return (
@@ -126,15 +126,15 @@ export function MilestonePaymentSection() {
                     ? 'border-validated'
                     : status.tone === 'live'
                       ? 'border-saffron'
-                      : 'border-ivory/15',
+                      : 'border-ink/15',
                 )}
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="font-mono text-meta uppercase text-silver">{m.code}</span>
+                  <span className="font-mono text-meta uppercase text-stone">{m.code}</span>
                   <span
                     className={cn(
                       'font-display text-3xl leading-none',
-                      status.tone === 'locked' ? 'text-ivory/30' : 'text-ivory',
+                      status.tone === 'locked' ? 'text-ink/35' : 'text-ink',
                     )}
                   >
                     <Counter
@@ -147,10 +147,10 @@ export function MilestonePaymentSection() {
                   </span>
                 </div>
 
-                <p className="mt-4 font-display text-xl uppercase leading-none text-ivory">
+                <p className="mt-4 font-display text-xl uppercase leading-none text-ink">
                   {m.title}
                 </p>
-                <p className="mt-3 max-w-[34ch] text-sm leading-relaxed text-ivory/60">
+                <p className="mt-3 max-w-[34ch] text-sm leading-relaxed text-ink/60">
                   {m.description}
                 </p>
 
@@ -158,10 +158,10 @@ export function MilestonePaymentSection() {
                   className={cn(
                     'mt-5 font-mono text-meta uppercase',
                     status.tone === 'done'
-                      ? 'text-validated-light'
+                      ? 'text-validated'
                       : status.tone === 'live'
                         ? 'text-saffron'
-                        : 'text-silver',
+                        : 'text-stone',
                   )}
                 >
                   {status.label}
@@ -172,11 +172,11 @@ export function MilestonePaymentSection() {
         </ol>
 
         {/* --- the rule, stated --- */}
-        <div data-rule className="mt-20 border-t border-ivory/10 pt-10">
+        <div data-rule className="mt-20 border-t border-ink/12 pt-10">
           <ol className="flex flex-wrap items-center gap-x-8 gap-y-4">
             {['Evidence', 'Approval', 'Payment'].map((step, i) => (
               <li key={step} data-rule-step className="flex items-center gap-8">
-                <span className="font-display text-display-xs font-medium uppercase leading-none text-ivory">
+                <span className="font-display text-display-xs font-medium uppercase leading-none text-ink">
                   {step}
                 </span>
                 {i < 2 ? (
@@ -187,7 +187,7 @@ export function MilestonePaymentSection() {
               </li>
             ))}
           </ol>
-          <p className="mt-6 max-w-[68ch] text-pretty text-base leading-relaxed text-silver">
+          <p className="mt-6 max-w-[68ch] text-pretty text-base leading-relaxed text-stone">
             Each tranche is contracted against named deliverables and released once the department
             validates the filed evidence. The startup knows what unlocks the next payment before
             the pilot starts, and the department never pays ahead of proof.
