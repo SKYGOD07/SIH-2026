@@ -11,55 +11,28 @@ const config: Config = {
     extend: {
       colors: {
         /**
-         * Light-primary palette.
+         * Three colours, taken from the silviasguotti.design reference:
+         * pure black ground, pure white type, one vivid yellow signal.
          *
-         * The reference work (noomoagency.com, valentime.noomoagency.com) is
-         * calm, warm and pale — enormous dark type on a soft ground, with a few
-         * large matte forms. The first pass was near-black and busy, which is
-         * why it read as debris rather than as a considered object.
-         *
-         *  bone     — the page ground. Warm off-white, never pure #FFF.
-         *  ink      — type. Warm near-black, never pure #000.
-         *  saffron  — the single accent, deepened so it holds contrast on bone.
-         *  abyss    — reserved for the few dark punctuation sections that carry
-         *             the heaviest 3D moments. Dark is now the exception.
+         * No greys in the palette and no warm neutrals. Every intermediate tone
+         * is white or black at an alpha — `text-chalk/50`, `border-chalk/15` —
+         * which is what keeps the page reading as stark rather than as a
+         * gradient of beiges. That starkness is the whole character.
          */
-        bone: {
-          DEFAULT: '#EDE7DD',
-          soft: '#F4F1EA',
-          light: '#F8F6F1',
-          deep: '#E0D8CB',
-          shadow: '#D2C8B8',
+        void: {
+          DEFAULT: '#000000',
+          soft: '#090909',
+          lift: '#141414',
         },
-        ink: {
-          DEFAULT: '#17161A',
-          soft: '#26242A',
-          muted: '#45433D',
+        chalk: {
+          DEFAULT: '#FFFFFF',
         },
-        stone: {
-          DEFAULT: '#8A8780',
-          light: '#A8A49B',
-          dark: '#63615B',
+        signal: {
+          DEFAULT: '#FFC400',
+          deep: '#E0AC00',
         },
-        saffron: {
-          DEFAULT: '#D2590F',
-          light: '#E8762B',
-          deep: '#A8430A',
-          wash: '#F2D9C4',
-        },
-        validated: {
-          DEFAULT: '#4E7A5C',
-          light: '#6B9678',
-        },
-        risk: {
-          DEFAULT: '#A83E32',
-        },
-        /* Dark punctuation sections */
-        abyss: {
-          DEFAULT: '#14161A',
-          deep: '#0D0F12',
-          light: '#1E2228',
-        },
+        validated: { DEFAULT: '#6FCF97' },
+        risk: { DEFAULT: '#FF6B5A' },
 
         /* shadcn bridge tokens, kept so the existing ui/ primitives still work */
         background: 'hsl(var(--background))',
@@ -70,10 +43,7 @@ const config: Config = {
         secondary: { DEFAULT: 'hsl(var(--secondary))', foreground: 'hsl(var(--secondary-foreground))' },
         muted: { DEFAULT: 'hsl(var(--muted))', foreground: 'hsl(var(--muted-foreground))' },
         accent: { DEFAULT: 'hsl(var(--accent))', foreground: 'hsl(var(--accent-foreground))' },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
+        destructive: { DEFAULT: 'hsl(var(--destructive))', foreground: 'hsl(var(--destructive-foreground))' },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
