@@ -109,7 +109,7 @@ export function EvidenceSection() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(7,8,10,0.85)_0%,rgba(7,8,10,0.2)_35%,rgba(7,8,10,0.92)_85%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(13,15,18,0.85)_0%,rgba(13,15,18,0.2)_35%,rgba(13,15,18,0.92)_85%)]"
       />
 
       <div className="edge relative z-10 mx-auto flex h-full min-h-0 max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
@@ -118,7 +118,7 @@ export function EvidenceSection() {
             <Label index="03" tone="accent">
               Evidence retrieval
             </Label>
-            <p className="mt-5 max-w-[24ch] font-display text-display-xs font-medium uppercase leading-[0.95] text-ivory">
+            <p className="mt-5 max-w-[24ch] font-display text-display-xs font-medium uppercase leading-[0.95] text-bone">
               {PRIMARY_RETRIEVAL.question}
             </p>
           </div>
@@ -130,7 +130,7 @@ export function EvidenceSection() {
                 aria-current={i === stage ? 'step' : undefined}
                 className={
                   'flex items-center gap-3 font-mono text-meta uppercase transition-colors duration-500 ' +
-                  (i === stage ? 'text-saffron' : i < stage ? 'text-ivory/50' : 'text-ivory/20')
+                  (i === stage ? 'text-saffron-light' : i < stage ? 'text-bone/50' : 'text-bone/25')
                 }
               >
                 <span className="w-4 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
@@ -152,7 +152,7 @@ export function EvidenceSection() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="font-mono text-meta uppercase text-saffron"
+                    className="font-mono text-meta uppercase text-saffron-light"
                   >
                     {cited.length} relevant sources found
                   </motion.span>
@@ -162,7 +162,7 @@ export function EvidenceSection() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="font-mono text-meta uppercase text-silver"
+                    className="font-mono text-meta uppercase text-stone-light"
                   >
                     Retrieving evidence…
                   </motion.span>
@@ -180,17 +180,17 @@ export function EvidenceSection() {
                     y: showSources ? 0 : 14,
                   }}
                   transition={{ delay: showSources ? i * 0.09 : 0, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="border-l-2 border-saffron bg-ivory/[0.045] p-4 backdrop-blur-[2px]"
+                  className="border-l-2 border-saffron bg-bone/[0.05] p-4 backdrop-blur-[2px]"
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="font-mono text-meta uppercase text-saffron">
+                    <span className="font-mono text-meta uppercase text-saffron-light">
                       {SOURCE_LABEL[src.kind]}
                     </span>
-                    <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-silver">
+                    <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone-light">
                       {src.id}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm font-medium leading-snug text-ivory">{src.title}</p>
+                  <p className="mt-2 text-sm font-medium leading-snug text-bone">{src.title}</p>
                   <AnimatePresence>
                     {showEvidence ? (
                       <motion.blockquote
@@ -199,10 +199,10 @@ export function EvidenceSection() {
                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                         className="overflow-hidden"
                       >
-                        <p className="pt-3 text-sm italic leading-relaxed text-ivory/80">
+                        <p className="pt-3 text-sm italic leading-relaxed text-bone/75">
                           “{src.excerpt}”
                         </p>
-                        <cite className="mt-2 block font-mono text-[0.625rem] not-italic uppercase tracking-[0.12em] text-silver">
+                        <cite className="mt-2 block font-mono text-[0.625rem] not-italic uppercase tracking-[0.12em] text-stone-light">
                           {src.reference}
                         </cite>
                       </motion.blockquote>
@@ -220,27 +220,27 @@ export function EvidenceSection() {
               initial={false}
               animate={{ opacity: showAnalysis ? 1 : 0.1, y: showAnalysis ? 0 : 18 }}
               transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-5 border border-dashed border-ivory/25 p-6"
+              className="mt-5 border border-dashed border-bone/25 p-6"
             >
-              <span className="font-mono text-meta uppercase text-silver">
+              <span className="font-mono text-meta uppercase text-stone-light">
                 Generated analysis · drawn only from the cited passages
               </span>
-              <p className="mt-4 text-pretty text-base leading-relaxed text-ivory/90">
+              <p className="mt-4 text-pretty text-base leading-relaxed text-bone/90">
                 {PRIMARY_RETRIEVAL.analysis}
               </p>
 
-              <div className="mt-6 border-t border-ivory/15 pt-4">
-                <span className="font-mono text-meta uppercase text-silver">Cites</span>
+              <div className="mt-6 border-t border-bone/15 pt-4">
+                <span className="font-mono text-meta uppercase text-stone-light">Cites</span>
                 <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                   {cited.map((src) => (
-                    <li key={src.id} className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-saffron">
+                    <li key={src.id} className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-saffron-light">
                       {src.id} · {SOURCE_LABEL[src.kind]}
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <p className="mt-6 border-t border-ivory/15 pt-4 text-xs leading-relaxed text-silver">
+              <p className="mt-6 border-t border-bone/15 pt-4 text-xs leading-relaxed text-stone-light">
                 {PRIMARY_RETRIEVAL.decisionOwner} This analysis is an aid to that determination and
                 carries no authority of its own.
               </p>
