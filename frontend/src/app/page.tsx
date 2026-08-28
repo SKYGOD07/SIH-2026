@@ -2,26 +2,25 @@ import {
   Hero,
   ProblemSection,
   PathwaySection,
-  SimulatorSection,
-  EvidenceSection,
-  OutcomeSection,
-  BackendPlanSection,
+  IdeaSlide,
+  BuiltSlide,
+  CapabilitySlide,
   FinaleSection,
 } from '@/components/sections';
 
 /**
  * The landing story.
  *
- * Eight sections, one argument:
+ *   problem -> the mechanism -> the idea -> what is built -> what it does
  *
- *   problem -> the mechanism -> the simulator -> evidence -> outcome -> next
+ * Deliberately short. The reference this is modelled on carries 274 words
+ * across its whole page, about 23 to a screen; an earlier version of this page
+ * carried 873 across 24 screens, with one section alone holding more text than
+ * the entire reference site.
  *
- * The simulator is the centre. Everything before it establishes why a pilot
- * needs designing from evidence; everything after shows what that produces.
- *
- * Only the hero, the evidence sequence and the finale pin. An earlier build
- * pinned fourteen sections across twenty screens, which made the page long
- * without making the argument clearer.
+ * Detail did not get deleted, it got moved: the pathway detail lives on the
+ * product routes, and the simulator output lives in the API and the dashboard,
+ * which is where a reader who wants it is actually going.
  */
 export default function LandingPage() {
   return (
@@ -33,17 +32,11 @@ export default function LandingPage() {
       {/* the compliant end-to-end mechanism the PS asks for */}
       <PathwaySection />
 
-      {/* our addition: design the pilot from evidence before funding it */}
-      <SimulatorSection />
+      {/* the three slides: idea, built, capability */}
+      <IdeaSlide />
+      <BuiltSlide />
+      <CapabilitySlide />
 
-      {/* how any conclusion is grounded, and who decides */}
-      <EvidenceSection />
-
-      {/* contract, measure, pay, validate, scale */}
-      <OutcomeSection />
-
-      {/* honest scope, and the services still to build */}
-      <BackendPlanSection />
       <FinaleSection />
     </>
   );
