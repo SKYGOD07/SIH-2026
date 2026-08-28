@@ -19,8 +19,11 @@ interface IntroContextValue {
   heroComplete: boolean;
   beginReveal: () => void;
   complete: () => void;
-  /** Called by the Hero when its scroll timeline reaches the end. */
-  completeHero: () => void;
+  /**
+   * Set by the Hero from its pin progress. Two-way, so scrolling back up into
+   * the hero closes the navigation again rather than latching it open.
+   */
+  setHeroComplete: (value: boolean) => void;
 }
 
 const IntroContext = createContext<IntroContextValue>({
@@ -29,7 +32,7 @@ const IntroContext = createContext<IntroContextValue>({
   heroComplete: false,
   beginReveal: () => {},
   complete: () => {},
-  completeHero: () => {},
+  setHeroComplete: () => {},
 });
 
 /**
@@ -56,7 +59,7 @@ export function IntroProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const complete = useCallback(() => setPhase('ready'), []);
-  const completeHero = useCallback(() => setHeroComplete(true), []);
+
 
   const value = useMemo<IntroContextValue>(
     () => ({
@@ -65,9 +68,9 @@ export function IntroProvider({ children }: { children: ReactNode }) {
       heroComplete,
       beginReveal,
       complete,
-      completeHero,
+      setHeroComplete,
     }),
-    [phase, heroComplete, beginReveal, complete, completeHero],
+    [phase, heroComplete, beginReveal, complete],
   );
 
   return <IntroContext.Provider value={value}>{children}</IntroContext.Provider>;

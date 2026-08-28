@@ -125,9 +125,20 @@
     );
   }
 
-  /* A warmer variant for sections that should feel like paper. */
+  /*
+   * A warmer variant for sections that should feel like paper.
+   * Translucent for the same reason as `.ground-bone`: the travelling 3D forms
+   * live in one fixed layer behind every section, and an opaque ground would
+   * hide them for the length of that section.
+   */
   .ground-paper {
-    background-image: linear-gradient(180deg, #f4f1ea 0%, #efebe2 55%, #e8e2d6 100%);
+    background-image: linear-gradient(
+      180deg,
+      rgba(244, 241, 234, 0.88) 0%,
+      rgba(239, 235, 226, 0.62) 40%,
+      rgba(239, 235, 226, 0.62) 60%,
+      rgba(232, 226, 214, 0.88) 100%
+    );
   }
 
   /* Dark punctuation. Opaque — these carry their own 3D atmosphere. */

@@ -15,8 +15,8 @@ import { DEMO_NOTICE } from '@/data/challenges';
  * on top (z-3+). This prevents the text overlap bug that occurred when lines
  * were interleaved with the 3D canvas at different z-indices.
  *
- * The hero also signals `completeHero()` when its scroll animation finishes,
- * so the Nav can defer its entrance for an immersive opening.
+ * The hero reports its pin progress to the IntroProvider, so the navigation
+ * capsule stays closed while the reader is on it and opens once it is past.
  *
  * Cost discipline: nothing in the scrubbed timeline animates `filter`. Depth is
  * carried by transform and opacity only, both composited.
@@ -32,7 +32,7 @@ export function Hero() {
   const cueRef = useRef<HTMLDivElement>(null);
   const sceneProgress = useRef(0);
   const reduced = usePrefersReducedMotion();
-  const { canAnimate, completeHero } = useIntro();
+  const { canAnimate, setHeroComplete } = useIntro();
 
   /* --- Intro: plays once, as the curtain lifts ---------------------- */
   useGSAP(
@@ -44,7 +44,7 @@ export function Hero() {
       if (reduced) {
         gsap.set('[data-hero-inner], [data-hero-chrome]', { yPercent: 0, opacity: 1 });
         sceneProgress.current = 1;
-        completeHero();
+        setHeroComplete(true);
         return;
       }
 
@@ -102,9 +102,10 @@ export function Hero() {
               invalidateOnRefresh: true,
               onUpdate: (self) => {
                 sceneProgress.current = gsap.utils.clamp(0, 1, self.progress / 0.55);
-              },
-              onLeave: () => {
-                completeHero();
+                // Drives the navigation capsule. Read from progress rather than
+                // onLeave, which also fires during ScrollTrigger.refresh() and
+                // would open the navbar while the reader is still on the hero.
+                setHeroComplete(self.progress > 0.985);
               },
             },
           });
@@ -202,7 +203,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 100% 80% at 72% 30%, #F6F2EA 0%, #EDE7DD 46%, #E4DCCE 100%)',
+            'radial-gradient(ellipse 100% 80% at 72% 30%, rgba(246,242,234,0.55) 0%, rgba(237,231,221,0.35) 46%, rgba(228,220,206,0.55) 100%)',
         }}
       />
 
