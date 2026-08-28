@@ -12,19 +12,20 @@ import { DEMO_NOTICE } from '@/data/challenges';
 /**
  * The hero.
  *
- * Composition follows the reference language: enormous light-weight type set
- * edge to edge on a warm ground, with a few large matte forms passing *through*
- * the lines rather than sitting beside them. The 3D layer is deliberately
- * sandwiched — behind the first two lines, in front of the last two — which is
- * what makes the object feel like it occupies the same space as the words
- * instead of being wallpaper behind them.
+ * Redesigned to convey the actual PS idea — not generic "government problems"
+ * messaging. The 3D layer is atmospheric backdrop only (z-1), text always
+ * on top (z-3+). This prevents the text overlap bug that occurred when lines
+ * were interleaved with the 3D canvas at different z-indices.
+ *
+ * The hero also signals `completeHero()` when its scroll animation finishes,
+ * so the Nav can defer its entrance for an immersive opening.
  *
  * Cost discipline: nothing in the scrubbed timeline animates `filter`. Depth is
  * carried by transform and opacity only, both composited.
  */
 
-const OPENING = ['Government', 'problems', 'need', 'better', 'solutions.'];
-const VERBS = ['Find them.', 'Test them.', 'Prove them.', 'Scale them.'];
+const OPENING = ['Every year,', 'governments', 'bet on startups', 'without', 'evidence.'];
+const VERBS = ['Identify.', 'Simulate.', 'Prove.', 'Scale.'];
 
 export function Hero() {
   const rootRef = useRef<HTMLElement>(null);
@@ -33,7 +34,7 @@ export function Hero() {
   const cueRef = useRef<HTMLDivElement>(null);
   const sceneProgress = useRef(0);
   const reduced = usePrefersReducedMotion();
-  const { canAnimate } = useIntro();
+  const { canAnimate, completeHero } = useIntro();
 
   /* --- Intro: plays once, as the curtain lifts ---------------------- */
   useGSAP(
@@ -45,6 +46,7 @@ export function Hero() {
       if (reduced) {
         gsap.set('[data-hero-inner], [data-hero-chrome]', { yPercent: 0, opacity: 1 });
         sceneProgress.current = 1;
+        completeHero();
         return;
       }
 
@@ -103,6 +105,9 @@ export function Hero() {
               onUpdate: (self) => {
                 sceneProgress.current = gsap.utils.clamp(0, 1, self.progress / 0.55);
               },
+              onLeave: () => {
+                completeHero();
+              },
             },
           });
 
@@ -110,20 +115,21 @@ export function Hero() {
 
           tl.to(cueRef.current, { autoAlpha: 0, duration: 0.4 }, 0.05);
 
-          /* Lines separate — alternating, receding, never blurred. */
+          /*
+           * Lines separate — controlled fade-out, NO rotation to prevent overlap.
+           * Each line moves in its own direction but stays legible and non-colliding.
+           */
           tl.addLabel('fragment', 0.55);
           lines.forEach((line, i) => {
             const dir = i % 2 === 0 ? -1 : 1;
-            const depth = (i - (lines.length - 1) / 2) / lines.length;
             tl.to(
               line,
               {
-                xPercent: dir * (14 + i * 7),
-                yPercent: depth * 42,
-                rotate: dir * (1 + i * 0.6),
-                scale: 0.88 + Math.abs(depth) * 0.26,
-                opacity: 0.25,
-                duration: 1.15,
+                xPercent: dir * (10 + i * 5),
+                yPercent: (i - 2) * 18,
+                scale: 0.92,
+                opacity: 0,
+                duration: 1.0,
                 ease: 'power2.in',
               },
               'fragment+=' + i * 0.06,
@@ -131,30 +137,19 @@ export function Hero() {
           });
 
           /* Lines clear; the object owns the frame. */
-          tl.addLabel('assemble', 1.85);
-          tl.to(
-            lines,
-            {
-              autoAlpha: 0,
-              scale: 1.5,
-              yPercent: (i) => (i - 2) * 85,
-              duration: 0.95,
-              stagger: 0.05,
-              ease: 'power2.in',
-            },
-            'assemble',
-          );
+          tl.addLabel('assemble', 1.7);
 
-          /* The four verbs. */
-          tl.addLabel('verbs', 3);
+          /* The four verbs — the pipeline stages. Each verb fully exits
+           * before the next enters to prevent overlap. */
+          tl.addLabel('verbs', 2.6);
           verbPanels.forEach((panel, i) => {
-            const at = 'verbs+=' + i * 1.1;
+            const at = 'verbs+=' + i * 1.4;
             tl.to(panel, { autoAlpha: 1, yPercent: 0, scale: 1, duration: 0.6, ease: 'expo.out' }, at);
             if (i < verbPanels.length - 1) {
               tl.to(
                 panel,
-                { autoAlpha: 0, yPercent: -18, scale: 0.92, duration: 0.55, ease: 'power2.in' },
-                at + '+=0.7',
+                { autoAlpha: 0, yPercent: -24, scale: 0.9, duration: 0.6, ease: 'power2.in' },
+                at + '+=0.75',
               );
             }
           });
@@ -173,25 +168,23 @@ export function Hero() {
     { scope: rootRef, dependencies: [reduced] },
   );
 
-  /** One line of the opening statement. `depth` decides whether the 3D passes in front. */
+  /** One line of the opening statement. Text always above 3D. */
   const line = (word: string, i: number) => (
     <div
       key={word}
       data-hero-line
       className="line-mask origin-left will-3d"
       style={{
-        marginLeft: `${[0, 5, 1.5, 9, 3][i]}%`,
-        // Lines 0-1 sit behind the forms, 2-4 in front. This is what makes the
-        // object read as occupying the same space as the words.
+        marginLeft: `${[0, 4, 1, 8, 2][i]}%`,
         position: 'relative',
-        zIndex: i < 2 ? 1 : 3,
+        zIndex: 3,
       }}
     >
       <span
         data-hero-inner
         className={
           'block font-display text-hero-line font-normal uppercase ' +
-          (word === 'problems' ? 'text-ink' : 'text-ink/70')
+          (i === 2 ? 'text-ink' : 'text-ink/70')
         }
       >
         {word}
@@ -215,8 +208,8 @@ export function Hero() {
         }}
       />
 
-      {/* Spatial layer, sandwiched between the type layers via z-index. */}
-      <div className="absolute inset-0 z-[2]" aria-hidden="true">
+      {/* Spatial layer — BEHIND text (z-1). Atmospheric only, never fighting type. */}
+      <div className="absolute inset-0 z-[1]" aria-hidden="true">
         <SceneCanvas
           alwaysRender
           rootMargin="60% 0px"
@@ -226,17 +219,17 @@ export function Hero() {
         </SceneCanvas>
       </div>
 
-      <div className="relative z-[3] flex h-full flex-col nav-safe pb-[clamp(1rem,3vh,2rem)]">
+      <div className="relative z-[3] flex h-full flex-col pb-[clamp(1rem,3vh,2rem)]">
         <h1 className="sr-only">
-          Government problems need better solutions. Find them, test them, prove them, scale them.
+          Every year, governments bet on startups without evidence. We help them identify, simulate, prove, and scale.
         </h1>
 
         <div className="relative min-h-0 flex-1">
-          {/* Type layer. `pointer-events-none` so it never blocks the canvas. */}
+          {/* Type layer — always above 3D. */}
           <div
             ref={openingRef}
             aria-hidden="true"
-            className="edge pointer-events-none absolute inset-0 mx-auto flex w-full max-w-[110rem] flex-col justify-center"
+            className="edge pointer-events-none absolute inset-0 mx-auto flex w-full max-w-[110rem] flex-col justify-center gap-1"
             style={{ zIndex: 3 }}
           >
             {OPENING.map(line)}
@@ -254,6 +247,14 @@ export function Hero() {
                 </span>
                 <span className="mt-4 block font-display text-display-xl font-normal uppercase text-ink">
                   {verb}
+                </span>
+                <span className="mt-3 block max-w-[32ch] text-sm leading-relaxed text-ink-muted">
+                  {[
+                    'Surface real departmental problems. Match them to startups that can solve them.',
+                    'Run the pilot through a RAG-enabled sandbox. Every recommendation traceable to evidence.',
+                    'Milestone-based contracts. KPIs measured, not promised. Independent validation.',
+                    'What works in one ward works statewide. Evidence-based procurement at scale.',
+                  ][i]}
                 </span>
               </div>
             ))}
