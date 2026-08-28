@@ -143,7 +143,7 @@ export function KpiSection() {
     >
       <div className="edge mx-auto w-full max-w-[110rem] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <Label index="06">Outcome</Label>
-        <h2 className="mt-5 max-w-[15ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory">
+        <h2 className="mt-5 max-w-[15ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ink">
           Don’t ask whether it works. Measure it.
         </h2>
       </div>
@@ -153,27 +153,27 @@ export function KpiSection() {
         <div className="flex flex-col justify-center gap-10">
           <div data-kpi-baseline>
             <Label>Baseline · pre-pilot</Label>
-            <p className="mt-3 font-display text-display-sm font-medium leading-none text-ivory/45">
+            <p className="mt-3 font-display text-display-sm font-medium leading-none text-ink/45">
               {water.baseline}
               {water.unit}
             </p>
-            <p className="mt-2 font-mono text-meta uppercase text-silver">{water.label}</p>
+            <p className="mt-2 font-mono text-meta uppercase text-stone">{water.label}</p>
           </div>
 
           <div data-kpi-after className="opacity-0">
             <Label tone="accent">After pilot · independently validated</Label>
-            <p className="mt-3 font-display text-display-sm font-medium leading-none text-ivory">
+            <p className="mt-3 font-display text-display-sm font-medium leading-none text-ink">
               <Counter value={water.result} duration={1.6} />
               {water.unit}
             </p>
-            <p className="mt-2 font-mono text-meta uppercase text-silver">{water.label}</p>
+            <p className="mt-2 font-mono text-meta uppercase text-stone">{water.label}</p>
           </div>
 
           <div data-kpi-headline className="opacity-0">
             <p className="font-display text-display-md font-medium leading-[0.85] text-saffron">
               <Counter value={improvement} suffix="%" duration={1.4} />
             </p>
-            <p className="mt-2 font-display text-2xl uppercase leading-none text-ivory">
+            <p className="mt-2 font-display text-2xl uppercase leading-none text-ink">
               improvement
             </p>
           </div>
@@ -194,8 +194,8 @@ export function KpiSection() {
           >
             <defs>
               <linearGradient id="kpi-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#e8762b" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#e8762b" stopOpacity="0" />
+                <stop offset="0%" stopColor="#d2590f" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#d2590f" stopOpacity="0" />
               </linearGradient>
             </defs>
 
@@ -209,7 +209,7 @@ export function KpiSection() {
                     y1={y}
                     x2="1000"
                     y2={y}
-                    stroke="#f6f3ec"
+                    stroke="#17161a"
                     strokeOpacity="0.08"
                     vectorEffect="non-scaling-stroke"
                   />
@@ -222,7 +222,7 @@ export function KpiSection() {
               data-kpi-line
               d={linePath}
               fill="none"
-              stroke="#e8762b"
+              stroke="#d2590f"
               strokeWidth="2.5"
               vectorEffect="non-scaling-stroke"
               pathLength={1}
@@ -230,11 +230,11 @@ export function KpiSection() {
               strokeDashoffset={1}
               strokeLinecap="round"
             />
-            <circle data-kpi-marker cx="0" cy={280 - ((water.baseline - 18) / 16) * 280} r="5" fill="#a6a49c" opacity="0" />
-            <circle data-kpi-marker cx="1000" cy={280 - ((water.result - 18) / 16) * 280} r="6" fill="#e8762b" opacity="0" />
+            <circle data-kpi-marker cx="0" cy={280 - ((water.baseline - 18) / 16) * 280} r="5" fill="#8a8780" opacity="0" />
+            <circle data-kpi-marker cx="1000" cy={280 - ((water.result - 18) / 16) * 280} r="6" fill="#d2590f" opacity="0" />
           </svg>
 
-          <div className="mt-3 flex justify-between font-mono text-meta uppercase text-silver">
+          <div className="mt-3 flex justify-between font-mono text-meta uppercase text-stone">
             <span>Week 01 · baseline</span>
             <span>Week 13 · validation</span>
           </div>
@@ -243,18 +243,18 @@ export function KpiSection() {
 
       {/* --- secondary metrics --- */}
       <div className="edge mx-auto w-full max-w-[110rem] pb-[clamp(3rem,8vh,5rem)]">
-        <dl className="grid gap-x-10 gap-y-6 border-t border-ivory/10 pt-6 sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="grid gap-x-10 gap-y-6 border-t border-ink/12 pt-6 sm:grid-cols-2 lg:grid-cols-4">
           {others.map((m) => {
             const delta = Math.round(((m.result - m.baseline) / m.baseline) * 100);
             const good =
               m.direction === 'lower-is-better' ? delta < 0 : delta > 0;
             return (
               <div key={m.label} data-kpi-secondary className="flex items-baseline justify-between gap-4">
-                <dt className="font-mono text-meta uppercase text-silver">{m.label}</dt>
+                <dt className="font-mono text-meta uppercase text-stone">{m.label}</dt>
                 <dd
                   className={cn(
                     'font-display text-2xl leading-none tabular-nums',
-                    good ? 'text-validated-light' : 'text-risk',
+                    good ? 'text-validated' : 'text-risk',
                   )}
                 >
                   {delta < 0 ? '↓' : '↑'} {Math.abs(delta)}%
