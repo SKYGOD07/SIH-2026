@@ -22,11 +22,18 @@ export interface DisplayTextProps {
   id?: string;
 }
 
+/*
+ * The display face is Poppins, loaded at 600/700/800/900 only — it is set very
+ * large and very heavy, and the lighter cuts have no use at that scale. These
+ * names therefore map onto that range rather than onto the CSS scale: asking
+ * for 400 here would get silently rounded up by the browser anyway, and a
+ * weight nobody can predict is worse than a narrow one everybody can.
+ */
 const WEIGHT = {
-  light: 'font-light',
-  regular: 'font-normal',
-  medium: 'font-medium',
-  bold: 'font-bold',
+  light: 'font-semibold',
+  regular: 'font-bold',
+  medium: 'font-extrabold',
+  bold: 'font-extrabold',
   black: 'font-black',
 } as const;
 

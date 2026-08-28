@@ -3,7 +3,11 @@ import Link from 'next/link';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Label } from '@/components/typography';
 import { fetchDashboard } from '@/lib/api/mahainnovate';
+import { PaymentTimingChart } from '@/components/dashboard/PaymentTimingChart';
+import { EvidenceBaseChart } from '@/components/dashboard/EvidenceBaseChart';
+import { OutcomeLedger, type OutcomeRow } from '@/components/dashboard/OutcomeLedger';
 import { PLATFORM_METRICS } from '@/data/knowledge';
+import { PATHWAY, TEMPLATES } from '@/data/pathway';
 import { formatLakh } from '@/lib/utils';
 
 export const metadata: Metadata = {
@@ -49,6 +53,48 @@ export default async function DashboardPage() {
   const { corpus, pilot, awaitingValidation, milestones, source } = snapshot;
 
   const releasedPct = Math.round((pilot.released / pilot.contractValue) * 100);
+  const { paymentTiming } = snapshot;
+
+  /*
+   * The six outcomes the problem statement names, each answered from figures
+   * that are already on this page. Two of them cannot be measured from a single
+   * pilot at all, and say so rather than borrowing a number that sounds close.
+   */
+  const outcomes: OutcomeRow[] = [
+    {
+      outcome: 'Faster discovery and testing',
+      figure: `${PATHWAY.length} stages`,
+      source: 'The pathway from challenge to scale decision, each stage recorded.',
+    },
+    {
+      outcome: 'Higher quality pilots',
+      figure: `${corpus.corpusSize} pilots`,
+      source: 'Comparable pilots the simulator designs each new pilot against.',
+    },
+    {
+      outcome: 'Reduced departmental risk',
+      figure: `${TEMPLATES.length} templates`,
+      source: 'Standard problem, evaluation, agreement, data/IP, security, risk and pathway forms.',
+    },
+    {
+      outcome: 'Timely startup payments',
+      figure:
+        paymentTiming.medianDaysToPay === null
+          ? null
+          : `${paymentTiming.medianDaysToPay}d median`,
+      source: `Filed to paid, against a ${paymentTiming.targetDays}-day standard. ${paymentTiming.settledCount} settled, ${paymentTiming.breachedCount} over.`,
+    },
+    {
+      outcome: 'Evidence-based procurement decisions',
+      figure: `${corpus.domains.length} domains`,
+      source: 'Domains with recorded outcomes the next decision can be argued from.',
+    },
+    {
+      outcome: 'Scaling across departments or districts',
+      figure: null,
+      source: 'Needs a validated pilot to have transferred to a second department. None yet has.',
+    },
+  ];
 
   return (
     <>
@@ -86,7 +132,7 @@ export default async function DashboardPage() {
                 <Link
                   href="/pilots"
                   data-cursor="open"
-                  className="font-display text-display-xs font-normal text-chalk transition-colors hover:text-signal"
+                  className="font-display text-display-xs font-bold text-chalk transition-colors hover:text-signal"
                 >
                   {item.title}
                 </Link>
@@ -118,7 +164,7 @@ export default async function DashboardPage() {
           <div>
             <Label>Contract · {pilot.id}</Label>
 
-            <p className="mt-6 font-display text-display-sm font-normal text-chalk">
+            <p className="mt-6 font-display text-display-sm font-extrabold text-chalk">
               {formatLakh(pilot.released)}
               <span className="text-chalk/50"> of {formatLakh(pilot.contractValue)}</span>
             </p>
@@ -164,7 +210,7 @@ export default async function DashboardPage() {
           <div>
             <Label>Evidence base</Label>
 
-            <p className="mt-6 font-display text-display-sm font-normal text-chalk">
+            <p className="mt-6 font-display text-display-sm font-extrabold text-chalk">
               {corpus.corpusSize}
               <span className="text-chalk/50"> pilots recorded</span>
             </p>
@@ -173,34 +219,39 @@ export default async function DashboardPage() {
               simulator reasons from. The base grows with each one.
             </p>
 
-            <ol className="mt-8">
-              {corpus.domains.map((d) => {
-                const thin = corpus.thinDomains.includes(d.domain);
-                return (
-                  <li
-                    key={d.domain}
-                    className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-chalk/12 py-3"
-                  >
-                    <span className="text-base text-chalk">{d.domain.replace(/-/g, ' ')}</span>
-                    <span className="flex items-baseline gap-5 font-mono text-meta uppercase">
-                      <span className="text-chalk/50">
-                        {d.met} met of {d.total}
-                      </span>
-                      {thin ? (
-                        <span className="text-signal">too thin to advise</span>
-                      ) : (
-                        <span className="text-validated">advisable</span>
-                      )}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
+            <div className="mt-10">
+              <EvidenceBaseChart domains={corpus.domains} thinDomains={corpus.thinDomains} />
+            </div>
 
             <p className="mt-6 max-w-[46ch] text-xs leading-relaxed text-chalk/55">
               Domains marked thin have fewer than four comparable pilots. The simulator will still
               run against them, but reports its confidence band as context rather than as a finding.
             </p>
+          </div>
+        </section>
+
+        {/* --- did the money actually move on time --- */}
+        <section className="mt-20 border-t border-chalk/15 pt-10">
+          <Label>Payment timing · {pilot.id}</Label>
+          <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-chalk/55">
+            The one outcome that cannot be asserted, only measured. Each milestone is timed from
+            the moment its last evidence was filed to the moment the tranche was released, split at
+            approval so a delay is attributable.
+          </p>
+          <div className="mt-10 max-w-[70rem]">
+            <PaymentTimingChart timing={paymentTiming} />
+          </div>
+        </section>
+
+        {/* --- the outcomes the PS judges the mechanism on --- */}
+        <section className="mt-20">
+          <Label>Against the expected outcomes</Label>
+          <p className="mt-4 max-w-[52ch] text-sm leading-relaxed text-chalk/55">
+            The six outcomes the problem statement names, each answered with a figure from this
+            page and the place it came from.
+          </p>
+          <div className="mt-10">
+            <OutcomeLedger rows={outcomes} />
           </div>
         </section>
 
@@ -211,7 +262,7 @@ export default async function DashboardPage() {
             {PLATFORM_METRICS.map((m) => (
               <div key={m.label}>
                 <dt className="font-mono text-meta uppercase text-chalk/50">{m.label}</dt>
-                <dd className="mt-3 font-display text-display-xs font-normal tabular-nums text-chalk">
+                <dd className="mt-3 font-display text-display-xs font-extrabold tabular-nums text-chalk">
                   {m.value}
                   {m.unit ?? ''}
                 </dd>

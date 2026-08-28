@@ -67,7 +67,7 @@ export function NumberedRow({
 
         <span
           className={cn(
-            'mt-2 block font-display text-display-sm font-normal transition-colors duration-500',
+            'mt-2 block font-display text-display-sm font-extrabold transition-colors duration-500',
             active ? 'text-chalk' : 'text-chalk/80',
           )}
         >
