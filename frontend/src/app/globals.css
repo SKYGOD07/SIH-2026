@@ -4,31 +4,31 @@
 
 @layer base {
   :root {
-    /* shadcn bridge tokens, retuned to the MahaInnovate palette */
-    --background: 220 12% 5%;
-    --foreground: 44 30% 95%;
-    --card: 220 11% 8%;
-    --card-foreground: 44 30% 95%;
-    --popover: 220 12% 5%;
-    --popover-foreground: 44 30% 95%;
-    --primary: 24 81% 54%;
-    --primary-foreground: 220 12% 5%;
-    --secondary: 220 9% 14%;
-    --secondary-foreground: 44 30% 95%;
-    --muted: 220 9% 14%;
-    --muted-foreground: 45 6% 63%;
-    --accent: 220 9% 14%;
-    --accent-foreground: 44 30% 95%;
-    --destructive: 4 47% 52%;
-    --destructive-foreground: 44 30% 95%;
-    --border: 220 9% 17%;
-    --input: 220 9% 17%;
-    --ring: 24 81% 54%;
-    --radius: 0.25rem;
+    /* shadcn bridge tokens, retuned to the light-primary palette */
+    --background: 39 27% 90%;
+    --foreground: 260 6% 9%;
+    --card: 40 33% 94%;
+    --card-foreground: 260 6% 9%;
+    --popover: 40 33% 94%;
+    --popover-foreground: 260 6% 9%;
+    --primary: 24 87% 44%;
+    --primary-foreground: 40 33% 96%;
+    --secondary: 38 20% 84%;
+    --secondary-foreground: 260 6% 9%;
+    --muted: 38 20% 84%;
+    --muted-foreground: 45 4% 45%;
+    --accent: 38 20% 84%;
+    --accent-foreground: 260 6% 9%;
+    --destructive: 6 54% 43%;
+    --destructive-foreground: 40 33% 96%;
+    --border: 38 18% 78%;
+    --input: 38 18% 78%;
+    --ring: 24 87% 44%;
+    --radius: 0.125rem;
 
     /* experience tokens */
-    --nav-h: 4.5rem;
-    --edge: clamp(1.25rem, 5vw, 5rem);
+    --nav-h: 4.75rem;
+    --edge: clamp(1.25rem, 4.5vw, 4.5rem);
     /* Vertical safe area under the fixed nav, used by every full-height section. */
     --nav-safe: calc(var(--nav-h) + clamp(0.75rem, 2vh, 1.75rem));
   }
@@ -59,31 +59,29 @@
   }
 
   body {
-    /* Never a flat fill: the page ground is itself a slow vertical gradient. */
-    background-color: #0a0b0d;
-    color: #f6f3ec;
+    background-color: #ede7dd;
+    color: #17161a;
     font-family: var(--font-body), Inter, system-ui, sans-serif;
     overflow-x: hidden;
   }
 
-  /* While the preloader is up, nothing behind it may scroll or paint through. */
+  /* While the preloader is up, nothing behind it may scroll. */
   body[data-loading='true'] {
     overflow: hidden;
   }
 
-  /* Custom cursor active: hide native pointer on fine-pointer devices only */
   body[data-cursor='on'],
   body[data-cursor='on'] * {
     cursor: none !important;
   }
 
   ::selection {
-    background: rgba(232, 118, 43, 0.3);
-    color: #f6f3ec;
+    background: rgba(210, 89, 15, 0.22);
+    color: #17161a;
   }
 
   :focus-visible {
-    outline: 2px solid #e8762b;
+    outline: 2px solid #d2590f;
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -106,81 +104,79 @@
   }
 
   .label {
-    @apply font-mono text-meta uppercase text-silver;
-  }
-
-  .label-accent {
-    @apply font-mono text-meta uppercase text-saffron;
+    @apply font-mono text-meta uppercase text-stone;
   }
 
   /**
    * Section grounds.
    *
-   * Dark sections are deliberately NOT opaque. The page's colour comes from one
-   * fixed backdrop of drifting gradient pools (see AmbientBackdrop), and an
-   * opaque section would simply hide it — which is how the first pass ended up
-   * as a stack of identical black rectangles. These grounds only seal the top
-   * and bottom edges so section boundaries stay crisp, and leave the middle
-   * open for the backdrop to show through.
+   * Light sections are transparent so the fixed AmbientBackdrop reads through
+   * them; only the top and bottom edges are sealed so boundaries stay crisp.
+   * Dark sections are opaque and deliberately rare — they punctuate the run at
+   * the heaviest 3D moments rather than being the default.
    */
-  .ground-ink {
+  .ground-bone {
     background-image: linear-gradient(
       180deg,
-      rgba(7, 8, 10, 0.82) 0%,
-      rgba(7, 8, 10, 0.12) 22%,
-      rgba(7, 8, 10, 0.12) 78%,
-      rgba(7, 8, 10, 0.82) 100%
+      rgba(237, 231, 221, 0.9) 0%,
+      rgba(237, 231, 221, 0.15) 20%,
+      rgba(237, 231, 221, 0.15) 80%,
+      rgba(237, 231, 221, 0.9) 100%
     );
   }
 
-  /* Same seal, plus a cool pool of its own — used where the story turns analytical. */
+  /* A warmer variant for sections that should feel like paper. */
+  .ground-paper {
+    background-image: linear-gradient(180deg, #f4f1ea 0%, #efebe2 55%, #e8e2d6 100%);
+  }
+
+  /* Dark punctuation. Opaque — these carry their own 3D atmosphere. */
   .ground-abyss {
     background-image:
-      radial-gradient(ellipse 90% 60% at 50% 50%, rgba(30, 65, 82, 0.26) 0%, rgba(10, 11, 13, 0) 72%),
-      linear-gradient(
-        180deg,
-        rgba(7, 8, 10, 0.82) 0%,
-        rgba(9, 20, 25, 0.2) 26%,
-        rgba(9, 20, 25, 0.2) 74%,
-        rgba(7, 8, 10, 0.82) 100%
-      );
+      radial-gradient(ellipse 90% 65% at 50% 45%, #1e2228 0%, #14161a 62%, #0d0f12 100%);
   }
 
-  /* Inverted sections are the intentional breaks in the run, so these are opaque. */
-  .ground-ivory {
-    background-image: linear-gradient(180deg, #f6f3ec 0%, #efebe1 55%, #e9e4d8 100%);
-  }
-
-  /* Scrim behind the navigation so type never collides with it visually. */
+  /* Scrim behind the navigation so type never collides with it. */
   .nav-scrim {
     background-image: linear-gradient(
       180deg,
-      rgba(7, 8, 10, 0.92) 0%,
-      rgba(7, 8, 10, 0.66) 45%,
-      rgba(7, 8, 10, 0) 100%
+      rgba(237, 231, 221, 0.94) 0%,
+      rgba(237, 231, 221, 0.7) 45%,
+      rgba(237, 231, 221, 0) 100%
+    );
+  }
+  .nav-scrim-dark {
+    background-image: linear-gradient(
+      180deg,
+      rgba(13, 15, 18, 0.94) 0%,
+      rgba(13, 15, 18, 0.66) 45%,
+      rgba(13, 15, 18, 0) 100%
     );
   }
 
-  /* Editorial grain — one static layer, never animated. */
+  /* Very fine paper grain — static, never animated. */
   .grain::after {
     content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.4;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
+    opacity: 0.28;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
   }
 
   .hairline-grid {
     background-image:
-      linear-gradient(to right, rgba(246, 243, 236, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(246, 243, 236, 0.05) 1px, transparent 1px);
+      linear-gradient(to right, rgba(23, 22, 26, 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(23, 22, 26, 0.055) 1px, transparent 1px);
     background-size: 7.5rem 7.5rem;
   }
 
   .panel {
-    @apply border border-white/10 bg-white/[0.025];
+    @apply border border-ink/10 bg-bone-light/60;
+  }
+  .panel-dark {
+    @apply border border-bone/15 bg-bone/[0.03];
   }
 }
 
@@ -188,7 +184,6 @@
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
 
-  /* Per-line/word/char masking primitive used by the text components */
   .split-mask {
     display: inline-block;
     overflow: hidden;
@@ -201,8 +196,8 @@
 
   /**
    * Overflow-hidden line box that does not clip descenders.
-   * The padding gives the "g" and "y" room; the negative margin takes the
-   * space back out of the layout so line rhythm is unchanged.
+   * The padding gives the "g" and "y" room; the negative margin takes the space
+   * back out of the layout so line rhythm is unchanged.
    */
   .line-mask {
     overflow: hidden;
@@ -210,10 +205,7 @@
     margin-bottom: -0.14em;
   }
 
-  /**
-   * Promotion hint for elements a scrubbed timeline transforms every frame.
-   * Applied narrowly — a page full of `will-change` is its own performance bug.
-   */
+  /* Promotion hint, applied narrowly to scrub-driven elements only. */
   .will-3d {
     will-change: transform, opacity;
     transform: translate3d(0, 0, 0);
@@ -223,10 +215,6 @@
   .mask-fade-y {
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
-  }
-  .mask-fade-x {
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
-    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
   }
 }
 
