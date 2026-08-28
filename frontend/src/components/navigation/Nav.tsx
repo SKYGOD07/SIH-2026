@@ -47,8 +47,8 @@ export function Nav() {
       <motion.header
         initial={false}
         animate={{
-          backgroundColor: scrolled ? 'rgba(7,8,10,0.78)' : 'rgba(7,8,10,0)',
-          borderBottomColor: scrolled ? 'rgba(246,243,236,0.1)' : 'rgba(246,243,236,0)',
+          backgroundColor: scrolled ? 'rgba(244,241,234,0.82)' : 'rgba(244,241,234,0)',
+          borderBottomColor: scrolled ? 'rgba(23,22,26,0.12)' : 'rgba(23,22,26,0)',
           backdropFilter: scrolled ? 'blur(16px)' : 'blur(0px)',
         }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -62,7 +62,7 @@ export function Nav() {
         */}
         <div
           aria-hidden="true"
-          className="nav-scrim pointer-events-none absolute inset-x-0 top-0 -z-10 h-[calc(var(--nav-h)*1.7)]"
+          className="nav-scrim pointer-events-none absolute inset-x-0 top-0 -z-10 h-[calc(var(--nav-h)*1.6)]"
         />
         <nav
           aria-label="Primary"
@@ -71,7 +71,7 @@ export function Nav() {
           <Link
             href="/"
             data-cursor="home"
-            className="font-display text-[0.95rem] font-bold uppercase tracking-[0.14em] text-ivory transition-opacity hover:opacity-70"
+            className="font-display text-[0.95rem] font-bold uppercase tracking-[0.14em] text-ink transition-opacity hover:opacity-70"
           >
             MahaInnovate
           </Link>
@@ -86,7 +86,7 @@ export function Nav() {
                     data-cursor="open"
                     className={cn(
                       'group relative block py-1 font-mono text-meta uppercase transition-colors',
-                      active ? 'text-ivory' : 'text-silver hover:text-ivory',
+                      active ? 'text-ink' : 'text-stone hover:text-ink',
                     )}
                   >
                     {link.label}
@@ -99,7 +99,7 @@ export function Nav() {
                     />
                     <span
                       aria-hidden="true"
-                      className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-ivory/40 transition-transform duration-500 ease-editorial group-hover:scale-x-100"
+                      className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-ink/40 transition-transform duration-500 ease-editorial group-hover:scale-x-100"
                     />
                   </Link>
                 </li>
@@ -111,7 +111,7 @@ export function Nav() {
             <Link
               href="/dashboard"
               data-cursor="enter"
-              className="group hidden items-center gap-2.5 border border-ivory/25 px-4 py-2 font-mono text-meta uppercase text-ivory transition-colors hover:border-saffron hover:text-saffron sm:inline-flex"
+              className="group hidden items-center gap-2.5 border border-ink/25 px-4 py-2 font-mono text-meta uppercase text-ink transition-colors hover:border-saffron hover:text-saffron sm:inline-flex"
             >
               Enter platform
               <span aria-hidden="true" className="transition-transform duration-500 ease-editorial group-hover:translate-x-1">
@@ -128,12 +128,12 @@ export function Nav() {
             >
               <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
               <motion.span
-                className="block h-px w-5 bg-ivory"
+                className="block h-px w-5 bg-ink"
                 animate={{ rotate: open ? 45 : 0, y: open ? 3 : 0 }}
                 transition={{ duration: 0.3 }}
               />
               <motion.span
-                className="block h-px w-5 bg-ivory"
+                className="block h-px w-5 bg-ink"
                 animate={{ rotate: open ? -45 : 0, y: open ? -3 : 0 }}
                 transition={{ duration: 0.3 }}
               />
@@ -151,7 +151,7 @@ export function Nav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduceMotion ? 0 : -12 }}
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-0 top-[var(--nav-h)] z-40 border-b border-ivory/10 bg-ink-950/97 backdrop-blur-xl md:hidden"
+            className="fixed inset-x-0 top-[var(--nav-h)] z-40 border-b border-ink/12 bg-bone-light/97 backdrop-blur-xl md:hidden"
           >
             <ul className="edge flex flex-col py-6">
               {[...LINKS, { href: '/dashboard', label: 'Enter platform' }].map((link, i) => (
@@ -163,7 +163,7 @@ export function Nav() {
                 >
                   <Link
                     href={link.href}
-                    className="block border-b border-ivory/10 py-4 font-display text-2xl uppercase text-ivory"
+                    className="block border-b border-ink/12 py-4 font-display text-2xl uppercase text-ink"
                   >
                     {link.label}
                   </Link>
