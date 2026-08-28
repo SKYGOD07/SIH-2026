@@ -54,8 +54,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0A0B0D',
-  colorScheme: 'dark',
+  themeColor: '#EDE7DD',
+  colorScheme: 'light',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -65,10 +65,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${display.variable} ${body.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen bg-ink-950 font-sans text-ivory antialiased">
+      <body className="min-h-screen bg-bone font-sans text-ink antialiased">
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-saffron focus:px-4 focus:py-2 focus:font-mono focus:text-meta focus:uppercase focus:text-ink"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-saffron focus:px-4 focus:py-2 focus:font-mono focus:text-meta focus:uppercase focus:text-bone-light"
         >
           Skip to content
         </a>
@@ -83,7 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   Nav             (z-50)
                   Preloader       (z-120)
                 Dark sections are intentionally not opaque so the backdrop reads
-                through them; see `.ground-ink` in globals.css.
+                through them; see `.ground-bone` in globals.css.
               */}
               <AmbientBackdrop />
               <CustomCursor />
