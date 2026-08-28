@@ -59,6 +59,8 @@ export function Preloader() {
   const rootRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
+  /** The hand-off timeline must build once and never be torn down mid-flight. */
+  const flightStarted = useRef(false);
   const scatter = useMemo(buildScatter, []);
 
   /* --- lock scrolling for the whole loading phase --- */
@@ -99,8 +101,14 @@ export function Preloader() {
     let alive = true;
     const marks = { fonts: false, load: false, frame: false };
 
-    // Fast, responsive loading floor so the mark assembles smoothly without stalling.
-    const ASSEMBLY_FLOOR = 1200;
+    /**
+     * The assembly timeline ends at roughly 3.05s (0.25s delay + 1.9s tile
+     * travel + 0.9s of stagger). Releasing before then starts the hand-off while
+     * tiles are still arriving, so the mark is never seen whole. The floor sits
+     * just past that; on a slow connection readiness is still the binding
+     * constraint and this changes nothing.
+     */
+    const ASSEMBLY_FLOOR = 3200;
     const started = performance.now();
     let floorTimer = 0;
 
@@ -129,14 +137,20 @@ export function Preloader() {
 
     requestAnimationFrame(() => requestAnimationFrame(() => bump('frame')));
 
-    // Hard failsafe: Never leave the user stuck on loading screen longer than 2.5s
+    /**
+     * Failsafe for a readiness signal that never arrives.
+     *
+     * It must not fire while the hand-off is already playing — forcing
+     * `complete()` mid-flight unmounts the preloader and the mark never lands.
+     * If the flight has started, the timeline owns completion from there.
+     */
     const failsafe = window.setTimeout(() => {
-      if (alive) {
-        setDone(true);
-        beginReveal();
-        complete();
-      }
-    }, 2500);
+      if (!alive) return;
+      setDone(true);
+      if (flightStarted.current) return;
+      beginReveal();
+      complete();
+    }, 9000);
     return () => {
       alive = false;
       window.clearTimeout(failsafe);
@@ -210,10 +224,20 @@ export function Preloader() {
   /* --- the mark flies into the navigation capsule --- */
   useGSAP(
     () => {
-      if (!done || reduced || phase !== 'loading') return;
+      /**
+       * Runs exactly once, guarded by a ref rather than by `phase`.
+       *
+       * This timeline calls `beginReveal()` from inside itself, which advances
+       * the phase. If `phase` were a dependency here, that call would re-run the
+       * effect, and `useGSAP` would revert and kill the very timeline that made
+       * the call — so `onComplete` never fired, `complete()` was never reached,
+       * and the preloader stayed on screen forever covering the page.
+       */
+      if (!done || reduced || flightStarted.current) return;
       const root = rootRef.current;
       const mark = markRef.current;
       if (!root || !mark) return;
+      flightStarted.current = true;
 
       /**
        * Measure the destination.
@@ -291,9 +315,11 @@ export function Preloader() {
         .to(mark, { opacity: 0, duration: 0.25, ease: 'power2.in' }, '-=0.3')
         .set(root, { pointerEvents: 'none' });
 
-      return () => tl.kill();
+      return () => {
+        tl.kill();
+      };
     },
-    { scope: rootRef, dependencies: [done, reduced, phase, beginReveal, complete] },
+    { scope: rootRef, dependencies: [done, reduced] },
   );
 
   if (phase === 'ready') return null;
