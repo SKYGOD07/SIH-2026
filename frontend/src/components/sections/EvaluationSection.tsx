@@ -81,10 +81,10 @@ export function EvaluationSection() {
       ref={rootRef}
       id="evaluate"
       aria-label="Evaluate — assisted analysis, human decision"
-      className="relative w-full ground-ivory py-[clamp(6rem,14vh,11rem)] text-ink"
+      className="relative w-full ground-paper py-[clamp(6rem,14vh,11rem)] text-ink"
     >
       <div className="edge mx-auto max-w-[110rem]">
-        <Label index="04" className="text-graphite-light">
+        <Label index="04" className="text-ink-muted">
           Evaluate
         </Label>
 
@@ -100,8 +100,8 @@ export function EvaluationSection() {
           {/* --- extracted criteria --- */}
           <div data-criteria>
             <div className="flex items-baseline justify-between gap-4 border-b border-ink/15 pb-3">
-              <Label className="text-graphite-light">Extracted signals</Label>
-              <Label className="text-graphite-light">Weight · Score</Label>
+              <Label className="text-ink-muted">Extracted signals</Label>
+              <Label className="text-ink-muted">Weight · Score</Label>
             </div>
 
             <ul className="mt-2">
@@ -111,7 +111,7 @@ export function EvaluationSection() {
                     <span className="font-display text-xl uppercase leading-none text-ink">
                       {c.label}
                     </span>
-                    <span className="flex items-baseline gap-4 font-mono text-meta uppercase text-graphite-light">
+                    <span className="flex items-baseline gap-4 font-mono text-meta uppercase text-ink-muted">
                       <span>{Math.round(c.weight * 100)}%</span>
                       <span className="font-display text-2xl tabular-nums text-ink">
                         <Counter value={c.score} duration={1.3} />
@@ -127,7 +127,7 @@ export function EvaluationSection() {
                     />
                   </div>
 
-                  <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-graphite-light">
+                  <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-ink-muted">
                     {c.basis}
                   </p>
                 </li>
@@ -138,19 +138,19 @@ export function EvaluationSection() {
           {/* --- composite + chain --- */}
           <div className="lg:pt-8">
             <div className="border border-ink/15 p-8">
-              <Label className="text-graphite-light">Weighted composite</Label>
+              <Label className="text-ink-muted">Weighted composite</Label>
               <p className="mt-4 font-display text-display-sm font-medium tabular-nums leading-none text-ink">
                 <Counter value={composite} duration={1.8} />
-                <span className="text-graphite-light"> / 100</span>
+                <span className="text-ink-muted"> / 100</span>
               </p>
-              <p className="mt-5 text-sm leading-relaxed text-graphite-light">
+              <p className="mt-5 text-sm leading-relaxed text-ink-muted">
                 A weighted summary of the extracted signals, published alongside the criteria that
                 produced it. It ranks the proposal for the panel. It does not award anything.
               </p>
             </div>
 
             <div data-chain className="mt-10">
-              <Label className="text-graphite-light">Decision chain</Label>
+              <Label className="text-ink-muted">Decision chain</Label>
               <ol className="mt-6 space-y-0">
                 {EVALUATION_CHAIN.map((step, i) => (
                   <li key={step.step}>
@@ -161,7 +161,7 @@ export function EvaluationSection() {
                       <p className="mt-2 font-display text-2xl uppercase leading-none text-ink">
                         {step.step}
                       </p>
-                      <p className="mt-2 max-w-[40ch] text-sm leading-relaxed text-graphite-light">
+                      <p className="mt-2 max-w-[40ch] text-sm leading-relaxed text-ink-muted">
                         {step.detail}
                       </p>
                     </div>
