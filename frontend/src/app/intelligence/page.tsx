@@ -27,36 +27,36 @@ export default function IntelligencePage() {
       {/* --- the corpus every conclusion is cited against --- */}
       <section
         aria-label="Policy corpus"
-        className="relative w-full ground-ink py-[clamp(5rem,12vh,9rem)]"
+        className="relative w-full ground-bone py-[clamp(5rem,12vh,9rem)]"
       >
         <div className="edge mx-auto max-w-[110rem]">
           <Label index="—">Policy corpus</Label>
-          <h2 className="mt-6 max-w-[22ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory">
+          <h2 className="mt-6 max-w-[22ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ink">
             Every conclusion cites a clause.
           </h2>
-          <p className="mt-6 max-w-[62ch] text-pretty text-base leading-relaxed text-silver">
+          <p className="mt-6 max-w-[62ch] text-pretty text-base leading-relaxed text-stone">
             Eligibility, security and contracting questions are answered by retrieving from this
             corpus and quoting it. The analysis that accompanies a retrieval is assistive; the
             determination stays with the department’s competent authority.
           </p>
 
-          <ul className="mt-14 grid gap-px border-t border-ivory/10 md:grid-cols-2">
+          <ul className="mt-14 grid gap-px border-t border-ink/12 md:grid-cols-2">
             {EVIDENCE_SOURCES.map((s) => (
-              <li key={s.id} className="border-b border-ivory/10 py-7 md:pr-10">
+              <li key={s.id} className="border-b border-ink/12 py-7 md:pr-10">
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
                   <span className="font-mono text-meta uppercase text-saffron">
                     {SOURCE_LABEL[s.kind]}
                   </span>
-                  <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-silver">
+                  <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone">
                     {s.id}
                   </span>
                 </div>
-                <h3 className="mt-3 font-display text-xl uppercase leading-tight text-ivory">
+                <h3 className="mt-3 font-display text-xl uppercase leading-tight text-ink">
                   {s.title}
                 </h3>
-                <p className="mt-1.5 font-mono text-meta uppercase text-silver">{s.reference}</p>
-                <blockquote className="mt-4 border-l border-ivory/20 pl-4">
-                  <p className="max-w-[56ch] text-sm italic leading-relaxed text-ivory/75">
+                <p className="mt-1.5 font-mono text-meta uppercase text-stone">{s.reference}</p>
+                <blockquote className="mt-4 border-l border-ink/20 pl-4">
+                  <p className="max-w-[56ch] text-sm italic leading-relaxed text-ink/70">
                     “{s.excerpt}”
                   </p>
                 </blockquote>
