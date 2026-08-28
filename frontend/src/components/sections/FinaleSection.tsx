@@ -104,7 +104,7 @@ export function FinaleSection() {
       ref={rootRef}
       id="finale"
       aria-label="From problem to scale"
-      className="relative h-[100svh] w-full overflow-hidden ground-bone"
+      className="relative h-[100svh] w-full overflow-hidden ground-void"
     >
       {/* the last of the network, fading out */}
       <div
@@ -121,31 +121,31 @@ export function FinaleSection() {
             <p
               key={a}
               data-couplet
-              className="absolute inset-x-0 font-display text-display-md font-medium uppercase leading-[0.88] text-ink opacity-0"
+              className="absolute inset-x-0 font-display text-display-md font-medium uppercase leading-[0.88] text-chalk opacity-0"
             >
               {a}
               <br />
-              <span className="text-saffron">{b}</span>
+              <span className="text-signal">{b}</span>
             </p>
           ))}
 
           <div data-wordmark className="opacity-0">
-            <h2 className="font-display text-display-lg font-bold uppercase leading-[0.85] tracking-[-0.045em] text-ink">
+            <h2 className="font-display text-display-lg font-bold uppercase leading-[0.85] tracking-[-0.045em] text-chalk">
               MahaInnovate
             </h2>
           </div>
         </div>
 
         <div className="edge mt-12 flex w-full max-w-[110rem] flex-col items-center gap-8">
-          <p data-signoff className="font-mono text-meta-lg uppercase text-stone opacity-0">
+          <p data-signoff className="font-mono text-meta-lg uppercase text-chalk/50 opacity-0">
             Innovation procurement intelligence platform
           </p>
 
           <ul data-signoff className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 opacity-0">
             {TRUST_PRINCIPLE.map((t) => (
               <li key={t.term} className="font-mono text-meta uppercase">
-                <span className="text-saffron">{t.term}</span>{' '}
-                <span className="text-stone">{t.definition}</span>
+                <span className="text-signal">{t.term}</span>{' '}
+                <span className="text-chalk/50">{t.definition}</span>
               </li>
             ))}
           </ul>

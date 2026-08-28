@@ -18,11 +18,11 @@ const STATUS_LABEL: Record<ChallengeStatus, string> = {
 };
 
 const STATUS_TONE: Record<ChallengeStatus, string> = {
-  DRAFT: 'text-stone border-ink/20',
-  OPEN: 'text-saffron border-saffron/60',
-  EVALUATION: 'text-ink border-ink/40',
+  DRAFT: 'text-chalk/50 border-chalk/20',
+  OPEN: 'text-signal border-signal/60',
+  EVALUATION: 'text-chalk border-chalk/40',
   PILOT: 'text-validated border-validated/60',
-  CLOSED: 'text-stone/70 border-ink/12',
+  CLOSED: 'text-chalk/45 border-chalk/15',
 };
 
 const FILTERS = ['All', 'Open', 'In pilot', 'Closed'] as const;
@@ -73,7 +73,7 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
       <div
         role="tablist"
         aria-label="Filter challenges by status"
-        className="flex flex-wrap gap-x-6 gap-y-2 border-b border-ink/12 pb-4"
+        className="flex flex-wrap gap-x-6 gap-y-2 border-b border-chalk/15 pb-4"
       >
         {FILTERS.map((f) => (
           <button
@@ -85,14 +85,14 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
             data-cursor="filter"
             className={cn(
               'relative py-1 font-mono text-meta uppercase transition-colors',
-              filter === f ? 'text-ink' : 'text-stone hover:text-ink',
+              filter === f ? 'text-chalk' : 'text-chalk/50 hover:text-chalk',
             )}
           >
             {f}
             {filter === f ? (
               <motion.span
                 layoutId="challenge-filter"
-                className="absolute -bottom-[17px] left-0 h-px w-full bg-saffron"
+                className="absolute -bottom-[17px] left-0 h-px w-full bg-signal"
                 transition={{ type: 'spring', stiffness: 400, damping: 34 }}
               />
             ) : null}
@@ -104,7 +104,7 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
         {visible.map((c) => {
           const open = openId === c.id;
           return (
-            <li key={c.id} data-challenge-row className="border-b border-ink/12">
+            <li key={c.id} data-challenge-row className="border-b border-chalk/15">
               <button
                 type="button"
                 onClick={() => setOpenId(open ? null : c.id)}
@@ -113,19 +113,19 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
                 data-cursor={open ? 'close' : 'view'}
                 className="group grid w-full grid-cols-1 items-baseline gap-x-8 gap-y-3 py-8 text-left md:grid-cols-[7rem_1fr_auto]"
               >
-                <span className="font-mono text-meta uppercase text-stone">{c.id}</span>
+                <span className="font-mono text-meta uppercase text-chalk/50">{c.id}</span>
 
                 <span>
-                  <span className="block font-display text-2xl uppercase leading-tight text-ink transition-colors group-hover:text-saffron md:text-3xl">
+                  <span className="block font-display text-2xl uppercase leading-tight text-chalk transition-colors group-hover:text-signal md:text-3xl">
                     {c.title}
                   </span>
-                  <span className="mt-2 block font-mono text-meta uppercase text-stone">
+                  <span className="mt-2 block font-mono text-meta uppercase text-chalk/50">
                     {c.department} · {c.location}
                   </span>
                 </span>
 
                 <span className="flex flex-wrap items-baseline gap-x-8 gap-y-2">
-                  <span className="font-display text-xl leading-none text-ink">
+                  <span className="font-display text-xl leading-none text-chalk">
                     {formatLakh(c.budget)}
                   </span>
                   <span
@@ -154,12 +154,12 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
 
                       <div>
                         <Label tone="accent">Target outcome</Label>
-                        <p className="mt-3 max-w-[46ch] text-base leading-relaxed text-ink/80">
+                        <p className="mt-3 max-w-[46ch] text-base leading-relaxed text-chalk/75">
                           {c.target}
                         </p>
 
                         <Label className="mt-8 block">As received</Label>
-                        <p className="mt-3 max-w-[52ch] border-l border-ink/20 pl-4 text-sm italic leading-relaxed text-stone">
+                        <p className="mt-3 max-w-[52ch] border-l border-chalk/20 pl-4 text-sm italic leading-relaxed text-chalk/50">
                           “{c.rawNote}”
                         </p>
                       </div>
@@ -170,11 +170,11 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
                           {c.measurement.map((m) => (
                             <div
                               key={m.label}
-                              className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-ink/10 py-3"
+                              className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-chalk/12 py-3"
                             >
-                              <dt className="text-sm text-ink/75">{m.label}</dt>
-                              <dd className="font-mono text-meta uppercase text-stone">
-                                {m.baseline} <span className="text-saffron">→</span> {m.target}
+                              <dt className="text-sm text-chalk/70">{m.label}</dt>
+                              <dd className="font-mono text-meta uppercase text-chalk/50">
+                                {m.baseline} <span className="text-signal">→</span> {m.target}
                               </dd>
                             </div>
                           ))}
@@ -187,8 +187,8 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
                             { k: 'Applications', v: String(c.applications) },
                           ].map((x) => (
                             <div key={x.k}>
-                              <dt className="font-mono text-meta uppercase text-stone">{x.k}</dt>
-                              <dd className="mt-1.5 text-sm text-ink">{x.v}</dd>
+                              <dt className="font-mono text-meta uppercase text-chalk/50">{x.k}</dt>
+                              <dd className="mt-1.5 text-sm text-chalk">{x.v}</dd>
                             </div>
                           ))}
                         </dl>
@@ -203,7 +203,7 @@ export function ChallengeList({ challenges }: { challenges: Challenge[] }) {
       </ul>
 
       {visible.length === 0 ? (
-        <p className="py-16 text-center font-mono text-meta uppercase text-stone">
+        <p className="py-16 text-center font-mono text-meta uppercase text-chalk/50">
           No challenges with this status.
         </p>
       ) : null}

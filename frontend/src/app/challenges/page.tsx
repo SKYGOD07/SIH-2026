@@ -22,14 +22,14 @@ export default function ChallengesPage() {
         aside={
           <dl className="flex flex-wrap gap-x-10 gap-y-4">
             <div>
-              <dt className="font-mono text-meta uppercase text-stone">Published</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-ink">
+              <dt className="font-mono text-meta uppercase text-chalk/50">Published</dt>
+              <dd className="mt-2 font-display text-3xl leading-none text-chalk">
                 {CHALLENGES.length}
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-meta uppercase text-stone">Open now</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-saffron">{open}</dd>
+              <dt className="font-mono text-meta uppercase text-chalk/50">Open now</dt>
+              <dd className="mt-2 font-display text-3xl leading-none text-signal">{open}</dd>
             </div>
           </dl>
         }

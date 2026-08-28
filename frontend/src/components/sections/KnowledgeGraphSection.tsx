@@ -124,14 +124,14 @@ export function KnowledgeGraphSection() {
       ref={rootRef}
       id="intelligence"
       aria-label="Innovation knowledge graph"
-      className="relative w-full ground-bone py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-void py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="—">Institutional intelligence</Label>
         <SplitText
           as="h2"
           type="lines"
-          className="mt-6 max-w-[20ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ink"
+          className="mt-6 max-w-[20ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-chalk"
         >
           Every pilot leaves something behind.
         </SplitText>
@@ -140,9 +140,9 @@ export function KnowledgeGraphSection() {
         <ol data-graph-chain className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-2">
           {GRAPH_CHAIN.map((word, i) => (
             <li key={word} data-chain-word className="flex items-center gap-4">
-              <span className="font-mono text-meta uppercase text-stone">{word}</span>
+              <span className="font-mono text-meta uppercase text-chalk/50">{word}</span>
               {i < GRAPH_CHAIN.length - 1 ? (
-                <span aria-hidden="true" className="text-saffron">
+                <span aria-hidden="true" className="text-signal">
                   →
                 </span>
               ) : null}
@@ -228,7 +228,7 @@ export function KnowledgeGraphSection() {
           {/* --- inspector --- */}
           <div className="lg:pt-4">
             <Label tone="accent">Node metadata</Label>
-            <div className="mt-5 min-h-[15rem] border-t border-ink/12 pt-5">
+            <div className="mt-5 min-h-[15rem] border-t border-chalk/15 pt-5">
               <AnimatePresence mode="wait">
                 {active ? (
                   <motion.div
@@ -244,14 +244,14 @@ export function KnowledgeGraphSection() {
                     >
                       {KIND_LABEL[active.kind]}
                     </span>
-                    <p className="mt-3 font-display text-2xl uppercase leading-tight text-ink">
+                    <p className="mt-3 font-display text-2xl uppercase leading-tight text-chalk">
                       {active.label}
                     </p>
                     <dl className="mt-6 space-y-3">
                       {active.meta.map((m) => (
-                        <div key={m.label} className="flex items-baseline justify-between gap-4 border-b border-ink/10 pb-2">
-                          <dt className="font-mono text-meta uppercase text-stone">{m.label}</dt>
-                          <dd className="text-right text-sm text-ink/80">{m.value}</dd>
+                        <div key={m.label} className="flex items-baseline justify-between gap-4 border-b border-chalk/12 pb-2">
+                          <dt className="font-mono text-meta uppercase text-chalk/50">{m.label}</dt>
+                          <dd className="text-right text-sm text-chalk/75">{m.value}</dd>
                         </div>
                       ))}
                     </dl>
@@ -262,7 +262,7 @@ export function KnowledgeGraphSection() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="max-w-[34ch] text-sm leading-relaxed text-stone"
+                    className="max-w-[34ch] text-sm leading-relaxed text-chalk/50"
                   >
                     Select a node to see what it recorded — prior pilots, success rates, failure
                     causes, deployment requirements and the departments each result reached.
@@ -273,7 +273,7 @@ export function KnowledgeGraphSection() {
 
             <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2">
               {(Object.keys(KIND_LABEL) as GraphNodeKind[]).map((kind) => (
-                <li key={kind} className={cn('flex items-center gap-2 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone')}>
+                <li key={kind} className={cn('flex items-center gap-2 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-chalk/50')}>
                   <span
                     aria-hidden="true"
                     className="block h-2 w-2 rounded-full"

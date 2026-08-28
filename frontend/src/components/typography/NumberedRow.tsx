@@ -56,26 +56,26 @@ export function NumberedRow({
         aria-hidden="true"
         className={cn(
           'mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-[0.6875rem] transition-colors duration-500',
-          active ? 'border-saffron text-saffron' : 'border-ink/25 text-ink/55',
+          active ? 'border-signal text-signal' : 'border-chalk/25 text-chalk/55',
         )}
       >
         {index}
       </span>
 
       <span className="min-w-0 flex-1">
-        <span className="block font-mono text-meta uppercase text-stone">{label}</span>
+        <span className="block font-mono text-meta uppercase text-chalk/50">{label}</span>
 
         <span
           className={cn(
             'mt-2 block font-display text-display-sm font-normal transition-colors duration-500',
-            active ? 'text-ink' : 'text-ink/85',
+            active ? 'text-chalk' : 'text-chalk/80',
           )}
         >
           {headline}
         </span>
 
         {description ? (
-          <span className="mt-3 block max-w-[52ch] text-sm leading-relaxed text-ink-muted">
+          <span className="mt-3 block max-w-[52ch] text-sm leading-relaxed text-chalk/55">
             {description}
           </span>
         ) : null}
@@ -87,7 +87,7 @@ export function NumberedRow({
 
   return (
     <li
-      className={cn('border-b border-ink/12', className)}
+      className={cn('border-b border-chalk/15', className)}
       // Progressive indent, capped so it never runs off a narrow viewport.
       style={{ paddingLeft: `min(${step * 3}vw, 9rem)` }}
     >

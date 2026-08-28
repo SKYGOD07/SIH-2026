@@ -21,9 +21,9 @@ const PILOT_STATUS: Record<PilotStatus, string> = {
 const MILESTONE_TONE: Record<MilestoneStatus, string> = {
   PAID: 'bg-validated',
   APPROVED: 'bg-validated',
-  EVIDENCE_SUBMITTED: 'bg-saffron',
-  IN_PROGRESS: 'bg-saffron/50',
-  LOCKED: 'bg-ink/12',
+  EVIDENCE_SUBMITTED: 'bg-signal',
+  IN_PROGRESS: 'bg-signal/50',
+  LOCKED: 'bg-chalk/15',
 };
 
 const MILESTONE_LABEL: Record<MilestoneStatus, string> = {
@@ -74,7 +74,7 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
 
   return (
     <div ref={ref} className="edge mx-auto max-w-[110rem] pb-[clamp(5rem,12vh,9rem)]">
-      <ul className="grid gap-px border-t border-ink/12 lg:grid-cols-2">
+      <ul className="grid gap-px border-t border-chalk/15 lg:grid-cols-2">
         {pilots.map((p) => {
           const isActive = p.id === selected;
           const s = getStartup(p.startupId);
@@ -86,20 +86,20 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                 aria-pressed={isActive}
                 data-cursor="open"
                 className={cn(
-                  'group h-full w-full border-b border-ink/12 py-7 pr-8 text-left transition-colors lg:pr-12',
+                  'group h-full w-full border-b border-chalk/15 py-7 pr-8 text-left transition-colors lg:pr-12',
                   isActive ? 'border-t-2 border-t-saffron' : 'border-t-2 border-t-transparent',
                 )}
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-3">
-                  <span className="font-mono text-meta uppercase text-stone">{p.id}</span>
+                  <span className="font-mono text-meta uppercase text-chalk/50">{p.id}</span>
                   <span
                     className={cn(
                       'font-mono text-meta uppercase',
                       p.status === 'DECIDED'
                         ? 'text-validated'
                         : p.status === 'VALIDATION'
-                          ? 'text-saffron'
-                          : 'text-stone',
+                          ? 'text-signal'
+                          : 'text-chalk/50',
                     )}
                   >
                     {PILOT_STATUS[p.status]}
@@ -109,12 +109,12 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                 <h2
                   className={cn(
                     'mt-3 font-display text-2xl uppercase leading-tight transition-colors',
-                    isActive ? 'text-saffron' : 'text-ink group-hover:text-saffron',
+                    isActive ? 'text-signal' : 'text-chalk group-hover:text-signal',
                   )}
                 >
                   {p.title}
                 </h2>
-                <p className="mt-2 font-mono text-meta uppercase text-stone">
+                <p className="mt-2 font-mono text-meta uppercase text-chalk/50">
                   {s?.name} · {p.wards.length} sites
                 </p>
 
@@ -126,7 +126,7 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                         className={cn('block h-1', MILESTONE_TONE[m.status])}
                         title={`${m.code} — ${MILESTONE_LABEL[m.status]}`}
                       />
-                      <span className="mt-2 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone">
+                      <span className="mt-2 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-chalk/50">
                         {m.code}
                       </span>
                     </li>
@@ -152,11 +152,11 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
             <Label tone="accent">Milestones and payment</Label>
             <ol className="mt-6">
               {active.milestones.map((m) => (
-                <li key={m.id} className="border-b border-ink/12 py-5">
+                <li key={m.id} className="border-b border-chalk/15 py-5">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
                     <span className="flex items-baseline gap-4">
-                      <span className="font-mono text-meta uppercase text-stone">{m.code}</span>
-                      <span className="font-display text-xl uppercase leading-none text-ink">
+                      <span className="font-mono text-meta uppercase text-chalk/50">{m.code}</span>
+                      <span className="font-display text-xl uppercase leading-none text-chalk">
                         {m.title}
                       </span>
                     </span>
@@ -167,21 +167,21 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                           m.status === 'PAID' || m.status === 'APPROVED'
                             ? 'text-validated'
                             : m.status === 'LOCKED'
-                              ? 'text-stone/60'
-                              : 'text-saffron',
+                              ? 'text-chalk/40'
+                              : 'text-signal',
                         )}
                       >
                         {MILESTONE_LABEL[m.status]}
                       </span>
-                      <span className="font-display text-xl leading-none text-ink tabular-nums">
+                      <span className="font-display text-xl leading-none text-chalk tabular-nums">
                         {formatLakh(m.payment)}
                       </span>
                     </span>
                   </div>
-                  <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-ink/65">
+                  <p className="mt-2 max-w-[58ch] text-sm leading-relaxed text-chalk/60">
                     {m.description}
                   </p>
-                  <p className="mt-2 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone">
+                  <p className="mt-2 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-chalk/50">
                     Evidence: {m.evidenceRequired.join(' · ')}
                   </p>
                 </li>
@@ -189,11 +189,11 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
             </ol>
 
             <div className="mt-6 flex flex-wrap items-baseline justify-between gap-4">
-              <span className="font-mono text-meta uppercase text-stone">
+              <span className="font-mono text-meta uppercase text-chalk/50">
                 Released against approved evidence
               </span>
-              <span className="font-display text-2xl leading-none text-ink">
-                {formatLakh(released)} <span className="text-stone">/ {formatLakh(total)}</span>
+              <span className="font-display text-2xl leading-none text-chalk">
+                {formatLakh(released)} <span className="text-chalk/50">/ {formatLakh(total)}</span>
               </span>
             </div>
           </div>
@@ -215,9 +215,9 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                   }),
                 },
               ].map((x) => (
-                <div key={x.k} className="border-b border-ink/10 pb-3">
-                  <dt className="font-mono text-meta uppercase text-stone">{x.k}</dt>
-                  <dd className="mt-1.5 text-sm leading-relaxed text-ink">{x.v}</dd>
+                <div key={x.k} className="border-b border-chalk/12 pb-3">
+                  <dt className="font-mono text-meta uppercase text-chalk/50">{x.k}</dt>
+                  <dd className="mt-1.5 text-sm leading-relaxed text-chalk">{x.v}</dd>
                 </div>
               ))}
             </dl>
@@ -232,11 +232,11 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                     return (
                       <div
                         key={m.label}
-                        className="flex items-baseline justify-between gap-4 border-b border-ink/10 pb-2"
+                        className="flex items-baseline justify-between gap-4 border-b border-chalk/12 pb-2"
                       >
-                        <dt className="text-sm text-ink/75">{m.label}</dt>
+                        <dt className="text-sm text-chalk/70">{m.label}</dt>
                         <dd className="flex items-baseline gap-4 font-mono text-meta uppercase">
-                          <span className="text-stone">
+                          <span className="text-chalk/50">
                             {m.baseline}
                             {m.unit} → {m.result}
                             {m.unit}
@@ -251,10 +251,10 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                 </dl>
 
                 {active.score > 0 ? (
-                  <p className="mt-6 font-display text-4xl leading-none text-ink">
+                  <p className="mt-6 font-display text-4xl leading-none text-chalk">
                     <Counter value={active.score} duration={1.4} />
-                    <span className="text-stone text-2xl"> / 100</span>
-                    <span className="mt-2 block font-mono text-meta uppercase text-stone">
+                    <span className="text-chalk/50 text-2xl"> / 100</span>
+                    <span className="mt-2 block font-mono text-meta uppercase text-chalk/50">
                       Independent validation score · decision: {active.decision}
                     </span>
                   </p>

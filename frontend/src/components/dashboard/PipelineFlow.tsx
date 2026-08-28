@@ -61,7 +61,7 @@ export function PipelineFlow({
             <span
               className={cn(
                 'font-mono text-meta uppercase',
-                light ? 'text-ink-muted' : 'text-stone',
+                light ? 'text-chalk/55' : 'text-chalk/50',
               )}
             >
               {String(i + 1).padStart(2, '0')} · {s.label}
@@ -69,23 +69,23 @@ export function PipelineFlow({
             <span
               className={cn(
                 'font-display text-xl leading-none tabular-nums',
-                light ? 'text-ink' : 'text-ink',
+                light ? 'text-chalk' : 'text-chalk',
               )}
             >
               <Counter value={s.value} duration={1.3} />
             </span>
           </div>
-          <div className={cn('mt-2 h-[3px] w-full', light ? 'bg-ink/10' : 'bg-ink/12')}>
+          <div className={cn('mt-2 h-[3px] w-full', light ? 'bg-chalk/12' : 'bg-chalk/15')}>
             <span
               data-pipeline-bar
-              className="block h-[3px] origin-left bg-saffron"
+              className="block h-[3px] origin-left bg-signal"
               style={{ width: (s.value / max) * 100 + '%' }}
             />
           </div>
           <p
             className={cn(
               'mt-1.5 text-xs',
-              light ? 'text-ink-muted' : 'text-stone',
+              light ? 'text-chalk/55' : 'text-chalk/50',
             )}
           >
             {s.hint}

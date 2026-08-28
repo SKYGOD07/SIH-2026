@@ -14,8 +14,8 @@ export interface LabelProps {
 }
 
 const TONE = {
-  default: 'text-stone',
-  accent: 'text-saffron',
+  default: 'text-chalk/50',
+  accent: 'text-signal',
   validated: 'text-validated',
   risk: 'text-risk',
 } as const;
@@ -43,7 +43,7 @@ export function Label({
     >
       {index ? (
         <>
-          <span className="text-saffron">{index}</span>
+          <span className="text-signal">{index}</span>
           <span aria-hidden="true" className="h-px w-6 bg-current opacity-30" />
         </>
       ) : null}

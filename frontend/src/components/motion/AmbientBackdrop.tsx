@@ -33,7 +33,7 @@ const POOLS: Pool[] = [
   {
     // Warm blush — strongest early and through the outcome sections.
     background:
-      'radial-gradient(circle, rgba(226,150,90,0.28) 0%, rgba(226,150,90,0.09) 36%, rgba(237,231,221,0) 68%)',
+      'radial-gradient(circle, rgba(255,196,0,0.16) 0%, rgba(255,196,0,0.05) 36%, rgba(0,0,0,0) 68%)',
     size: '95vmax',
     from: { x: -20, y: -16, scale: 1, opacity: 0.8 },
     to: { x: 24, y: 32, scale: 1.3, opacity: 0.5 },
@@ -43,7 +43,7 @@ const POOLS: Pool[] = [
   {
     // Cool haze — the complement, keeping the bone from going uniformly warm.
     background:
-      'radial-gradient(circle, rgba(150,172,192,0.3) 0%, rgba(150,172,192,0.1) 40%, rgba(237,231,221,0) 70%)',
+      'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 40%, rgba(0,0,0,0) 70%)',
     size: '110vmax',
     from: { x: 28, y: 24, scale: 1.2, opacity: 0.55 },
     to: { x: -22, y: -20, scale: 1, opacity: 0.8 },
@@ -53,7 +53,7 @@ const POOLS: Pool[] = [
   {
     // Paper lift — a near-white pool that keeps the ground from flattening.
     background:
-      'radial-gradient(circle, rgba(255,253,248,0.75) 0%, rgba(255,253,248,0.3) 42%, rgba(237,231,221,0) 72%)',
+      'radial-gradient(circle, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 42%, rgba(0,0,0,0) 72%)',
     size: '80vmax',
     from: { x: 10, y: 36, scale: 1.1, opacity: 0.7 },
     to: { x: -14, y: -30, scale: 0.92, opacity: 0.5 },

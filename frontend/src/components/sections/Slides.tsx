@@ -40,20 +40,20 @@ function Slide({
       aria-label={label}
       className={cn(
         'relative flex min-h-[100svh] w-full flex-col justify-center py-[clamp(5rem,12vh,9rem)]',
-        tone === 'paper' ? 'ground-paper' : 'ground-bone',
+        tone === 'paper' ? 'ground-void' : 'ground-void',
       )}
     >
       <div className="edge mx-auto w-full max-w-[110rem]">
         <Label index={index}>{label}</Label>
 
-        <h2 className="mt-8 max-w-[15ch] font-display text-display-lg font-normal text-ink">
+        <h2 className="mt-8 max-w-[15ch] font-display text-display-lg font-normal text-chalk">
           {headline}
         </h2>
 
         <div className="mt-[clamp(3rem,8vh,6rem)]">{figure}</div>
 
         {footnote ? (
-          <p className="mt-12 max-w-[44ch] font-mono text-meta uppercase leading-relaxed text-stone">
+          <p className="mt-12 max-w-[44ch] font-mono text-meta uppercase leading-relaxed text-chalk/50">
             {footnote}
           </p>
         ) : null}
@@ -135,9 +135,9 @@ function ConvergenceFigure() {
         <circle data-result cx="880" cy="130" r="16" fill="#D2590F" />
       </svg>
 
-      <div className="mt-6 flex justify-between font-mono text-meta uppercase text-stone">
+      <div className="mt-6 flex justify-between font-mono text-meta uppercase text-chalk/50">
         <span>Every comparable pilot already run</span>
-        <span className="text-saffron">One designed pilot</span>
+        <span className="text-signal">One designed pilot</span>
       </div>
     </div>
   );
@@ -203,16 +203,16 @@ function ServicesFigure() {
   );
 
   return (
-    <ol ref={ref} className="border-t border-ink/12">
+    <ol ref={ref} className="border-t border-chalk/15">
       {SERVICES.map((s) => (
         <li
           key={s.id}
           data-service
-          className="flex items-center gap-6 border-b border-ink/10 py-5 sm:gap-10"
+          className="flex items-center gap-6 border-b border-chalk/12 py-5 sm:gap-10"
         >
-          <span className="w-16 shrink-0 font-mono text-meta uppercase text-stone">{s.id}</span>
-          <span className="flex-1 font-display text-2xl font-normal text-ink">{s.name}</span>
-          <span className="hidden h-px w-32 bg-ink/10 sm:block">
+          <span className="w-16 shrink-0 font-mono text-meta uppercase text-chalk/50">{s.id}</span>
+          <span className="flex-1 font-display text-2xl font-normal text-chalk">{s.name}</span>
+          <span className="hidden h-px w-32 bg-chalk/12 sm:block">
             <span data-service-bar className="block h-px origin-left bg-validated" />
           </span>
           <span className="w-20 shrink-0 text-right font-mono text-meta uppercase text-validated">
@@ -277,7 +277,7 @@ function OutputsFigure() {
   );
 
   const outputs = [
-    { n: '01', name: 'Pilot design', figure: '90 → 120 days', tone: 'bg-saffron' },
+    { n: '01', name: 'Pilot design', figure: '90 → 120 days', tone: 'bg-signal' },
     { n: '02', name: 'Risk register', figure: '2 preconditions', tone: 'bg-risk' },
     { n: '03', name: 'Confidence', figure: '2 of 5 met', tone: 'bg-validated' },
   ];
@@ -286,12 +286,12 @@ function OutputsFigure() {
     <div ref={ref} className="grid gap-x-12 gap-y-10 sm:grid-cols-3">
       {outputs.map((o) => (
         <div key={o.n} data-output>
-          <span className="font-mono text-meta uppercase text-stone">{o.n}</span>
-          <p className="mt-3 font-display text-display-xs font-normal text-ink">{o.name}</p>
-          <span className="mt-5 block h-[3px] w-full bg-ink/10">
+          <span className="font-mono text-meta uppercase text-chalk/50">{o.n}</span>
+          <p className="mt-3 font-display text-display-xs font-normal text-chalk">{o.name}</p>
+          <span className="mt-5 block h-[3px] w-full bg-chalk/12">
             <span data-band className={cn('block h-[3px] w-full origin-left', o.tone)} />
           </span>
-          <p className="mt-4 font-mono text-meta uppercase text-ink-muted">{o.figure}</p>
+          <p className="mt-4 font-mono text-meta uppercase text-chalk/55">{o.figure}</p>
         </div>
       ))}
     </div>

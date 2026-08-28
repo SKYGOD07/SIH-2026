@@ -18,10 +18,10 @@ export const dynamic = 'force-dynamic';
 const STATUS_TONE: Record<string, string> = {
   PAID: 'text-validated',
   APPROVED: 'text-validated',
-  EVIDENCE_SUBMITTED: 'text-saffron',
-  IN_PROGRESS: 'text-saffron',
+  EVIDENCE_SUBMITTED: 'text-signal',
+  IN_PROGRESS: 'text-signal',
   REJECTED: 'text-risk',
-  LOCKED: 'text-stone',
+  LOCKED: 'text-chalk/50',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
               'border px-3 py-1.5 font-mono text-meta uppercase ' +
               (source === 'live'
                 ? 'border-validated/50 text-validated'
-                : 'border-ink/20 text-stone')
+                : 'border-chalk/20 text-chalk/50')
             }
           >
             {source === 'live' ? 'Live API' : 'Demonstration data'}
@@ -73,33 +73,33 @@ export default async function DashboardPage() {
 
       <div className="edge mx-auto max-w-[110rem] pb-[clamp(5rem,12vh,9rem)]">
         {/* --- the worklist --- */}
-        <ol className="border-t border-ink/15">
+        <ol className="border-t border-chalk/15">
           {awaitingValidation.map((item) => (
             <li
               key={`${item.pilotId}-${item.milestoneId}`}
-              className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-b border-ink/10 py-6"
+              className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-b border-chalk/12 py-6"
             >
               <span className="flex items-baseline gap-5">
-                <span className="font-mono text-meta uppercase text-stone">
+                <span className="font-mono text-meta uppercase text-chalk/50">
                   {item.pilotId} · {item.code}
                 </span>
                 <Link
                   href="/pilots"
                   data-cursor="open"
-                  className="font-display text-display-xs font-normal text-ink transition-colors hover:text-saffron"
+                  className="font-display text-display-xs font-normal text-chalk transition-colors hover:text-signal"
                 >
                   {item.title}
                 </Link>
               </span>
 
               <span className="flex items-baseline gap-8">
-                <span className="font-mono text-meta uppercase text-stone">
+                <span className="font-mono text-meta uppercase text-chalk/50">
                   {item.filed} artefacts filed
                 </span>
-                <span className="font-display text-2xl text-ink">
+                <span className="font-display text-2xl text-chalk">
                   {formatLakh(item.payment)}
                 </span>
-                <span className="font-mono text-meta uppercase text-saffron">
+                <span className="font-mono text-meta uppercase text-signal">
                   Validate →
                 </span>
               </span>
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
           ))}
 
           {awaitingValidation.length === 0 ? (
-            <li className="border-b border-ink/10 py-8 font-mono text-meta uppercase text-stone">
+            <li className="border-b border-chalk/12 py-8 font-mono text-meta uppercase text-chalk/50">
               Nothing awaiting validation.
             </li>
           ) : null}
@@ -118,17 +118,17 @@ export default async function DashboardPage() {
           <div>
             <Label>Contract · {pilot.id}</Label>
 
-            <p className="mt-6 font-display text-display-sm font-normal text-ink">
+            <p className="mt-6 font-display text-display-sm font-normal text-chalk">
               {formatLakh(pilot.released)}
-              <span className="text-stone"> of {formatLakh(pilot.contractValue)}</span>
+              <span className="text-chalk/50"> of {formatLakh(pilot.contractValue)}</span>
             </p>
-            <p className="mt-2 font-mono text-meta uppercase text-stone">
+            <p className="mt-2 font-mono text-meta uppercase text-chalk/50">
               released against approved evidence
             </p>
 
-            <div className="mt-6 h-[3px] w-full bg-ink/10">
+            <div className="mt-6 h-[3px] w-full bg-chalk/12">
               <span
-                className="block h-[3px] bg-saffron"
+                className="block h-[3px] bg-signal"
                 style={{ width: `${releasedPct}%` }}
               />
             </div>
@@ -137,21 +137,21 @@ export default async function DashboardPage() {
               {milestones.map((m) => (
                 <li
                   key={m.id}
-                  className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-ink/10 py-3.5"
+                  className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-chalk/12 py-3.5"
                 >
                   <span className="flex items-baseline gap-4">
-                    <span className="font-mono text-meta uppercase text-stone">{m.code}</span>
-                    <span className="text-base text-ink">{m.title}</span>
+                    <span className="font-mono text-meta uppercase text-chalk/50">{m.code}</span>
+                    <span className="text-base text-chalk">{m.title}</span>
                   </span>
                   <span className="flex items-baseline gap-6">
                     <span
                       className={
-                        'font-mono text-meta uppercase ' + (STATUS_TONE[m.status] ?? 'text-stone')
+                        'font-mono text-meta uppercase ' + (STATUS_TONE[m.status] ?? 'text-chalk/50')
                       }
                     >
                       {STATUS_LABEL[m.status] ?? m.status}
                     </span>
-                    <span className="font-display text-lg text-ink">
+                    <span className="font-display text-lg text-chalk">
                       {formatLakh(m.payment)}
                     </span>
                   </span>
@@ -164,11 +164,11 @@ export default async function DashboardPage() {
           <div>
             <Label>Evidence base</Label>
 
-            <p className="mt-6 font-display text-display-sm font-normal text-ink">
+            <p className="mt-6 font-display text-display-sm font-normal text-chalk">
               {corpus.corpusSize}
-              <span className="text-stone"> pilots recorded</span>
+              <span className="text-chalk/50"> pilots recorded</span>
             </p>
-            <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-ink-muted">
+            <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-chalk/55">
               Every closed pilot — including the ones that missed their target — is what the
               simulator reasons from. The base grows with each one.
             </p>
@@ -179,15 +179,15 @@ export default async function DashboardPage() {
                 return (
                   <li
                     key={d.domain}
-                    className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-ink/10 py-3"
+                    className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-chalk/12 py-3"
                   >
-                    <span className="text-base text-ink">{d.domain.replace(/-/g, ' ')}</span>
+                    <span className="text-base text-chalk">{d.domain.replace(/-/g, ' ')}</span>
                     <span className="flex items-baseline gap-5 font-mono text-meta uppercase">
-                      <span className="text-stone">
+                      <span className="text-chalk/50">
                         {d.met} met of {d.total}
                       </span>
                       {thin ? (
-                        <span className="text-saffron">too thin to advise</span>
+                        <span className="text-signal">too thin to advise</span>
                       ) : (
                         <span className="text-validated">advisable</span>
                       )}
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
               })}
             </ol>
 
-            <p className="mt-6 max-w-[46ch] text-xs leading-relaxed text-ink-muted">
+            <p className="mt-6 max-w-[46ch] text-xs leading-relaxed text-chalk/55">
               Domains marked thin have fewer than four comparable pilots. The simulator will still
               run against them, but reports its confidence band as context rather than as a finding.
             </p>
@@ -205,17 +205,17 @@ export default async function DashboardPage() {
         </section>
 
         {/* --- platform totals, deliberately last --- */}
-        <section className="mt-20 border-t border-ink/15 pt-10">
+        <section className="mt-20 border-t border-chalk/15 pt-10">
           <Label>Across the platform</Label>
           <dl className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
             {PLATFORM_METRICS.map((m) => (
               <div key={m.label}>
-                <dt className="font-mono text-meta uppercase text-stone">{m.label}</dt>
-                <dd className="mt-3 font-display text-display-xs font-normal tabular-nums text-ink">
+                <dt className="font-mono text-meta uppercase text-chalk/50">{m.label}</dt>
+                <dd className="mt-3 font-display text-display-xs font-normal tabular-nums text-chalk">
                   {m.value}
                   {m.unit ?? ''}
                 </dd>
-                <dd className="mt-2 text-xs leading-relaxed text-ink-muted">{m.hint}</dd>
+                <dd className="mt-2 text-xs leading-relaxed text-chalk/55">{m.hint}</dd>
               </div>
             ))}
           </dl>

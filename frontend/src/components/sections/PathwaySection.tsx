@@ -68,7 +68,7 @@ export function PathwaySection() {
       ref={rootRef}
       id="pathway"
       aria-label="The end-to-end pathway"
-      className="relative w-full ground-paper py-[clamp(6rem,15vh,11rem)]"
+      className="relative w-full ground-void py-[clamp(6rem,15vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="01">The mechanism</Label>
@@ -76,18 +76,18 @@ export function PathwaySection() {
         <SplitText
           as="h2"
           type="lines"
-          className="mt-8 max-w-[16ch] font-display text-display-lg font-normal text-ink"
+          className="mt-8 max-w-[16ch] font-display text-display-lg font-normal text-chalk"
         >
           Ten stages. One record.
         </SplitText>
 
-        <p className="mt-8 max-w-[46ch] text-pretty text-base leading-relaxed text-ink-muted">
+        <p className="mt-8 max-w-[46ch] text-pretty text-base leading-relaxed text-chalk/55">
           Every activity the problem statement names, in order, each issuing the standard template
           that stage is responsible for.
         </p>
 
         {/* --- the ten stages --- */}
-        <ol data-stages className="mt-20 border-t border-ink/12">
+        <ol data-stages className="mt-20 border-t border-chalk/15">
           {PATHWAY.map((stage, i) => {
             const h = HEADLINES[i];
             return (
@@ -106,11 +106,11 @@ export function PathwaySection() {
                 description={stage.government}
                 aside={
                   stage.isOurs ? (
-                    <span className="whitespace-nowrap border border-saffron/50 px-2.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-saffron">
+                    <span className="whitespace-nowrap border border-signal/50 px-2.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-signal">
                       Our addition
                     </span>
                   ) : stage.template ? (
-                    <span className="block max-w-[16ch] font-mono text-[0.5625rem] uppercase leading-relaxed tracking-[0.12em] text-stone">
+                    <span className="block max-w-[16ch] font-mono text-[0.5625rem] uppercase leading-relaxed tracking-[0.12em] text-chalk/50">
                       {stage.template}
                     </span>
                   ) : null
@@ -129,10 +129,10 @@ export function PathwaySection() {
                 <li
                   key={t.name}
                   data-template
-                  className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 border-b border-ink/10 py-4"
+                  className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 border-b border-chalk/12 py-4"
                 >
-                  <span className="font-display text-xl font-normal text-ink">{t.name}</span>
-                  <span className="font-mono text-meta uppercase text-stone">{t.stage}</span>
+                  <span className="font-display text-xl font-normal text-chalk">{t.name}</span>
+                  <span className="font-mono text-meta uppercase text-chalk/50">{t.stage}</span>
                 </li>
               ))}
             </ul>
@@ -142,9 +142,9 @@ export function PathwaySection() {
             <Label>Integrations</Label>
             <ul className="mt-8">
               {INTEGRATIONS.map((it) => (
-                <li key={it.name} className="border-b border-ink/10 py-4">
-                  <p className="font-display text-xl font-normal text-ink">{it.name}</p>
-                  <p className="mt-2 max-w-[34ch] text-sm leading-relaxed text-ink-muted">
+                <li key={it.name} className="border-b border-chalk/12 py-4">
+                  <p className="font-display text-xl font-normal text-chalk">{it.name}</p>
+                  <p className="mt-2 max-w-[34ch] text-sm leading-relaxed text-chalk/55">
                     {it.detail}
                   </p>
                 </li>

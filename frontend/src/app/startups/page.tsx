@@ -22,13 +22,13 @@ export default function StartupsPage() {
         aside={
           <dl className="flex flex-wrap gap-x-10 gap-y-4">
             <div>
-              <dt className="font-mono text-meta uppercase text-stone">On register</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-ink">
+              <dt className="font-mono text-meta uppercase text-chalk/50">On register</dt>
+              <dd className="mt-2 font-display text-3xl leading-none text-chalk">
                 {STARTUPS.length}
               </dd>
             </div>
             <div>
-              <dt className="font-mono text-meta uppercase text-stone">Compliance verified</dt>
+              <dt className="font-mono text-meta uppercase text-chalk/50">Compliance verified</dt>
               <dd className="mt-2 font-display text-3xl leading-none text-validated">
                 {verified}
               </dd>

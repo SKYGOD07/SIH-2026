@@ -56,7 +56,7 @@ const FORMS: Form[] = [
   {
     kind: 'box',
     base: 1.25,
-    tone: '#EFE9DF',
+    tone: '#F2F2F2',
     spin: 0.055,
     track: [
       { p: 0.0, x: 0.6, y: 1.9, z: 0.2, s: 1 },
@@ -71,7 +71,7 @@ const FORMS: Form[] = [
   {
     kind: 'capsule',
     base: 1.05,
-    tone: '#E4DCCF',
+    tone: '#D8D8D8',
     spin: -0.04,
     track: [
       { p: 0.0, x: 3.1, y: 0.8, z: -0.3, s: 1 },
@@ -86,7 +86,7 @@ const FORMS: Form[] = [
   {
     kind: 'torus',
     base: 1.05,
-    tone: '#F2ECE2',
+    tone: '#FFFFFF',
     spin: 0.07,
     track: [
       { p: 0.0, x: 0.4, y: -1.5, z: -0.9, s: 1 },
@@ -101,7 +101,7 @@ const FORMS: Form[] = [
   {
     kind: 'sphere',
     base: 0.9,
-    tone: '#E8DFD0',
+    tone: '#CFCFCF',
     spin: 0.03,
     track: [
       { p: 0.0, x: 2.5, y: -1.8, z: 0.7, s: 1 },
@@ -116,7 +116,7 @@ const FORMS: Form[] = [
   {
     kind: 'cylinder',
     base: 0.85,
-    tone: '#EDE6DA',
+    tone: '#E6E6E6',
     spin: -0.05,
     track: [
       { p: 0.0, x: 1.9, y: 2.5, z: -1.5, s: 1 },
@@ -132,7 +132,7 @@ const FORMS: Form[] = [
     // The one accent form. A single warm object against five neutrals.
     kind: 'box',
     base: 0.66,
-    tone: '#D2590F',
+    tone: '#FFC400',
     spin: 0.09,
     track: [
       { p: 0.0, x: 1.9, y: 0.0, z: 1.4, s: 1 },
@@ -252,10 +252,10 @@ function TravellingForm({ form, progress }: { form: Form; progress: ProgressRef 
 function SoftLight() {
   return (
     <>
-      <ambientLight intensity={1.5} color="#FBF7F0" />
-      <directionalLight position={[3, 6, 5]} intensity={2.2} color="#FFFDF8" />
-      <directionalLight position={[-5, 1, 2]} intensity={0.7} color="#C9D4DE" />
-      <directionalLight position={[0, -4, 3]} intensity={0.45} color="#E8C9A8" />
+      <ambientLight intensity={0.55} color="#FFFFFF" />
+      <directionalLight position={[3, 6, 5]} intensity={2.6} color="#FFFFFF" />
+      <directionalLight position={[-5, 1, 2]} intensity={0.7} color="#7A8390" />
+      <directionalLight position={[0, -4, 3]} intensity={0.45} color="#FFC400" />
     </>
   );
 }

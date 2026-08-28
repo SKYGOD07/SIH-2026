@@ -200,7 +200,7 @@ export function Hero() {
         data-hero-inner
         className={
           'block font-display text-hero-line font-normal uppercase ' +
-          (i === 2 ? 'text-ink' : 'text-ink/70')
+          (i === 2 ? 'text-chalk' : 'text-chalk/70')
         }
       >
         {word}
@@ -220,7 +220,7 @@ export function Hero() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse 100% 80% at 72% 30%, rgba(246,242,234,0.55) 0%, rgba(237,231,221,0.35) 46%, rgba(228,220,206,0.55) 100%)',
+            'radial-gradient(ellipse 110% 85% at 70% 35%, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 62%)',
         }}
       />
 
@@ -263,15 +263,15 @@ export function Hero() {
                   a widget, which is what made this read as an interface element
                   rather than as the argument.
                 */}
-                <span className="block font-mono text-meta uppercase text-saffron">
+                <span className="block font-mono text-meta uppercase text-signal">
                   {String(i + 1).padStart(2, '0')} — {VERB_LABELS[i]}
                 </span>
 
-                <span className="mt-5 block font-display text-display-xl font-normal text-ink">
+                <span className="mt-5 block font-display text-display-xl font-normal text-chalk">
                   {verb}
                 </span>
 
-                <span className="mt-7 block max-w-[34ch] text-lg leading-snug text-ink-muted">
+                <span className="mt-7 block max-w-[34ch] text-lg leading-snug text-chalk/55">
                   {VERB_COPY[i]}
                 </span>
               </div>
@@ -283,16 +283,16 @@ export function Hero() {
         <div className="edge relative z-[5] mx-auto w-full max-w-[110rem] shrink-0">
           <div
             data-hero-chrome
-            className="flex flex-wrap items-end justify-between gap-4 border-t border-ink/12 pt-4"
+            className="flex flex-wrap items-end justify-between gap-4 border-t border-chalk/15 pt-4"
           >
-            <p className="max-w-[42ch] font-mono text-meta uppercase leading-relaxed text-stone">
+            <p className="max-w-[42ch] font-mono text-meta uppercase leading-relaxed text-chalk/50">
               {DEMO_NOTICE}
             </p>
             <div ref={cueRef} className="flex items-center gap-3">
-              <span className="font-mono text-meta uppercase text-saffron">Scroll</span>
+              <span className="font-mono text-meta uppercase text-signal">Scroll</span>
               <span
                 aria-hidden="true"
-                className="block h-8 w-px bg-gradient-to-b from-saffron to-transparent"
+                className="block h-8 w-px bg-gradient-to-b from-signal to-transparent"
               />
             </div>
           </div>

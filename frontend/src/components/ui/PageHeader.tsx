@@ -37,7 +37,7 @@ export function PageHeader({
         <SplitText
           as="h1"
           type="lines"
-          className="max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ink"
+          className="max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-chalk"
         >
           {title}
         </SplitText>
@@ -45,7 +45,7 @@ export function PageHeader({
       </div>
 
       {lede ? (
-        <p className="mt-8 max-w-[62ch] text-pretty text-base leading-relaxed text-stone">
+        <p className="mt-8 max-w-[62ch] text-pretty text-base leading-relaxed text-chalk/50">
           {lede}
         </p>
       ) : null}

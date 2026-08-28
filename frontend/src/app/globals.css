@@ -5,13 +5,13 @@
 @layer base {
   :root {
     /* shadcn bridge tokens, retuned to the light-primary palette */
-    --background: 39 27% 90%;
-    --foreground: 260 6% 9%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
     --card: 40 33% 94%;
     --card-foreground: 260 6% 9%;
     --popover: 40 33% 94%;
     --popover-foreground: 260 6% 9%;
-    --primary: 24 87% 44%;
+    --primary: 46 100% 50%;
     --primary-foreground: 40 33% 96%;
     --secondary: 38 20% 84%;
     --secondary-foreground: 260 6% 9%;
@@ -21,9 +21,9 @@
     --accent-foreground: 260 6% 9%;
     --destructive: 6 54% 43%;
     --destructive-foreground: 40 33% 96%;
-    --border: 38 18% 78%;
+    --border: 0 0% 15%;
     --input: 38 18% 78%;
-    --ring: 24 87% 44%;
+    --ring: 46 100% 50%;
     --radius: 0.125rem;
 
     /* experience tokens */
@@ -59,8 +59,8 @@
   }
 
   body {
-    background-color: #ede7dd;
-    color: #17161a;
+    background-color: #000000;
+    color: #ffffff;
     font-family: var(--font-body), Inter, system-ui, sans-serif;
     overflow-x: hidden;
   }
@@ -76,12 +76,12 @@
   }
 
   ::selection {
-    background: rgba(210, 89, 15, 0.22);
-    color: #17161a;
+    background: #ffc400;
+    color: #000000;
   }
 
   :focus-visible {
-    outline: 2px solid #d2590f;
+    outline: 2px solid #ffc400;
     outline-offset: 3px;
     border-radius: 2px;
   }
@@ -104,66 +104,41 @@
   }
 
   .label {
-    @apply font-mono text-meta uppercase text-stone;
+    @apply font-mono text-meta uppercase text-white/50;
   }
 
   /**
    * Section grounds.
    *
-   * Light sections are transparent so the fixed AmbientBackdrop reads through
-   * them; only the top and bottom edges are sealed so boundaries stay crisp.
-   * Dark sections are opaque and deliberately rare — they punctuate the run at
-   * the heaviest 3D moments rather than being the default.
+   * Two only: black, and the signal yellow used sparingly as a full-bleed
+   * inversion. There is no third tone and no gradient between them — the
+   * reference gets its force from an abrupt cut between pure black and pure
+   * yellow, and any intermediate wash would soften exactly the thing that
+   * makes it work.
+   *
+   * Black grounds are transparent so the fixed 3D layer reads through them;
+   * the body supplies the black underneath.
    */
-  .ground-bone {
-    background-image: linear-gradient(
-      180deg,
-      rgba(237, 231, 221, 0.9) 0%,
-      rgba(237, 231, 221, 0.15) 20%,
-      rgba(237, 231, 221, 0.15) 80%,
-      rgba(237, 231, 221, 0.9) 100%
-    );
+  .ground-void {
+    background-color: transparent;
   }
 
-  /*
-   * A warmer variant for sections that should feel like paper.
-   * Translucent for the same reason as `.ground-bone`: the travelling 3D forms
-   * live in one fixed layer behind every section, and an opaque ground would
-   * hide them for the length of that section.
-   */
-  .ground-paper {
-    background-image: linear-gradient(
-      180deg,
-      rgba(244, 241, 234, 0.88) 0%,
-      rgba(239, 235, 226, 0.62) 40%,
-      rgba(239, 235, 226, 0.62) 60%,
-      rgba(232, 226, 214, 0.88) 100%
-    );
+  /* Full-bleed inversion. Opaque, and deliberately rare. */
+  .ground-signal {
+    background-color: #ffc400;
+    color: #000000;
   }
-
-  /* Dark punctuation. Opaque — these carry their own 3D atmosphere. */
-  .ground-abyss {
-    background-image:
-      radial-gradient(ellipse 90% 65% at 50% 45%, #1e2228 0%, #14161a 62%, #0d0f12 100%);
-  }
-
-  /**
-   * Dark punctuation that still lets the page-wide 3D layer through.
-   * A fully opaque dark section would hide the travelling forms entirely, which
-   * is the one thing the global scene exists to prevent.
-   */
-  .ground-abyss-veil {
-    background-image:
-      radial-gradient(ellipse 95% 70% at 50% 45%, rgba(30, 34, 40, 0.86) 0%, rgba(20, 22, 26, 0.94) 58%, rgba(13, 15, 18, 0.97) 100%);
+  .ground-signal * {
+    border-color: rgba(0, 0, 0, 0.18);
   }
 
   /* Scrim behind the navigation so type never collides with it. */
   .nav-scrim {
     background-image: linear-gradient(
       180deg,
-      rgba(237, 231, 221, 0.94) 0%,
-      rgba(237, 231, 221, 0.7) 45%,
-      rgba(237, 231, 221, 0) 100%
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.55) 50%,
+      rgba(0, 0, 0, 0) 100%
     );
   }
   .nav-scrim-dark {
@@ -182,22 +157,44 @@
     inset: 0;
     pointer-events: none;
     opacity: 0.28;
-    mix-blend-mode: multiply;
+    mix-blend-mode: screen;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+  }
+
+  /**
+   * Hairline rules that divide the viewport into panels.
+   *
+   * The reference organises whole screens this way rather than with cards: a
+   * single 1px line at a considered position does the work a border-radius and
+   * a background would otherwise be asked to do.
+   */
+  .rule-v {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .rule-h {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.16);
   }
 
   .hairline-grid {
     background-image:
-      linear-gradient(to right, rgba(23, 22, 26, 0.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(23, 22, 26, 0.055) 1px, transparent 1px);
+      linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
     background-size: 7.5rem 7.5rem;
   }
 
   .panel {
-    @apply border border-ink/10 bg-bone-light/60;
+    @apply border border-white/12 bg-white/[0.03];
   }
   .panel-dark {
-    @apply border border-bone/15 bg-bone/[0.03];
+    @apply border border-white/12 bg-white/[0.03];
   }
 }
 

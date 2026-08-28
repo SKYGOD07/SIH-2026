@@ -122,12 +122,12 @@ export function Nav() {
             style={{
               // The reference recipe: hairline border, heavy blur with
               // saturation so whatever passes underneath tints the glass.
-              border: '0.8px solid rgba(23,22,26,0.14)',
+              border: '0.8px solid rgba(255,255,255,0.18)',
               backdropFilter: 'blur(22px) saturate(1.55)',
               WebkitBackdropFilter: 'blur(22px) saturate(1.55)',
-              backgroundColor: scrolled ? 'rgba(246,243,236,0.62)' : 'rgba(246,243,236,0.34)',
+              backgroundColor: scrolled ? 'rgba(0,0,0,0.62)' : 'rgba(0,0,0,0.28)',
               boxShadow:
-                '0 1px 0 0 rgba(255,255,255,0.5) inset, 0 8px 30px -12px rgba(23,22,26,0.18)',
+                '0 1px 0 0 rgba(255,255,255,0.14) inset, 0 8px 30px -12px rgba(0,0,0,0.6)',
             }}
           >
             {/* Gloss sweep, clipped to the capsule. */}
@@ -139,7 +139,7 @@ export function Nav() {
                 className="absolute inset-y-0 -left-1/3 w-1/3 opacity-40"
                 style={{
                   background:
-                    'linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent)',
+                    'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
                   animation: 'markGloss 7s ease-in-out infinite',
                 }}
               />
@@ -157,7 +157,7 @@ export function Nav() {
                 <Mark radius="22%" />
               </span>
 
-              <span className="whitespace-nowrap font-display text-[0.8125rem] font-bold uppercase tracking-[0.2em] text-ink">
+              <span className="whitespace-nowrap font-display text-[0.8125rem] font-bold uppercase tracking-[0.2em] text-chalk">
                 MahaInnovate
               </span>
             </Link>
@@ -170,7 +170,7 @@ export function Nav() {
                   {...reveal}
                   className="relative flex items-center gap-3 overflow-hidden sm:gap-4"
                 >
-                  <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-ink/15 lg:block" />
+                  <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-chalk/15 lg:block" />
 
                   <ul className="hidden items-center gap-5 lg:flex">
                     {LINKS.map((link) => {
@@ -182,14 +182,14 @@ export function Nav() {
                             data-cursor="open"
                             className={cn(
                               'group relative block whitespace-nowrap py-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] transition-colors',
-                              active ? 'text-ink' : 'text-stone hover:text-ink',
+                              active ? 'text-chalk' : 'text-chalk/50 hover:text-chalk',
                             )}
                           >
                             {link.label}
                             <span
                               aria-hidden="true"
                               className={cn(
-                                'absolute -bottom-0.5 left-0 h-px w-full origin-left bg-saffron transition-transform duration-500 ease-editorial',
+                                'absolute -bottom-0.5 left-0 h-px w-full origin-left bg-signal transition-transform duration-500 ease-editorial',
                                 active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
                               )}
                             />
@@ -202,7 +202,7 @@ export function Nav() {
                   <Link
                     href="/dashboard"
                     data-cursor="enter"
-                    className="hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-ink px-4 py-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-bone-light transition-colors hover:bg-saffron sm:inline-flex"
+                    className="hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-chalk px-4 py-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-void transition-colors hover:bg-signal sm:inline-flex"
                   >
                     Enter
                     <span aria-hidden="true">→</span>
@@ -217,12 +217,12 @@ export function Nav() {
                   >
                     <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
                     <motion.span
-                      className="block h-px w-4 bg-ink"
+                      className="block h-px w-4 bg-chalk"
                       animate={{ rotate: open ? 45 : 0, y: open ? 3 : 0 }}
                       transition={{ duration: 0.3 }}
                     />
                     <motion.span
-                      className="block h-px w-4 bg-ink"
+                      className="block h-px w-4 bg-chalk"
                       animate={{ rotate: open ? -45 : 0, y: open ? -3 : 0 }}
                       transition={{ duration: 0.3 }}
                     />
@@ -243,7 +243,7 @@ export function Nav() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduceMotion ? 0 : -12 }}
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-4 top-[4.75rem] z-40 rounded-3xl border border-ink/12 bg-bone-light/95 p-2 backdrop-blur-xl lg:hidden"
+            className="fixed inset-x-4 top-[4.75rem] z-40 rounded-3xl border border-chalk/15 bg-void/95 p-2 backdrop-blur-xl lg:hidden"
           >
             <ul className="flex flex-col">
               {[...LINKS, { href: '/dashboard', label: 'Enter platform' }].map((link, i) => (
@@ -255,7 +255,7 @@ export function Nav() {
                 >
                   <Link
                     href={link.href}
-                    className="block rounded-2xl px-4 py-3 font-display text-xl uppercase text-ink transition-colors hover:bg-ink/5"
+                    className="block rounded-2xl px-4 py-3 font-display text-xl uppercase text-chalk transition-colors hover:bg-chalk/5"
                   >
                     {link.label}
                   </Link>

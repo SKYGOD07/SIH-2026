@@ -289,8 +289,8 @@ export function Preloader() {
       aria-label="Loading MahaInnovate. Click to skip."
     >
       {/* The ground, split so it can part. */}
-      <div data-curtain className="absolute inset-x-0 top-0 h-1/2 bg-bone" />
-      <div data-curtain className="absolute inset-x-0 bottom-0 h-1/2 bg-bone" />
+      <div data-curtain className="absolute inset-x-0 top-0 h-1/2 bg-void" />
+      <div data-curtain className="absolute inset-x-0 bottom-0 h-1/2 bg-void" />
 
       {/* A soft pool so the ground is never a flat fill. */}
       <div
@@ -298,7 +298,7 @@ export function Preloader() {
         className="pointer-events-none absolute left-1/2 top-1/2 h-[90vmax] w-[90vmax] -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
-            'radial-gradient(circle, rgba(255,253,248,0.9) 0%, rgba(237,231,221,0.35) 42%, rgba(237,231,221,0) 70%)',
+            'radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0) 62%)',
         }}
       />
 
@@ -320,11 +320,11 @@ export function Preloader() {
           <span
             data-preload-rule
             aria-hidden="true"
-            className="block h-px w-[clamp(6rem,14vw,12rem)] origin-center bg-ink/25"
+            className="block h-px w-[clamp(6rem,14vw,12rem)] origin-center bg-chalk/25"
           />
           <span
             data-preload-word
-            className="font-mono text-[0.6875rem] uppercase tracking-[0.32em] text-ink/55"
+            className="font-mono text-[0.6875rem] uppercase tracking-[0.32em] text-chalk/55"
           >
             MahaInnovate
           </span>

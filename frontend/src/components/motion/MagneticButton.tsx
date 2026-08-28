@@ -21,9 +21,9 @@ export interface MagneticButtonProps {
 }
 
 const VARIANT = {
-  solid: 'bg-saffron text-ink hover:bg-saffron-light border-saffron',
-  outline: 'border-ink/25 text-ink hover:border-saffron hover:text-saffron',
-  ghost: 'border-transparent text-stone hover:text-ink',
+  solid: 'bg-signal text-chalk hover:bg-signal-light border-signal',
+  outline: 'border-chalk/25 text-chalk hover:border-signal hover:text-signal',
+  ghost: 'border-transparent text-chalk/50 hover:text-chalk',
 } as const;
 
 /**

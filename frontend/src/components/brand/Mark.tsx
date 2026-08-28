@@ -72,7 +72,7 @@ export const Mark = forwardRef<HTMLDivElement, MarkProps>(function Mark(
         <span
           key={t.key}
           {...(tileAttr ? { [tileAttr]: '' } : {})}
-          className={cn('absolute bg-ink', tileClassName)}
+          className={cn('absolute bg-chalk', tileClassName)}
           style={{
             left: `${t.col * STEP + INSET}%`,
             top: `${t.row * STEP + INSET}%`,

@@ -54,7 +54,7 @@ export function ProblemSection() {
       ref={rootRef}
       id="problem"
       aria-label="The problem"
-      className="relative w-full ground-bone py-[clamp(5rem,12vh,9rem)]"
+      className="relative w-full ground-void py-[clamp(5rem,12vh,9rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="00">The problem</Label>
@@ -62,7 +62,7 @@ export function ProblemSection() {
         <SplitText
           as="h2"
           type="lines"
-          className="mt-6 max-w-[24ch] font-display text-display-md font-normal uppercase leading-[0.92] text-ink"
+          className="mt-6 max-w-[24ch] font-display text-display-md font-normal uppercase leading-[0.92] text-chalk"
         >
           Procurement built for standard goods, asked to buy the unproven.
         </SplitText>
@@ -75,7 +75,7 @@ export function ProblemSection() {
           <span
             data-gap-rule
             aria-hidden="true"
-            className="absolute left-1/2 top-0 hidden h-full w-px origin-top bg-ink/15 md:block"
+            className="absolute left-1/2 top-0 hidden h-full w-px origin-top bg-chalk/15 md:block"
           />
 
           <div>
@@ -85,7 +85,7 @@ export function ProblemSection() {
                 <li
                   key={pain}
                   data-pain
-                  className="border-b border-ink/10 py-3 text-base leading-snug text-ink"
+                  className="border-b border-chalk/12 py-3 text-base leading-snug text-chalk"
                 >
                   {pain}
                 </li>
@@ -100,13 +100,13 @@ export function ProblemSection() {
                 <li
                   key={pain}
                   data-pain
-                  className="border-b border-ink/10 py-3 text-base leading-snug text-ink"
+                  className="border-b border-chalk/12 py-3 text-base leading-snug text-chalk"
                 >
                   {pain}
                 </li>
               ))}
             </ul>
-            <p className="mt-8 max-w-[38ch] text-sm leading-relaxed text-ink-muted">
+            <p className="mt-8 max-w-[38ch] text-sm leading-relaxed text-chalk/55">
               Neither side is behaving badly. The rules were written for buying desks and diesel,
               and they are being applied to buying something nobody has proven yet.
             </p>
