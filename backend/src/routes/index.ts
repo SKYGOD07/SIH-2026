@@ -7,6 +7,7 @@ import vehicleRoutes from './vehicle.routes';
 import orderRoutes from './order.routes';
 import trackingRoutes from './tracking.routes';
 import adminRoutes from './admin.routes';
+import mahainnovateRoutes from '../mahainnovate/http/mahainnovate.routes';
 
 const router = Router();
 
@@ -18,5 +19,8 @@ router.use('/vehicles', vehicleRoutes);
 router.use('/orders', orderRoutes);
 router.use('/tracking', trackingRoutes);
 router.use('/admin', adminRoutes);
+
+// MahaInnovate — the innovation procurement pathway.
+router.use('/mahainnovate', mahainnovateRoutes);
 
 export default router;
