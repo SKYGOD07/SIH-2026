@@ -128,7 +128,7 @@ export function ProblemStatement() {
       ref={rootRef}
       id="problem"
       aria-label="A problem exists"
-      className="relative h-[100svh] w-full overflow-hidden ground-ink"
+      className="relative h-[100svh] w-full overflow-hidden ground-bone"
     >
       <div className="edge absolute inset-x-0 top-0 z-20 mx-auto max-w-[110rem] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <Label index="00">The problem before the platform</Label>
@@ -172,12 +172,12 @@ export function ProblemStatement() {
 
       <div className="relative z-10 flex h-full items-center justify-center">
         <div ref={headingRef} className="edge text-center">
-          <h2 className="font-display text-display-lg font-medium uppercase leading-[0.86] text-ivory">
+          <h2 className="font-display text-display-lg font-medium uppercase leading-[0.86] text-ink">
             A problem
             <br />
             exists.
           </h2>
-          <p className="mx-auto mt-8 max-w-[46ch] text-pretty text-base leading-relaxed text-silver">
+          <p className="mx-auto mt-8 max-w-[46ch] text-pretty text-base leading-relaxed text-stone">
             Eight things have to happen before an innovative solution can legally reach a
             department at scale. Today they happen in eight disconnected places, or they do not
             happen at all.
@@ -189,7 +189,7 @@ export function ProblemStatement() {
           className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center opacity-0"
         >
           <span className="font-mono text-meta uppercase text-saffron">The pathway</span>
-          <h2 className="mt-6 text-center font-display text-display-lg font-medium uppercase leading-[0.86] text-ivory">
+          <h2 className="mt-6 text-center font-display text-display-lg font-medium uppercase leading-[0.86] text-ink">
             One system.
           </h2>
         </div>
