@@ -6,70 +6,49 @@ import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { useIntro } from './IntroProvider';
 import { useLenis } from '@/lib/lenis/SmoothScrollProvider';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { Mark, MARK_TILES } from '@/components/brand/Mark';
 import { seeded } from '@/lib/utils';
 
 /**
  * The opening sequence.
  *
- * Modelled on the zexvro.in opener: a large blocky mark builds itself out of
- * rounded tiles in the centre of an empty screen, holds, then hands off to the
- * navigation as the page reveals underneath.
+ * Modelled on the zexvro.in opener, with the two things that make it work:
  *
- * The tiles do not simply fade in — they arrive from scattered positions and
- * lock into the grid. That is deliberate here rather than decorative: the whole
- * argument of this site is eight scattered procurement activities resolving into
- * one system, and the first thing the reader sees is that idea performed.
+ *  DEPTH — the tiles do not fade in flat. They arrive from far back in Z with
+ *  independent rotation on all three axes, through a real perspective, and
+ *  decelerate into the grid. The mark is built in space, not composited.
  *
- * Timing is gated on real readiness (fonts, window load, first frame) with a
- * failsafe, and the whole sequence is skipped on a hidden tab, where
+ *  CONNECTION — when it is done, the assembled mark does not vanish. It is
+ *  measured against the navigation capsule's mark and flies into that exact
+ *  position and scale, so the thing the reader watched being built becomes the
+ *  logo they navigate with. That hand-off is the whole point of the sequence.
+ *
+ * Timing is gated on real readiness with a floor long enough for the assembly
+ * to play, and the whole thing is skipped on a hidden tab, where
  * requestAnimationFrame never fires and the animation would otherwise hang.
  */
 
-/** 5 x 5 pixel grid spelling M. 1 = tile. */
-const MARK: number[][] = [
-  [1, 0, 0, 0, 1],
-  [1, 1, 0, 1, 1],
-  [1, 0, 1, 0, 1],
-  [1, 0, 0, 0, 1],
-  [1, 0, 0, 0, 1],
-];
-
-const GRID = 5;
-
-interface Tile {
-  key: string;
-  row: number;
-  col: number;
-  /** Scatter offset the tile flies in from, in percent of the mark box. */
-  fromX: number;
-  fromY: number;
-  rot: number;
-  /** Distance from centre — drives the stagger so the mark builds outward. */
-  dist: number;
+interface Scatter {
+  x: number;
+  y: number;
+  z: number;
+  rx: number;
+  ry: number;
+  rz: number;
 }
 
-function buildTiles(): Tile[] {
-  const rand = seeded(3407);
-  const tiles: Tile[] = [];
-  const c = (GRID - 1) / 2;
-
-  MARK.forEach((row, r) =>
-    row.forEach((on, col) => {
-      if (!on) return;
-      tiles.push({
-        key: `${r}-${col}`,
-        row: r,
-        col,
-        // Scatter far enough to read as arrival, not as a nudge.
-        fromX: (rand() - 0.5) * 620,
-        fromY: (rand() - 0.5) * 620,
-        rot: (rand() - 0.5) * 180,
-        dist: Math.hypot(r - c, col - c),
-      });
-    }),
-  );
-
-  return tiles.sort((a, b) => a.dist - b.dist);
+/** Deterministic arrival vectors — art-directed depth, not a random cloud. */
+function buildScatter(): Scatter[] {
+  const rand = seeded(9173);
+  return MARK_TILES.map(() => ({
+    x: (rand() - 0.5) * 900,
+    y: (rand() - 0.5) * 780,
+    // Always from behind, so every tile travels toward the reader.
+    z: -900 - rand() * 1400,
+    rx: (rand() - 0.5) * 300,
+    ry: (rand() - 0.5) * 300,
+    rz: (rand() - 0.5) * 220,
+  }));
 }
 
 export function Preloader() {
@@ -78,8 +57,9 @@ export function Preloader() {
   const reduced = usePrefersReducedMotion();
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const markRef = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
-  const tiles = useMemo(buildTiles, []);
+  const scatter = useMemo(buildScatter, []);
 
   /* --- lock scrolling for the whole loading phase --- */
   useEffect(() => {
@@ -94,8 +74,8 @@ export function Preloader() {
 
   /**
    * A hidden tab never fires requestAnimationFrame, so GSAP's ticker does not
-   * advance and the sequence would sit frozen forever. There is no animation
-   * worth showing to a hidden tab, so skip straight to the finished state.
+   * advance and the sequence would sit frozen forever. Nothing is worth showing
+   * to a hidden tab, so skip straight to the finished state.
    */
   useEffect(() => {
     if (phase === 'ready') return;
@@ -109,7 +89,7 @@ export function Preloader() {
     return () => document.removeEventListener('visibilitychange', skipIfHidden);
   }, [phase, beginReveal, complete]);
 
-  /* --- genuine readiness signals --- */
+  /* --- genuine readiness, with a floor so the assembly always plays --- */
   useEffect(() => {
     if (reduced) {
       setDone(true);
@@ -119,16 +99,10 @@ export function Preloader() {
     let alive = true;
     const marks = { fonts: false, load: false, frame: false };
 
-    /**
-     * Readiness alone is not enough to release the opener.
-     *
-     * On a warm cache every signal lands inside ~300ms, which would cut the
-     * mark off mid-assembly — the reader would see a flash of tiles rather than
-     * a logo. The sequence therefore also waits out a floor long enough for the
-     * assembly to finish and hold. Slow connections are unaffected: readiness is
-     * still the binding constraint there.
-     */
-    const ASSEMBLY_FLOOR = 2400;
+    // On a warm cache every signal lands inside ~300ms, which would cut the
+    // mark off mid-assembly. The floor covers the build plus a beat to read it.
+    // Slow connections are unaffected — readiness is still binding there.
+    const ASSEMBLY_FLOOR = 3200;
     const started = performance.now();
     let floorTimer = 0;
 
@@ -157,8 +131,7 @@ export function Preloader() {
 
     requestAnimationFrame(() => requestAnimationFrame(() => bump('frame')));
 
-    // Never hold the page hostage to a signal that does not arrive.
-    const failsafe = window.setTimeout(() => alive && setDone(true), 5000);
+    const failsafe = window.setTimeout(() => alive && setDone(true), 6000);
     return () => {
       alive = false;
       window.clearTimeout(failsafe);
@@ -166,7 +139,7 @@ export function Preloader() {
     };
   }, [reduced]);
 
-  /* --- the mark assembles --- */
+  /* --- the mark assembles out of depth --- */
   useGSAP(
     () => {
       if (!rootRef.current) return;
@@ -177,84 +150,139 @@ export function Preloader() {
         return;
       }
 
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ delay: 0.25 });
 
       tl.fromTo(
         '[data-tile]',
         {
-          x: (i: number) => tiles[i]?.fromX ?? 0,
-          y: (i: number) => tiles[i]?.fromY ?? 0,
-          rotate: (i: number) => tiles[i]?.rot ?? 0,
-          scale: 0.2,
+          x: (i: number) => scatter[i]?.x ?? 0,
+          y: (i: number) => scatter[i]?.y ?? 0,
+          z: (i: number) => scatter[i]?.z ?? 0,
+          rotationX: (i: number) => scatter[i]?.rx ?? 0,
+          rotationY: (i: number) => scatter[i]?.ry ?? 0,
+          rotationZ: (i: number) => scatter[i]?.rz ?? 0,
           opacity: 0,
         },
         {
           x: 0,
           y: 0,
-          rotate: 0,
-          scale: 1,
+          z: 0,
+          rotationX: 0,
+          rotationY: 0,
+          rotationZ: 0,
           opacity: 1,
-          duration: 1.15,
+          duration: 1.9,
           ease: 'expo.out',
-          // Centre-out, because the tiles are pre-sorted by distance.
-          stagger: 0.045,
+          // Centre-out: MARK_TILES is pre-sorted by distance from centre.
+          stagger: 0.075,
         },
-      ).fromTo(
-        '[data-preload-word]',
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
-        0.75,
-      );
+      )
+        .fromTo(
+          '[data-preload-word]',
+          { opacity: 0, y: 14, letterSpacing: '0.5em' },
+          { opacity: 1, y: 0, letterSpacing: '0.32em', duration: 1.1, ease: 'expo.out' },
+          1.15,
+        )
+        .fromTo(
+          '[data-preload-rule]',
+          { scaleX: 0 },
+          { scaleX: 1, duration: 1.4, ease: 'power2.inOut' },
+          1.25,
+        )
+        // A single slow breath so the assembled state is alive, not frozen,
+        // during however long readiness still takes.
+        .to(
+          '[data-mark]',
+          { scale: 1.025, duration: 1.6, ease: 'sine.inOut', yoyo: true, repeat: -1 },
+          2.2,
+        );
 
       return () => tl.kill();
     },
     { scope: rootRef, dependencies: [reduced] },
   );
 
-  /* --- hand off to the page --- */
+  /* --- the mark flies into the navigation capsule --- */
   useGSAP(
     () => {
       if (!done || reduced || phase !== 'loading') return;
       const root = rootRef.current;
-      if (!root) return;
+      const mark = markRef.current;
+      if (!root || !mark) return;
+
+      /**
+       * Measure the destination.
+       *
+       * The nav capsule is still translated out of view at this moment, so its
+       * live rect is off by its entrance transform. Neutralising the transform
+       * for one synchronous read — with no paint in between — gives the true
+       * resting position to fly to.
+       */
+      const navMark = document.querySelector<HTMLElement>('[data-nav-mark]');
+      let dx = 0;
+      let dy = -window.innerHeight * 0.34;
+      let ratio = 0.08;
+
+      if (navMark) {
+        const holder = navMark.closest<HTMLElement>('.pointer-events-auto');
+        const prev = holder?.style.transform ?? '';
+        const prevOpacity = holder?.style.opacity ?? '';
+        if (holder) holder.style.transform = 'none';
+
+        const from = mark.getBoundingClientRect();
+        const to = navMark.getBoundingClientRect();
+
+        if (holder) {
+          holder.style.transform = prev;
+          holder.style.opacity = prevOpacity;
+        }
+
+        if (to.width > 0 && from.width > 0) {
+          ratio = to.width / from.width;
+          dx = to.left + to.width / 2 - (from.left + from.width / 2);
+          dy = to.top + to.height / 2 - (from.top + from.height / 2);
+        }
+      }
 
       const tl = gsap.timeline({
-        // Give the assembled mark a beat to read before it leaves.
-        delay: 0.35,
+        // Let the assembled mark be read before it leaves.
+        delay: 0.5,
         onComplete: () => {
-          // The curtain hid the page while it settled; re-measure before
-          // handing scroll control to ScrollTrigger.
+          // The ground hid the page while it settled; re-measure before handing
+          // scroll control to ScrollTrigger.
           ScrollTrigger.refresh();
           complete();
         },
       });
 
-      tl.to('[data-preload-word]', { opacity: 0, y: -8, duration: 0.35, ease: 'power2.in' })
-        // The mark contracts and drifts toward the navigation, so the opener
-        // reads as becoming the wordmark rather than simply disappearing.
+      // Stop the breathing loop cleanly before the flight takes over scale.
+      tl.set('[data-mark]', { scale: 1 })
         .to(
-          '[data-mark]',
-          {
-            scale: 0.09,
-            xPercent: -38,
-            yPercent: -42,
-            opacity: 0,
-            duration: 1.05,
-            ease: 'power3.inOut',
-          },
-          '-=0.2',
+          ['[data-preload-word]', '[data-preload-rule]'],
+          { opacity: 0, y: -10, duration: 0.45, ease: 'power2.in' },
         )
-        // Ground parts as two panels, revealing the hero already in motion.
         .to(
-          '[data-curtain]',
+          mark,
           {
-            yPercent: (i) => (i === 0 ? -101 : 101),
-            duration: 1.05,
-            ease: 'power4.inOut',
+            x: dx,
+            y: dy,
+            scale: ratio,
+            duration: 1.35,
+            // Settles rather than arriving abruptly — the mark is landing in a
+            // slot, not being thrown at one.
+            ease: 'power3.inOut',
             onStart: beginReveal,
           },
-          '-=0.55',
+          '-=0.25',
         )
+        // The ground parts once the mark is most of the way home, so the reader
+        // sees it land against the real page rather than against the curtain.
+        .to(
+          '[data-curtain]',
+          { yPercent: (i) => (i === 0 ? -101 : 101), duration: 1.1, ease: 'power4.inOut' },
+          '-=0.85',
+        )
+        .to(mark, { opacity: 0, duration: 0.3, ease: 'power2.in' }, '-=0.45')
         .set(root, { pointerEvents: 'none' });
 
       return () => tl.kill();
@@ -276,40 +304,44 @@ export function Preloader() {
       <div data-curtain className="absolute inset-x-0 top-0 h-1/2 bg-bone" />
       <div data-curtain className="absolute inset-x-0 bottom-0 h-1/2 bg-bone" />
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-[clamp(1.5rem,4vh,3rem)]">
-        {/* --- the mark --- */}
-        <div
-          data-mark
-          aria-hidden="true"
-          className="relative"
-          style={{
-            width: 'clamp(11rem, 24vw, 22rem)',
-            height: 'clamp(11rem, 24vw, 22rem)',
-          }}
-        >
-          {tiles.map((t) => (
-            <span
-              key={t.key}
-              data-tile
-              className="absolute rounded-[18%] bg-ink will-3d"
-              style={{
-                // 5-column grid with a gutter, expressed as percentages so the
-                // whole mark scales with one parent dimension.
-                left: `${t.col * 20 + 1.6}%`,
-                top: `${t.row * 20 + 1.6}%`,
-                width: '16.8%',
-                height: '16.8%',
-              }}
-            />
-          ))}
+      {/* A soft pool so the ground is never a flat fill. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[90vmax] w-[90vmax] -translate-x-1/2 -translate-y-1/2"
+        style={{
+          background:
+            'radial-gradient(circle, rgba(255,253,248,0.9) 0%, rgba(237,231,221,0.35) 42%, rgba(237,231,221,0) 70%)',
+        }}
+      />
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Perspective lives on the wrapper so tiles travel through real depth. */}
+        <div style={{ perspective: '1200px' }}>
+          <Mark
+            ref={markRef}
+            data-mark
+            tileAttr="data-tile"
+            tileClassName="will-3d"
+            radius="17%"
+            className="[transform-style:preserve-3d]"
+            style={{ width: 'clamp(15rem, min(52vw, 62svh), 44rem)' }}
+          />
         </div>
 
-        <span
-          data-preload-word
-          className="font-mono text-[0.6875rem] uppercase tracking-[0.32em] text-ink/55"
-        >
-          MahaInnovate
-        </span>
+        <div className="mt-[clamp(2rem,5vh,3.5rem)] flex flex-col items-center gap-4">
+          <span
+            data-preload-rule
+            aria-hidden="true"
+            className="block h-px w-[clamp(6rem,14vw,12rem)] origin-center bg-ink/25"
+          />
+          <span
+            data-preload-word
+            className="font-mono text-[0.6875rem] uppercase text-ink/55"
+            style={{ letterSpacing: '0.32em' }}
+          >
+            MahaInnovate
+          </span>
+        </div>
       </div>
     </div>
   );

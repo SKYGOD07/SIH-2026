@@ -218,6 +218,14 @@
   }
 }
 
+/* Gloss sweep across the navigation capsule. Transform only. */
+@keyframes markGloss {
+  0%   { transform: translateX(0%); opacity: 0; }
+  12%  { opacity: 0.55; }
+  40%  { transform: translateX(520%); opacity: 0; }
+  100% { transform: translateX(520%); opacity: 0; }
+}
+
 /* Reduced motion: keep the story, drop the choreography. */
 @media (prefers-reduced-motion: reduce) {
   *,
