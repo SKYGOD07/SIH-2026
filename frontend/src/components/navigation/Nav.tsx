@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLenis } from '@/lib/lenis/SmoothScrollProvider';
 import { useIntro } from '@/components/motion/IntroProvider';
+import { ScrollTrigger } from '@/lib/gsap';
 import { Mark } from '@/components/brand/Mark';
 
 const LINKS = [
@@ -40,13 +41,36 @@ export function Nav() {
   const pathname = usePathname();
   const lenis = useLenis();
   const reduceMotion = useReducedMotion();
-  const { canAnimate, heroComplete } = useIntro();
+  const { canAnimate } = useIntro();
+  const [pastHero, setPastHero] = useState(false);
 
   const isLanding = pathname === '/';
   // Appears as the opener hands off. Sub-pages have no opener.
   const visible = !isLanding || canAnimate;
   // Opens only once the hero has been scrolled past; closes again on the way up.
-  const expanded = !isLanding || heroComplete;
+  const expanded = !isLanding || pastHero;
+
+  /**
+   * Watch the section *after* the hero rather than the hero's own timeline.
+   *
+   * The hero is pinned, so its trigger's callbacks also fire during
+   * ScrollTrigger.refresh() and its progress does not map cleanly to "the
+   * reader has moved on". The arrival of the next section does, and it is a
+   * single unambiguous boundary in both directions.
+   */
+  useEffect(() => {
+    if (!isLanding) return;
+    const next = document.querySelector('#problem');
+    if (!next) return;
+
+    const st = ScrollTrigger.create({
+      trigger: next,
+      start: 'top 88%',
+      onEnter: () => setPastHero(true),
+      onLeaveBack: () => setPastHero(false),
+    });
+    return () => st.kill();
+  }, [isLanding]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);

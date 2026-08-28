@@ -41,10 +41,17 @@ export function Hero() {
       const root = rootRef.current;
       if (!root) return;
 
-      if (reduced) {
-        gsap.set('[data-hero-inner], [data-hero-chrome]', { yPercent: 0, opacity: 1 });
-        sceneProgress.current = 1;
-        setHeroComplete(true);
+      /**
+       * Reduced motion, or a tab that is not visible.
+       *
+       * A hidden tab never fires requestAnimationFrame, so a tween created now
+       * would sit frozen on its from-state — the reader would return to an
+       * apparently blank hero. Set the end state directly instead.
+       */
+      if (reduced || document.hidden) {
+        gsap.set('[data-hero-inner]', { yPercent: 0 });
+        gsap.set('[data-hero-chrome]', { opacity: 1, y: 0 });
+        sceneProgress.current = reduced ? 1 : 0;
         return;
       }
 
