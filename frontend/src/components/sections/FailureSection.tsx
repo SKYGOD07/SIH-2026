@@ -53,7 +53,7 @@ export function FailureSection() {
       ref={rootRef}
       id="failure"
       aria-label="Failure registry"
-      className="relative w-full ground-ink py-[clamp(5rem,12vh,9rem)]"
+      className="relative w-full ground-bone py-[clamp(5rem,12vh,9rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <div className="flex flex-wrap items-end justify-between gap-8 border-t border-risk/40 pt-8">
@@ -63,12 +63,12 @@ export function FailureSection() {
               as="h2"
               type="chars"
               stagger={0.025}
-              className="mt-5 font-display text-display-md font-medium uppercase leading-[0.88] text-ivory"
+              className="mt-5 font-display text-display-md font-medium uppercase leading-[0.88] text-ink"
             >
               Failure is data.
             </SplitText>
           </div>
-          <p className="max-w-[40ch] text-pretty text-base leading-relaxed text-silver">
+          <p className="max-w-[40ch] text-pretty text-base leading-relaxed text-stone">
             A pilot that misses its target is not a write-off. It is the only cheap way to learn a
             constraint before it is written into a full procurement.
           </p>
@@ -78,25 +78,25 @@ export function FailureSection() {
           {FAILURE_RECORDS.map((f) => (
             <li key={f.id} data-failure className="panel p-8">
               <div className="flex items-baseline justify-between gap-4">
-                <h3 className="font-display text-2xl uppercase leading-none text-ivory">
+                <h3 className="font-display text-2xl uppercase leading-none text-ink">
                   {f.title}
                 </h3>
-                <span className="font-mono text-meta uppercase text-silver">{f.id}</span>
+                <span className="font-mono text-meta uppercase text-stone">{f.id}</span>
               </div>
-              <p className="mt-2 font-mono text-meta uppercase text-silver">{f.department}</p>
+              <p className="mt-2 font-mono text-meta uppercase text-stone">{f.department}</p>
 
               <dl className="mt-8 space-y-5">
                 <div>
                   <dt className="font-mono text-meta uppercase text-risk">Result</dt>
-                  <dd className="mt-1.5 text-base text-ivory/85">{f.result}</dd>
+                  <dd className="mt-1.5 text-base text-ink/80">{f.result}</dd>
                 </div>
                 <div>
-                  <dt className="font-mono text-meta uppercase text-silver">Cause</dt>
-                  <dd className="mt-1.5 text-base text-ivory/85">{f.cause}</dd>
+                  <dt className="font-mono text-meta uppercase text-stone">Cause</dt>
+                  <dd className="mt-1.5 text-base text-ink/80">{f.cause}</dd>
                 </div>
                 <div>
                   <dt className="font-mono text-meta uppercase text-saffron">Lesson</dt>
-                  <dd className="mt-1.5 text-base text-ivory">{f.lesson}</dd>
+                  <dd className="mt-1.5 text-base text-ink">{f.lesson}</dd>
                 </div>
               </dl>
 
@@ -121,7 +121,7 @@ export function FailureSection() {
                 />
               </svg>
 
-              <p className="border-t border-ivory/10 pt-4 text-sm leading-relaxed text-validated-light">
+              <p className="border-t border-ink/12 pt-4 text-sm leading-relaxed text-validated">
                 {f.ruleAdded}
               </p>
             </li>
