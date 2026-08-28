@@ -18,7 +18,7 @@ export function AudiencePanel({ className }: { className?: string }) {
   const capabilities = AUDIENCE_CAPABILITIES[audience];
 
   return (
-    <section className={cn('border-t border-ivory/10 pt-10', className)} aria-live="polite">
+    <section className={cn('border-t border-ink/12 pt-10', className)} aria-live="polite">
       <Label tone="accent">{AUDIENCE_LABEL[audience]} actions</Label>
 
       <AnimatePresence mode="wait">
@@ -37,15 +37,15 @@ export function AudiencePanel({ className }: { className?: string }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ delay: i * 0.04, duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-              className="border-t border-ivory/10 pt-4"
+              className="border-t border-ink/12 pt-4"
             >
-              <span className="font-mono text-meta uppercase text-silver">
+              <span className="font-mono text-meta uppercase text-stone">
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <h3 className="mt-2 font-display text-xl uppercase leading-none text-ivory">
+              <h3 className="mt-2 font-display text-xl uppercase leading-none text-ink">
                 {c.label}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-silver">{c.detail}</p>
+              <p className="mt-2 text-sm leading-relaxed text-stone">{c.detail}</p>
             </motion.li>
           ))}
         </motion.ol>
