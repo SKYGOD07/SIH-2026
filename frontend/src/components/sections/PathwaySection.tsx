@@ -42,7 +42,7 @@ export function PathwaySection() {
     () => {
       if (!rootRef.current || reduced) return;
 
-      gsap.from('[data-stage-row]', {
+      gsap.from('[data-stages] > li', {
         autoAlpha: 0,
         y: 24,
         duration: 0.7,
@@ -91,32 +91,31 @@ export function PathwaySection() {
           {PATHWAY.map((stage, i) => {
             const h = HEADLINES[i];
             return (
-              <li key={stage.id} data-stage-row className="contents">
-                <NumberedRow
-                  index={stage.index}
-                  label={`${stage.label} · ${stage.psActivity}`}
-                  step={i}
-                  active={Boolean(stage.isOurs)}
-                  headline={
-                    <>
-                      {h.lead} <Accent>{h.accent}</Accent>
-                      {h.tail ? ` ${h.tail}` : ''}
-                    </>
-                  }
-                  description={stage.government}
-                  aside={
-                    stage.isOurs ? (
-                      <span className="whitespace-nowrap border border-saffron/50 px-2.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-saffron">
-                        Our addition
-                      </span>
-                    ) : stage.template ? (
-                      <span className="block max-w-[16ch] font-mono text-[0.5625rem] uppercase leading-relaxed tracking-[0.12em] text-stone">
-                        {stage.template}
-                      </span>
-                    ) : null
-                  }
-                />
-              </li>
+              <NumberedRow
+                key={stage.id}
+                index={stage.index}
+                label={`${stage.label} · ${stage.psActivity}`}
+                step={i}
+                active={Boolean(stage.isOurs)}
+                headline={
+                  <>
+                    {h.lead} <Accent>{h.accent}</Accent>
+                    {h.tail ? ` ${h.tail}` : ''}
+                  </>
+                }
+                description={stage.government}
+                aside={
+                  stage.isOurs ? (
+                    <span className="whitespace-nowrap border border-saffron/50 px-2.5 py-1 font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-saffron">
+                      Our addition
+                    </span>
+                  ) : stage.template ? (
+                    <span className="block max-w-[16ch] font-mono text-[0.5625rem] uppercase leading-relaxed tracking-[0.12em] text-stone">
+                      {stage.template}
+                    </span>
+                  ) : null
+                }
+              />
             );
           })}
         </ol>
