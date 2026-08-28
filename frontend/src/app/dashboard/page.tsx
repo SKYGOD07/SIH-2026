@@ -49,12 +49,12 @@ export default function DashboardPage() {
                 const filed = p.milestones.filter((m) => m.status === 'EVIDENCE_SUBMITTED');
                 const startup = getStartup(p.startupId);
                 return (
-                  <li key={p.id} className="border-b border-ivory/10 py-5">
+                  <li key={p.id} className="border-b border-ink/12 py-5">
                     <div className="flex flex-wrap items-baseline justify-between gap-3">
                       <Link
                         href="/pilots"
                         data-cursor="open"
-                        className="font-display text-xl uppercase leading-none text-ivory transition-colors hover:text-saffron"
+                        className="font-display text-xl uppercase leading-none text-ink transition-colors hover:text-saffron"
                       >
                         {p.title}
                       </Link>
@@ -62,7 +62,7 @@ export default function DashboardPage() {
                         {filed.length} milestone{filed.length === 1 ? '' : 's'} awaiting validation
                       </span>
                     </div>
-                    <p className="mt-2 font-mono text-meta uppercase text-silver">
+                    <p className="mt-2 font-mono text-meta uppercase text-stone">
                       {startup?.name} ·{' '}
                       {filed.map((m) => `${m.code} ${formatLakh(m.payment)}`).join(' · ')}
                     </p>
@@ -70,7 +70,7 @@ export default function DashboardPage() {
                 );
               })}
               {attention.length === 0 ? (
-                <li className="py-6 font-mono text-meta uppercase text-silver">
+                <li className="py-6 font-mono text-meta uppercase text-stone">
                   Nothing awaiting validation.
                 </li>
               ) : null}
@@ -81,16 +81,16 @@ export default function DashboardPage() {
               {CHALLENGES.filter((c) => c.status === 'OPEN').map((c) => (
                 <li
                   key={c.id}
-                  className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-ivory/10 py-4"
+                  className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-ink/12 py-4"
                 >
                   <Link
                     href="/challenges"
                     data-cursor="open"
-                    className="text-base text-ivory transition-colors hover:text-saffron"
+                    className="text-base text-ink transition-colors hover:text-saffron"
                   >
                     {c.title}
                   </Link>
-                  <span className="font-mono text-meta uppercase text-silver">
+                  <span className="font-mono text-meta uppercase text-stone">
                     {c.applications} applications · {formatLakh(c.budget)}
                   </span>
                 </li>
