@@ -82,7 +82,7 @@ export function StartupProfileSection() {
       ref={rootRef}
       id="verify"
       aria-label="Verify — the evidence behind a candidate"
-      className="relative w-full ground-ink py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-bone py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="03">Verify</Label>
@@ -92,11 +92,11 @@ export function StartupProfileSection() {
             as="h2"
             type="chars"
             stagger={0.028}
-            className="font-display text-display-md font-medium uppercase leading-[0.88] text-ivory"
+            className="font-display text-display-md font-medium uppercase leading-[0.88] text-ink"
           >
             {s.name}
           </SplitText>
-          <p className="max-w-[42ch] text-pretty text-base leading-relaxed text-silver">
+          <p className="max-w-[42ch] text-pretty text-base leading-relaxed text-stone">
             {s.summary}
           </p>
         </div>
@@ -104,12 +104,12 @@ export function StartupProfileSection() {
         {/* --- the profile --- */}
         <dl
           data-profile-stats
-          className="mt-14 grid gap-x-10 gap-y-8 border-t border-ivory/10 pt-10 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-14 grid gap-x-10 gap-y-8 border-t border-ink/12 pt-10 sm:grid-cols-2 lg:grid-cols-3"
         >
           {stats.map((stat) => (
             <div key={stat.label} data-profile-stat>
-              <dt className="font-mono text-meta uppercase text-silver">{stat.label}</dt>
-              <dd className="mt-3 font-display text-3xl uppercase leading-none text-ivory">
+              <dt className="font-mono text-meta uppercase text-stone">{stat.label}</dt>
+              <dd className="mt-3 font-display text-3xl uppercase leading-none text-ink">
                 {stat.numeric !== null ? (
                   <Counter value={stat.numeric} suffix={stat.suffix ?? ''} duration={1.4} />
                 ) : (
@@ -124,7 +124,7 @@ export function StartupProfileSection() {
         <div data-evidence-timeline className="mt-20">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <Label tone="accent">Evidence timeline</Label>
-            <p className="max-w-[46ch] text-xs leading-relaxed text-silver">
+            <p className="max-w-[46ch] text-xs leading-relaxed text-stone">
               Suitability is assessed from several independent evidence sources. Capital raised is
               recorded as one of them; it is not treated as a measure of quality, and it does not
               carry weight in the evaluation criteria.
@@ -148,13 +148,13 @@ export function StartupProfileSection() {
                     (e.kind === 'validated' ? 'bg-validated' : 'bg-saffron')
                   }
                 />
-                <span className="block font-mono text-meta uppercase text-silver">{e.year}</span>
-                <span className="mt-2 block font-display text-lg uppercase leading-tight text-ivory">
+                <span className="block font-mono text-meta uppercase text-stone">{e.year}</span>
+                <span className="mt-2 block font-display text-lg uppercase leading-tight text-ink">
                   {KIND_LABEL[e.kind]}
                 </span>
-                <span className="mt-2 block text-sm leading-relaxed text-ivory/65">{e.detail}</span>
+                <span className="mt-2 block text-sm leading-relaxed text-ink/65">{e.detail}</span>
                 {e.kind === 'funding' ? (
-                  <span className="mt-3 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-silver">
+                  <span className="mt-3 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone">
                     {formatLakh(s.fundingRaised)} · one signal, not a score
                   </span>
                 ) : null}
