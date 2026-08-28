@@ -19,14 +19,14 @@ const ROUTES = [
  */
 export function SiteFooter() {
   return (
-    <footer className="relative border-t border-ivory/10 ground-ink py-[clamp(3.5rem,8vh,6rem)]">
+    <footer className="relative border-t border-ink/12 ground-bone py-[clamp(3.5rem,8vh,6rem)]">
       <div className="edge mx-auto max-w-[110rem]">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_0.9fr_0.9fr]">
           <div>
-            <p className="font-display text-2xl font-bold uppercase tracking-[0.1em] text-ivory">
+            <p className="font-display text-2xl font-bold uppercase tracking-[0.1em] text-ink">
               MahaInnovate
             </p>
-            <p className="mt-4 max-w-[36ch] text-sm leading-relaxed text-silver">
+            <p className="mt-4 max-w-[36ch] text-sm leading-relaxed text-stone">
               Innovation procurement intelligence platform — from departmental problem to validated
               scale-up, on one record.
             </p>
@@ -44,7 +44,7 @@ export function SiteFooter() {
                 <li key={r.href}>
                   <Link
                     href={r.href}
-                    className="font-mono text-meta uppercase text-silver transition-colors hover:text-ivory"
+                    className="font-mono text-meta uppercase text-stone transition-colors hover:text-ink"
                   >
                     {r.label}
                   </Link>
@@ -57,15 +57,15 @@ export function SiteFooter() {
             <Label>The pathway</Label>
             <ol className="mt-5 grid grid-cols-2 gap-x-6 gap-y-2">
               {LIFECYCLE.map((s) => (
-                <li key={s.id} className="font-mono text-meta uppercase text-silver">
-                  <span className="text-ivory/40">{s.index}</span> {s.label}
+                <li key={s.id} className="font-mono text-meta uppercase text-stone">
+                  <span className="text-ink/40">{s.index}</span> {s.label}
                 </li>
               ))}
             </ol>
           </div>
         </div>
 
-        <p className="mt-14 max-w-[80ch] border-t border-ivory/10 pt-6 text-xs leading-relaxed text-silver">
+        <p className="mt-14 max-w-[80ch] border-t border-ink/12 pt-6 text-xs leading-relaxed text-stone">
           {DEMO_NOTICE} Nothing shown here constitutes a procurement notice, an eligibility
           determination or a government commitment.
         </p>
