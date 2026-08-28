@@ -22,11 +22,11 @@ export default function PilotsPage() {
         aside={
           <dl className="flex flex-wrap gap-x-10 gap-y-4">
             <div>
-              <dt className="font-mono text-meta uppercase text-silver">On record</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-ivory">{PILOTS.length}</dd>
+              <dt className="font-mono text-meta uppercase text-stone">On record</dt>
+              <dd className="mt-2 font-display text-3xl leading-none text-ink">{PILOTS.length}</dd>
             </div>
             <div>
-              <dt className="font-mono text-meta uppercase text-silver">Live</dt>
+              <dt className="font-mono text-meta uppercase text-stone">Live</dt>
               <dd className="mt-2 font-display text-3xl leading-none text-saffron">{running}</dd>
             </div>
           </dl>
