@@ -102,6 +102,25 @@ const DEMO_TIMING: { code: string; filed: number; approved: number | null; paid:
     { code: 'M4', filed: -6, approved: null, paid: null },
   ];
 
+/**
+ * Comparable pilots the simulator can reason from, by domain.
+ *
+ * Shaped so the console has something real to say: one domain well covered,
+ * one just short, and several thin. A corpus where everything clears the
+ * threshold demonstrates nothing about what the threshold is for.
+ */
+const DEMO_DOMAINS = [
+  { domain: 'water-distribution', total: 6, met: 3 },
+  { domain: 'transport-fleet', total: 3, met: 1 },
+  { domain: 'air-quality', total: 2, met: 1 },
+  { domain: 'agri-assessment', total: 2, met: 1 },
+  { domain: 'waste-routing', total: 2, met: 1 },
+  { domain: 'citizen-services', total: 2, met: 1 },
+];
+
+/** Mirrors REPORTING_THRESHOLD in the backend's confidence module. */
+const REPORTING_THRESHOLD = 4;
+
 function demoTiming(): PaymentTiming {
   const today = Date.now();
   const iso = (offsetDays: number) => new Date(today + offsetDays * 86_400_000).toISOString();
@@ -161,15 +180,11 @@ function fallback(): DashboardSnapshot {
     source: 'demonstration',
     corpus: {
       corpusSize: 19,
-      domains: [
-        { domain: 'water-distribution', total: 6, met: 3 },
-        { domain: 'transport-fleet', total: 3, met: 1 },
-        { domain: 'air-quality', total: 2, met: 1 },
-        { domain: 'agri-assessment', total: 2, met: 1 },
-        { domain: 'waste-routing', total: 2, met: 1 },
-        { domain: 'citizen-services', total: 2, met: 1 },
-      ],
-      thinDomains: ['transport-fleet', 'air-quality', 'agri-assessment'],
+      domains: DEMO_DOMAINS,
+      // Derived, never listed. A hand-written list drifts from the counts beside
+      // it, and the console then marks one two-pilot domain advisable and
+      // another too thin on the same screen.
+      thinDomains: DEMO_DOMAINS.filter((d) => d.total < REPORTING_THRESHOLD).map((d) => d.domain),
     },
     pilot: {
       id: PRIMARY_PILOT.id,

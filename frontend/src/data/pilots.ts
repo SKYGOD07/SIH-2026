@@ -4,6 +4,25 @@ import type { Pilot, EvaluationCriterion } from '@/types/platform';
 
 export const PRIMARY_PILOT_ID = 'PL-3311';
 
+/**
+ * A demonstration date, expressed as an offset from today.
+ *
+ * PL-3311 is the pilot the console renders as *currently running*, so its dates
+ * cannot be literals. A fixture written with fixed dates reads, some months
+ * later, as a milestone the department has sat on for a hundred days — and the
+ * console then demonstrates a broken department rather than a working
+ * mechanism. Every other pilot here is closed, and keeps its real dates.
+ *
+ * Evaluated once per server process. Every route that renders it is
+ * `force-dynamic`, so it is never frozen into a static page at build time.
+ */
+const demoDate = (offsetDays: number): string => {
+  const d = new Date(Date.now() + offsetDays * 86_400_000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+    d.getDate(),
+  ).padStart(2, '0')}`;
+};
+
 export const PILOTS: Pilot[] = [
   {
     id: PRIMARY_PILOT_ID,
@@ -24,7 +43,7 @@ export const PILOTS: Pilot[] = [
         payment: 300000,
         evidenceRequired: ['Installation register', 'Node connectivity log', 'Site photographs'],
         status: 'PAID',
-        dueOn: '2026-03-25',
+        dueOn: demoDate(-94),
       },
       {
         id: 'M2',
@@ -34,7 +53,7 @@ export const PILOTS: Pilot[] = [
         payment: 400000,
         evidenceRequired: ['Baseline dataset', 'Data quality report', 'Uptime record'],
         status: 'PAID',
-        dueOn: '2026-04-24',
+        dueOn: demoDate(-62),
       },
       {
         id: 'M3',
@@ -44,7 +63,7 @@ export const PILOTS: Pilot[] = [
         payment: 400000,
         evidenceRequired: ['Excavation verification sheet', 'True/false positive analysis'],
         status: 'APPROVED',
-        dueOn: '2026-05-20',
+        dueOn: demoDate(-17),
       },
       {
         id: 'M4',
@@ -54,7 +73,7 @@ export const PILOTS: Pilot[] = [
         payment: 400000,
         evidenceRequired: ['Independent validation report', 'Cost impact statement'],
         status: 'EVIDENCE_SUBMITTED',
-        dueOn: '2026-06-12',
+        dueOn: demoDate(9),
       },
     ],
     metrics: [

@@ -304,6 +304,23 @@
     color: rgba(255, 255, 255, 0.7);
   }
 
+  /*
+   * Pages that predate the console keep their own markup.
+   *
+   * They were written as full-width routes and carry a page gutter and a top
+   * reservation for the floating capsule. Inside the console column both are
+   * already supplied, so they are removed here rather than every page being
+   * rewritten — one rule, and no route left half-converted.
+   */
+  .console-shell .edge {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .console-shell header.edge {
+    padding-top: 0;
+    padding-bottom: 1rem;
+  }
+
   /* The console scrolls two of its three columns independently. */
   .console-scroll {
     overflow-y: auto;
