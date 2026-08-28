@@ -268,9 +268,26 @@
     justify-content: center;
   }
 
-  /* Progress rail. Meaningless when the deck is stacked, so it is not drawn. */
+  /*
+   * Progress rail. Meaningless when the deck is stacked, so it is not drawn.
+   *
+   * Its ink is a variable because the rail is fixed while the slides travel
+   * underneath it — over the one full-bleed yellow slide the white hairlines
+   * would disappear, so the deck flips `data-tone` as that slide arrives.
+   */
   .deck-rail {
     display: none;
+    --rail-ink: rgba(255, 255, 255, 0.38);
+    --rail-line: rgba(255, 255, 255, 0.12);
+    --rail-fill: #ffc400;
+    color: var(--rail-ink);
+    transition: color 0.4s ease;
+  }
+
+  .deck-rail[data-tone='invert'] {
+    --rail-ink: rgba(0, 0, 0, 0.55);
+    --rail-line: rgba(0, 0, 0, 0.18);
+    --rail-fill: #000000;
   }
 
   @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {

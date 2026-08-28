@@ -40,6 +40,7 @@ export function Deck({ children, chapters }: DeckProps) {
   const shellRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
+  const railFillRef = useRef<HTMLSpanElement>(null);
   const reduced = usePrefersReducedMotion();
   const { setHeroComplete } = useIntro();
 
@@ -70,8 +71,23 @@ export function Deck({ children, chapters }: DeckProps) {
             onUpdate: (self) => {
               // The navigation opens once the first slide is behind the reader.
               setHeroComplete(self.progress > 0.5 / Math.max(chapters.length - 1, 1));
+
+              if (railFillRef.current) {
+                gsap.set(railFillRef.current, { scaleX: self.progress });
+              }
+
+              /*
+               * The rail is fixed while the slides travel under it, so it has
+               * to be told what it is currently sitting on: white hairlines
+               * over the one full-bleed yellow slide would be invisible.
+               */
+              const slides = track.querySelectorAll('[data-slide]');
+              const index = Math.round(self.progress * (slides.length - 1));
+              const over = slides[index];
               if (railRef.current) {
-                gsap.set(railRef.current, { scaleX: self.progress });
+                railRef.current.dataset.tone = over?.hasAttribute('data-invert')
+                  ? 'invert'
+                  : 'default';
               }
             },
           },
@@ -115,27 +131,27 @@ export function Deck({ children, chapters }: DeckProps) {
           also the only affordance telling a reader that scrolling moves the
           page sideways rather than that the page has stopped. */}
       <div
+        ref={railRef}
         aria-hidden="true"
+        data-tone="default"
         className="deck-rail pointer-events-none absolute inset-x-0 bottom-0 z-20"
       >
         <div className="edge flex items-end justify-between pb-6">
           <ol className="flex items-center gap-5">
             {chapters.map((chapter, i) => (
-              <li
-                key={chapter}
-                className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-chalk/35"
-              >
-                <span className="text-chalk/25">{String(i + 1).padStart(2, '0')}</span>{' '}
-                {chapter}
+              <li key={chapter} className="font-mono text-[0.5625rem] uppercase tracking-[0.16em]">
+                <span className="opacity-60">{String(i + 1).padStart(2, '0')}</span> {chapter}
               </li>
             ))}
           </ol>
-          <span className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-chalk/35">
-            Scroll →
-          </span>
+          <span className="font-mono text-[0.5625rem] uppercase tracking-[0.16em]">Scroll →</span>
         </div>
-        <span className="block h-px w-full bg-chalk/12">
-          <span ref={railRef} className="block h-px origin-left scale-x-0 bg-signal" />
+        <span className="block h-px w-full" style={{ background: 'var(--rail-line)' }}>
+          <span
+            ref={railFillRef}
+            className="block h-px origin-left scale-x-0"
+            style={{ background: 'var(--rail-fill)' }}
+          />
         </span>
       </div>
     </div>
@@ -165,6 +181,7 @@ export function Slide({ id, index, label, children, invert = false, className }:
       id={id}
       data-slide
       aria-label={label}
+      data-invert={invert ? '' : undefined}
       className={cn('deck-slide', invert ? 'ground-signal' : 'ground-void', className)}
     >
       <div className="edge nav-safe flex h-full w-full flex-col justify-center pb-[clamp(4rem,10vh,7rem)]">

@@ -1,5 +1,32 @@
 import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { extendTailwindMerge } from 'tailwind-merge';
+
+/**
+ * The project's custom font sizes, declared to tailwind-merge.
+ *
+ * Without this it cannot tell `text-display-xl` from `text-chalk` — both are
+ * `text-*`, and an unrecognised value is assumed to be a colour. The two then
+ * count as conflicting, the later one wins, and the size is silently dropped:
+ * a display headline written as `text-display-xl … text-chalk` renders at the
+ * inherited 16px with no error anywhere. The same trap catches `text-meta`
+ * against a tone class in every label on the site.
+ *
+ * These names must stay in step with the `fontSize` ramp in tailwind.config.ts.
+ */
+const FONT_SIZES = [
+  'display-xs',
+  'display-sm',
+  'display-md',
+  'display-lg',
+  'display-xl',
+  'hero-line',
+  'meta',
+  'meta-lg',
+];
+
+const twMerge = extendTailwindMerge({
+  extend: { classGroups: { 'font-size': [{ text: FONT_SIZES }] } },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
