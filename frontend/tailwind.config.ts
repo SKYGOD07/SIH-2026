@@ -79,26 +79,31 @@ const config: Config = {
         ring: 'hsl(var(--ring))',
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Archivo', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        display: ['var(--font-display)', 'Inter Tight', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        /** Display serif, used for one or two words inside a headline. */
+        accent: ['var(--font-accent)', 'Instrument Serif', 'Georgia', 'serif'],
         sans: ['var(--font-body)', 'Inter', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       fontSize: {
         /**
-         * Display ramp. Larger and lighter than the first pass — the reference
-         * sets type edge to edge at a light weight, and lets whitespace and
-         * scale carry the composition rather than colour or effects.
+         * Display ramp.
+         *
+         * Tracking is heavily negative (-0.05em and tighter at the top of the
+         * ramp) and leading sits under 1. That combination — not weight — is
+         * what makes the reference headlines read as expressive: the words lock
+         * into a single dense mass rather than sitting as loose letters.
          *
          * Every size clamps against `svh` as well as `vw`, so a short viewport
-         * shrinks the type instead of pushing it under the fixed navigation.
+         * shrinks the type instead of pushing it under the navigation.
          */
-        'display-xs': ['clamp(1.15rem, min(2.2vw, 3.4svh), 2rem)', { lineHeight: '1.04', letterSpacing: '-0.015em' }],
-        'display-sm': ['clamp(1.7rem, min(3.8vw, 6svh), 3.4rem)', { lineHeight: '0.98', letterSpacing: '-0.022em' }],
-        'display-md': ['clamp(2.2rem, min(6vw, 9.5svh), 5.5rem)', { lineHeight: '0.93', letterSpacing: '-0.028em' }],
-        'display-lg': ['clamp(2.6rem, min(8.4vw, 13svh), 8rem)', { lineHeight: '0.9', letterSpacing: '-0.034em' }],
-        'display-xl': ['clamp(3rem, min(11vw, 17svh), 11rem)', { lineHeight: '0.87', letterSpacing: '-0.038em' }],
+        'display-xs': ['clamp(1.2rem, min(2.3vw, 3.6svh), 2.1rem)', { lineHeight: '1.02', letterSpacing: '-0.03em' }],
+        'display-sm': ['clamp(1.8rem, min(4vw, 6.4svh), 3.6rem)', { lineHeight: '0.96', letterSpacing: '-0.04em' }],
+        'display-md': ['clamp(2.4rem, min(6.4vw, 10svh), 6rem)', { lineHeight: '0.93', letterSpacing: '-0.045em' }],
+        'display-lg': ['clamp(2.8rem, min(9vw, 14svh), 9rem)', { lineHeight: '0.9', letterSpacing: '-0.05em' }],
+        'display-xl': ['clamp(3.2rem, min(12vw, 18svh), 12rem)', { lineHeight: '0.88', letterSpacing: '-0.055em' }],
         /** Hero: one word per line, filling the measure. */
-        'hero-line': ['clamp(2.4rem, min(10.5vw, 13.5svh), 10rem)', { lineHeight: '0.87', letterSpacing: '-0.036em' }],
+        'hero-line': ['clamp(2.6rem, min(11vw, 14.5svh), 11rem)', { lineHeight: '0.88', letterSpacing: '-0.052em' }],
         meta: ['0.6875rem', { lineHeight: '1.2', letterSpacing: '0.16em' }],
         'meta-lg': ['0.8125rem', { lineHeight: '1.2', letterSpacing: '0.14em' }],
       },

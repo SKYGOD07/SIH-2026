@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Archivo, Inter, JetBrains_Mono } from 'next/font/google';
+import { Inter, Inter_Tight, Instrument_Serif, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { SmoothScrollProvider } from '@/lib/lenis/SmoothScrollProvider';
 import { AudienceProvider } from '@/components/motion/AudienceProvider';
@@ -12,15 +12,36 @@ import { CustomCursor } from '@/components/navigation/CustomCursor';
 import { SiteFooter } from '@/components/navigation/SiteFooter';
 
 /**
- * Type system: a grotesk for display, a neutral sans for reading, a monospace
- * for metadata. All three are variable fonts loaded through next/font, so they
- * are self-hosted, preloaded and subset — no external stylesheet, no FOUT
- * mid-animation, and no render-blocking request to a font CDN.
+ * Type system.
+ *
+ * Four faces, each with one job:
+ *
+ *  display   Inter Tight — a Swiss neo-grotesk with tight apertures, set very
+ *            large at regular/medium weight with heavy negative tracking. This
+ *            is the closest freely-licensed face to the Lausanne used on the
+ *            reference sites, where the expressiveness comes from scale and
+ *            tracking rather than from weight.
+ *  accent    Instrument Serif — a display serif used *inside* headlines for
+ *            one or two words. That grotesk/serif mix is what makes the
+ *            reference headlines read as composed rather than merely large.
+ *  body      Inter — for reading.
+ *  mono      JetBrains Mono — metadata, labels, numerals.
+ *
+ * All loaded through next/font, so they are self-hosted, preloaded and subset:
+ * no external stylesheet, no render-blocking CDN request, no FOUT mid-animation.
  */
-const display = Archivo({
+const display = Inter_Tight({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
+  weight: ['400', '500', '600'],
   variable: '--font-display',
+  display: 'swap',
+});
+
+const accent = Instrument_Serif({
+  subsets: ['latin'],
+  weight: ['400'],
+  style: ['normal', 'italic'],
+  variable: '--font-accent',
   display: 'swap',
 });
 
@@ -63,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      className={`${display.variable} ${accent.variable} ${body.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-screen bg-bone font-sans text-ink antialiased">
