@@ -49,7 +49,7 @@ export function Studio({ intensity = 1 }: { intensity?: number }) {
         <Lightformer
           form="rect"
           intensity={0.6 * intensity}
-          color="#33363b"
+          color="#2a2d33"
           position={[0, -5, 2]}
           rotation={[Math.PI / 2, 0, 0]}
           scale={[12, 6, 1]}
@@ -61,13 +61,13 @@ export function Studio({ intensity = 1 }: { intensity?: number }) {
 
 /** Palette shared between the DOM and the scenes, so they never drift apart. */
 export const SCENE_COLORS = {
-  ivory: '#f6f3ec',
-  silver: '#a6a49c',
-  graphite: '#33363b',
-  ink: '#0a0b0d',
+  ivory: '#ede7dd',
+  silver: '#a8a49b',
+  graphite: '#2a2d33',
+  ink: '#0d0f12',
   saffron: '#e8762b',
   saffronLight: '#f79a44',
-  validated: '#5f9070',
+  validated: '#6b9678',
   risk: '#c0524a',
   /* The cool complement, matching the AmbientBackdrop pools. */
   abyss: '#0e1b22',
