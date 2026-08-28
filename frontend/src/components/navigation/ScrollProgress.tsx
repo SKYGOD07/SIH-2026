@@ -58,8 +58,8 @@ export function ScrollProgress({ enabled = true }: { enabled?: boolean }) {
                   i === active
                     ? 'w-6 bg-saffron'
                     : i < active
-                      ? 'w-3.5 bg-ivory/45'
-                      : 'w-2 bg-ivory/20',
+                      ? 'w-3.5 bg-ink/45'
+                      : 'w-2 bg-ink/20',
                 )}
               />
             </li>
@@ -77,11 +77,11 @@ export function ScrollProgress({ enabled = true }: { enabled?: boolean }) {
 
       {/* Mobile / tablet: a single hairline with the active stage named */}
       <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 lg:hidden">
-        <div className="flex items-center gap-3 bg-gradient-to-t from-ink via-ink/80 to-transparent px-[var(--edge)] pb-3 pt-6">
+        <div className="flex items-center gap-3 bg-gradient-to-t from-bone via-bone/80 to-transparent px-[var(--edge)] pb-3 pt-6">
           <span className="font-mono text-[0.5625rem] uppercase tracking-[0.18em] text-saffron">
             {stage.index} {stage.label}
           </span>
-          <span className="relative h-px flex-1 bg-ivory/15">
+          <span className="relative h-px flex-1 bg-ink/15">
             <span
               className="absolute inset-y-0 left-0 bg-saffron transition-[width] duration-200 ease-linear"
               style={{ width: `${progress * 100}%` }}
