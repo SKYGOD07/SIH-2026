@@ -14,9 +14,9 @@ export interface LabelProps {
 }
 
 const TONE = {
-  default: 'text-silver',
+  default: 'text-stone',
   accent: 'text-saffron',
-  validated: 'text-validated-light',
+  validated: 'text-validated',
   risk: 'text-risk',
 } as const;
 
