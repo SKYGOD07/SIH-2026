@@ -268,6 +268,11 @@
     justify-content: center;
   }
 
+  /* Progress rail. Meaningless when the deck is stacked, so it is not drawn. */
+  .deck-rail {
+    display: none;
+  }
+
   @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
     .deck-shell {
       height: 100svh;
@@ -288,6 +293,10 @@
       width: 100vw;
       height: 100svh;
       min-height: 0;
+    }
+
+    .deck-rail {
+      display: block;
     }
   }
 

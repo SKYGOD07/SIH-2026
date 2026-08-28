@@ -116,7 +116,7 @@ export function Deck({ children, chapters }: DeckProps) {
           page sideways rather than that the page has stopped. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden md:block"
+        className="deck-rail pointer-events-none absolute inset-x-0 bottom-0 z-20"
       >
         <div className="edge flex items-end justify-between pb-6">
           <ol className="flex items-center gap-5">

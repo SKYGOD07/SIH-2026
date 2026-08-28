@@ -15,13 +15,14 @@ interface IntroContextValue {
   phase: IntroPhase;
   /** True once the curtain has started lifting — the cue for entrance animations. */
   canAnimate: boolean;
-  /** True once the hero scroll animation has fully completed. */
+  /** True once the deck's opening slide is behind the reader. */
   heroComplete: boolean;
   beginReveal: () => void;
   complete: () => void;
   /**
-   * Set by the Hero from its pin progress. Two-way, so scrolling back up into
-   * the hero closes the navigation again rather than latching it open.
+   * Set by the landing deck from its pin progress. Two-way, so travelling back
+   * to the opening slide closes the navigation again rather than latching it
+   * open.
    */
   setHeroComplete: (value: boolean) => void;
 }
@@ -48,7 +49,8 @@ const IntroContext = createContext<IntroContextValue>({
  *   ready    → preloader unmounted, ScrollTrigger takes over
  *
  * The `heroComplete` flag is separate from the phase — it tracks when the
- * hero's pinned scroll animation finishes, so the Nav can defer its entrance.
+ * deck has travelled past its opening slide, so the Nav can stay closed over
+ * the opening statement and only expand once there is a page to navigate.
  */
 export function IntroProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<IntroPhase>('loading');

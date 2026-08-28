@@ -1,9 +1,8 @@
-export * from './Hero';
-export * from './ProblemSection';
-export * from './PathwaySection';
-export * from './Slides';
-export * from './FinaleSection';
-
-/* Used by product routes only, not by the landing story. */
+/*
+ * Sections used by the product routes.
+ *
+ * The landing story no longer lives here — it is the horizontal deck in
+ * `components/deck`, which owns its own slides.
+ */
 export * from './KnowledgeGraphSection';
 export * from './FailureSection';
