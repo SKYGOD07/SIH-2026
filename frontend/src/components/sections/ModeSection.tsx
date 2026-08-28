@@ -21,12 +21,12 @@ export function ModeSection() {
     <section
       id="modes"
       aria-label="Government and startup views"
-      className="relative w-full ground-ivory py-[clamp(6rem,14vh,11rem)] text-ink"
+      className="relative w-full ground-paper py-[clamp(6rem,14vh,11rem)] text-ink"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <div className="flex flex-wrap items-end justify-between gap-8">
           <div>
-            <Label className="text-graphite-light">One pathway, two sides</Label>
+            <Label className="text-ink-muted">One pathway, two sides</Label>
             <h2 className="mt-6 max-w-[16ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ink">
               The same record, read from either end.
             </h2>
@@ -64,7 +64,7 @@ export function ModeSection() {
                   <h3 className="mt-3 font-display text-2xl uppercase leading-none text-ink">
                     {c.label}
                   </h3>
-                  <p className="mt-3 max-w-[36ch] text-sm leading-relaxed text-graphite-light">
+                  <p className="mt-3 max-w-[36ch] text-sm leading-relaxed text-ink-muted">
                     {c.detail}
                   </p>
                 </motion.li>
