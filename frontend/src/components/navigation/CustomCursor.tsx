@@ -1,30 +1,41 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { gsap } from '@/lib/gsap';
 import { useDeviceTier } from '@/hooks/useDeviceTier';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 /**
- * The cursor.
+ * The cursor — a gooey metaball trail.
  *
- * Modelled on the silviasguotti.design reference: a single solid disc in the
- * accent colour that trails the pointer, swells over anything interactive, and
- * carries a short label when the target names one.
+ * Taken from the silviasguotti.design reference, whose recipe is:
  *
- * The disc is filled rather than outlined, which is the whole character of it —
- * an outline ring reads as a system cursor, a filled disc reads as a mark that
- * belongs to the page. `mix-blend-mode: difference` is deliberately not used:
- * on a warm bone ground it inverts the accent into a muddy cyan.
+ *   • a fixed wrapper at z-1000 carrying `filter: url(#goo)` and
+ *     `mix-blend-mode: difference`
+ *   • twenty absolutely-positioned white circles inside it
+ *   • each circle scaled `1 - i * 0.05`, so the trail tapers
+ *   • each circle chases the one in front of it, so they string out on movement
  *
- * Disabled on touch and under reduced motion, where the native cursor returns.
+ * The SVG filter is what makes it read as liquid rather than as twenty dots: a
+ * heavy blur followed by a high-contrast alpha ramp, which fuses overlapping
+ * shapes into one surface and pinches them apart as they separate. That is the
+ * whole "floating molecules" effect — it is the filter, not the motion.
+ *
+ * `mix-blend-mode: difference` on white inverts whatever is underneath, so the
+ * trail is dark navy over the bone ground and inverts cleanly over the dark
+ * sections without needing a second colour.
  */
+
+/** Matches the reference exactly. */
+const DOTS = 20;
+const HEAD_SIZE = 26;
+/** How hard each dot chases its leader. Lower = longer, looser tail. */
+const CHASE = 0.32;
+
 export function CustomCursor() {
   const { touch, ready } = useDeviceTier();
   const reduced = usePrefersReducedMotion();
-  const discRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLSpanElement>(null);
-  const [label, setLabel] = useState<string | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   const enabled = ready && !touch && !reduced;
 
@@ -35,55 +46,79 @@ export function CustomCursor() {
     }
     document.body.setAttribute('data-cursor', 'on');
 
-    const disc = discRef.current;
-    if (!disc) return;
+    const wrap = wrapRef.current;
+    if (!wrap) return;
 
-    // quickTo interpolates without churning a new tween every frame. A little
-    // lag is what makes the disc feel like an object being dragged along rather
-    // than a sprite pinned to the pointer.
-    const toX = gsap.quickTo(disc, 'x', { duration: 0.34, ease: 'power3.out' });
-    const toY = gsap.quickTo(disc, 'y', { duration: 0.34, ease: 'power3.out' });
+    const dots = Array.from(wrap.children) as HTMLElement[];
+    if (dots.length === 0) return;
 
-    let shown = false;
+    // Position state per dot, kept out of the DOM so the loop never reads layout.
+    const xs = new Array(dots.length).fill(-100);
+    const ys = new Array(dots.length).fill(-100);
+
+    const pointer = { x: -100, y: -100 };
+    let visible = false;
+    /** Swells over interactive targets. */
+    let scale = 1;
+    let scaleTarget = 1;
+
     const onMove = (e: PointerEvent) => {
-      if (!shown) {
-        shown = true;
-        gsap.to(disc, { autoAlpha: 1, duration: 0.3 });
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+      if (!visible) {
+        visible = true;
+        gsap.to(wrap, { autoAlpha: 1, duration: 0.3 });
       }
-      toX(e.clientX);
-      toY(e.clientY);
     };
 
     const onLeave = () => {
-      shown = false;
-      gsap.to(disc, { autoAlpha: 0, duration: 0.2 });
+      visible = false;
+      gsap.to(wrap, { autoAlpha: 0, duration: 0.25 });
     };
 
     // One delegated listener rather than a handler per element.
     const onOver = (e: PointerEvent) => {
-      const target = (e.target as HTMLElement | null)?.closest<HTMLElement>(
+      const target = (e.target as HTMLElement | null)?.closest(
         '[data-cursor], a, button, [role="button"], input, select, textarea',
       );
-
-      if (!target) {
-        setLabel(null);
-        gsap.to(disc, { scale: 1, duration: 0.4, ease: 'power3.out' });
-        return;
-      }
-
-      const named = target.dataset.cursor;
-      const hasLabel = Boolean(named) && named !== 'on';
-      setLabel(hasLabel ? (named as string) : null);
-      gsap.to(disc, {
-        scale: hasLabel ? 3.4 : 2.1,
-        duration: 0.45,
-        ease: 'power3.out',
-      });
+      scaleTarget = target ? 1.9 : 1;
     };
 
-    const onDown = () => gsap.to(disc, { scale: 0.8, duration: 0.18 });
-    const onUp = () => gsap.to(disc, { scale: 1, duration: 0.3 });
+    const onDown = () => {
+      scaleTarget *= 0.7;
+    };
+    const onUp = () => {
+      scaleTarget = scaleTarget > 1.2 ? 1.9 : 1;
+    };
 
+    /**
+     * One loop for the whole trail, driven off GSAP's ticker so it shares the
+     * page's single animation frame rather than opening another one.
+     *
+     * Dot 0 chases the pointer; every other dot chases the dot in front of it.
+     * That chain is what produces the tail — no per-dot easing curves, no
+     * staggered tweens, just twenty followers at the same rate.
+     */
+    const tick = () => {
+      scale += (scaleTarget - scale) * 0.12;
+
+      let leadX = pointer.x;
+      let leadY = pointer.y;
+
+      for (let i = 0; i < dots.length; i++) {
+        xs[i] += (leadX - xs[i]) * CHASE;
+        ys[i] += (leadY - ys[i]) * CHASE;
+
+        const taper = 1 - i * 0.05;
+        dots[i].style.transform =
+          `translate3d(${xs[i]}px, ${ys[i]}px, 0) scale(${taper * scale})`;
+
+        leadX = xs[i];
+        leadY = ys[i];
+      }
+    };
+
+    gsap.ticker.add(tick);
     window.addEventListener('pointermove', onMove, { passive: true });
     window.addEventListener('pointerover', onOver, { passive: true });
     window.addEventListener('pointerdown', onDown, { passive: true });
@@ -91,6 +126,7 @@ export function CustomCursor() {
     document.addEventListener('pointerleave', onLeave);
 
     return () => {
+      gsap.ticker.remove(tick);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerover', onOver);
       window.removeEventListener('pointerdown', onDown);
@@ -100,29 +136,55 @@ export function CustomCursor() {
     };
   }, [enabled]);
 
-  // The label counter-scales against the disc so it stays a readable size at
-  // every swell state.
-  useEffect(() => {
-    const el = labelRef.current;
-    if (!el) return;
-    gsap.set(el, { scale: label ? 1 / 3.4 : 1 });
-  }, [label]);
-
   if (!enabled) return null;
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[100]">
+    <>
+      {/*
+        The gooey filter. A heavy blur, then a steep alpha curve that pushes
+        blurred edges back to full opacity — overlapping circles fuse, separating
+        ones pinch apart. Rendered into a zero-size SVG so it never paints.
+      */}
+      <svg aria-hidden="true" className="pointer-events-none absolute h-0 w-0">
+        <defs>
+          <filter id="cursor-goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+            <feColorMatrix
+              in="blur"
+              mode="matrix"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"
+              result="goo"
+            />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+      </svg>
+
       <div
-        ref={discRef}
-        className="absolute -left-[11px] -top-[11px] flex h-[22px] w-[22px] items-center justify-center rounded-full bg-saffron opacity-0"
+        ref={wrapRef}
+        aria-hidden="true"
+        className="pointer-events-none fixed left-0 top-0 opacity-0"
+        style={{
+          zIndex: 1000,
+          filter: 'url(#cursor-goo)',
+          mixBlendMode: 'difference',
+        }}
       >
-        <span
-          ref={labelRef}
-          className="whitespace-nowrap font-mono text-[0.625rem] uppercase tracking-[0.14em] text-bone-light"
-        >
-          {label}
-        </span>
+        {Array.from({ length: DOTS }, (_, i) => (
+          <span
+            key={i}
+            className="absolute left-0 top-0 block rounded-full bg-white"
+            style={{
+              width: HEAD_SIZE,
+              height: HEAD_SIZE,
+              // Centre each circle on its own coordinate.
+              marginLeft: -HEAD_SIZE / 2,
+              marginTop: -HEAD_SIZE / 2,
+              willChange: 'transform',
+            }}
+          />
+        ))}
       </div>
-    </div>
+    </>
   );
 }

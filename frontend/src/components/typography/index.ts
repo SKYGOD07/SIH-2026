@@ -5,3 +5,4 @@ export * from './MaskedText';
 export * from './Counter';
 export * from './WordCloud';
 export * from './Label';
+export * from './NumberedRow';
