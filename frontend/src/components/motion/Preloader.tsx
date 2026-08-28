@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { useIntro } from './IntroProvider';
@@ -12,21 +12,43 @@ import { seeded } from '@/lib/utils';
 /**
  * The opening sequence.
  *
- * Modelled on the zexvro.in opener, with the two things that make it work:
+ * Modelled on the zexvro.in opener: a large blocky mark builds itself out of
+ * rounded tiles, holds, then flies into the navigation capsule as the ground
+ * parts.
  *
- *  DEPTH — the tiles do not fade in flat. They arrive from far back in Z with
- *  independent rotation on all three axes, through a real perspective, and
- *  decelerate into the grid. The mark is built in space, not composited.
+ * ── Why this is built the way it is ──────────────────────────────────────────
  *
- *  CONNECTION — when it is done, the assembled mark does not vanish. It is
- *  measured against the navigation capsule's mark and flies into that exact
- *  position and scale, so the thing the reader watched being built becomes the
- *  logo they navigate with. That hand-off is the whole point of the sequence.
+ * An earlier version drove the exit from GSAP callbacks and gated the hand-off
+ * on React state. That gave a screen whose only job is to get out of the way
+ * several independent ways to fail — and it did: it could sit on top of the page
+ * forever, leaving the site apparently dead.
  *
- * Timing is gated on real readiness with a floor long enough for the assembly
- * to play, and the whole thing is skipped on a hidden tab, where
- * requestAnimationFrame never fires and the animation would otherwise hang.
+ * So the contract here is deliberately blunt:
+ *
+ *   1. ONE timeline, built once on mount. Nothing re-creates or reverts it.
+ *   2. The page is released by a plain `setTimeout` on a fixed schedule, NOT by
+ *      an animation callback. If GSAP stalls, is throttled, or never ticks, the
+ *      page still opens on time.
+ *   3. Readiness and reduced-motion can only make the exit *earlier*, never
+ *      later, and a watchdog closes it out regardless.
+ *   4. Clicking anywhere skips.
+ *
+ * The animation is decoration over a schedule. It is never load-bearing.
  */
+
+/* --- the schedule, in seconds. The animation is built to fit it. --------- */
+const T = {
+  /** Tiles start arriving. */
+  assembleStart: 0.25,
+  /** Tiles have all landed (assembleStart + travel + stagger). */
+  assembled: 3.05,
+  /** The mark leaves for the navigation capsule. */
+  flightStart: 3.5,
+  /** The ground starts parting. */
+  curtainStart: 4.1,
+  /** The page is handed over. */
+  done: 5.2,
+} as const;
 
 interface Scatter {
   x: number;
@@ -58,12 +80,34 @@ export function Preloader() {
 
   const rootRef = useRef<HTMLDivElement>(null);
   const markRef = useRef<HTMLDivElement>(null);
-  const [done, setDone] = useState(false);
-  /** The hand-off timeline must build once and never be torn down mid-flight. */
-  const flightStarted = useRef(false);
   const scatter = useMemo(buildScatter, []);
 
-  /* --- lock scrolling for the whole loading phase --- */
+  /** Each phase transition fires at most once, whoever gets there first. */
+  const firedReveal = useRef(false);
+  const firedComplete = useRef(false);
+
+  const doReveal = useCallback(() => {
+    if (firedReveal.current) return;
+    firedReveal.current = true;
+    beginReveal();
+  }, [beginReveal]);
+
+  const doComplete = useCallback(() => {
+    if (firedComplete.current) return;
+    firedComplete.current = true;
+    doReveal();
+    // The ground hid the page while it settled; re-measure before handing
+    // scroll control to ScrollTrigger. Guarded because a failure here must not
+    // prevent the page from opening.
+    try {
+      ScrollTrigger.refresh();
+    } catch {
+      /* measurement is best-effort; the page opens either way */
+    }
+    complete();
+  }, [complete, doReveal]);
+
+  /* --- scroll is locked only while the opener is actually up --- */
   useEffect(() => {
     document.body.dataset.loading = phase === 'ready' ? 'false' : 'true';
     if (!lenis) return;
@@ -75,103 +119,97 @@ export function Preloader() {
   }, [phase, lenis]);
 
   /**
-   * A hidden tab never fires requestAnimationFrame, so GSAP's ticker does not
-   * advance and the sequence would sit frozen forever. Nothing is worth showing
-   * to a hidden tab, so skip straight to the finished state.
+   * Whatever happens, the body is never left unscrollable.
+   *
+   * `data-loading` drives `overflow: hidden`, so if this component were ever
+   * torn down between phases the page would be frozen with no way back.
    */
+  useEffect(
+    () => () => {
+      document.body.dataset.loading = 'false';
+    },
+    [],
+  );
+
+  /* ------------------------------------------------------------------ */
+  /* The schedule. This — not the animation — releases the page.         */
+  /* ------------------------------------------------------------------ */
   useEffect(() => {
     if (phase === 'ready') return;
-    const skipIfHidden = () => {
-      if (!document.hidden) return;
-      beginReveal();
-      complete();
-    };
-    skipIfHidden();
-    document.addEventListener('visibilitychange', skipIfHidden);
-    return () => document.removeEventListener('visibilitychange', skipIfHidden);
-  }, [phase, beginReveal, complete]);
 
-  /* --- genuine readiness, with a floor so the assembly always plays --- */
-  useEffect(() => {
-    if (reduced) {
-      setDone(true);
+    // Nothing worth showing to a reader who asked for less motion, or to a tab
+    // that is not visible (where requestAnimationFrame never fires and the
+    // animation could not play anyway).
+    if (reduced || document.hidden) {
+      doComplete();
       return;
     }
 
-    let alive = true;
-    const marks = { fonts: false, load: false, frame: false };
+    const timers = [
+      window.setTimeout(doReveal, T.flightStart * 1000),
+      window.setTimeout(doComplete, T.done * 1000),
+      // Watchdog. Should never be reached; exists so that a stall in any of the
+      // above can still not strand the reader behind a curtain.
+      window.setTimeout(doComplete, 9000),
+    ];
 
-    /**
-     * The assembly timeline ends at roughly 3.05s (0.25s delay + 1.9s tile
-     * travel + 0.9s of stagger). Releasing before then starts the hand-off while
-     * tiles are still arriving, so the mark is never seen whole. The floor sits
-     * just past that; on a slow connection readiness is still the binding
-     * constraint and this changes nothing.
-     */
-    const ASSEMBLY_FLOOR = 3200;
-    const started = performance.now();
-    let floorTimer = 0;
-
-    const release = () => {
-      if (!alive) return;
-      const waited = performance.now() - started;
-      if (waited >= ASSEMBLY_FLOOR) setDone(true);
-      else {
-        window.clearTimeout(floorTimer);
-        floorTimer = window.setTimeout(() => alive && setDone(true), ASSEMBLY_FLOOR - waited);
-      }
+    // If the reader backgrounds the tab mid-sequence, stop performing to an
+    // audience that cannot see it and hand the page over.
+    const onHide = () => {
+      if (document.hidden) doComplete();
     };
+    document.addEventListener('visibilitychange', onHide);
 
-    const bump = (key: keyof typeof marks) => {
-      if (!alive || marks[key]) return;
-      marks[key] = true;
-      if (Object.values(marks).every(Boolean)) release();
-    };
-
-    const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
-    if (fonts?.ready) fonts.ready.then(() => bump('fonts'));
-    else bump('fonts');
-
-    if (document.readyState === 'complete') bump('load');
-    else window.addEventListener('load', () => bump('load'), { once: true });
-
-    requestAnimationFrame(() => requestAnimationFrame(() => bump('frame')));
-
-    /**
-     * Watchdog.
-     *
-     * Long enough that a healthy sequence has already completed and unmounted
-     * this component — which clears the timer through the cleanup below — so it
-     * only ever fires when something genuinely stalled: a readiness signal that
-     * never arrived, or a hand-off that never finished. In either case the page
-     * is released rather than left behind a curtain.
-     */
-    const failsafe = window.setTimeout(() => {
-      if (!alive) return;
-      setDone(true);
-      beginReveal();
-      complete();
-    }, 9000);
     return () => {
-      alive = false;
-      window.clearTimeout(failsafe);
-      window.clearTimeout(floorTimer);
+      timers.forEach(window.clearTimeout);
+      document.removeEventListener('visibilitychange', onHide);
     };
-  }, [reduced, beginReveal, complete]);
+  }, [phase, reduced, doReveal, doComplete]);
 
-  /* --- the mark assembles out of depth --- */
+  /** Click anywhere to skip. */
+  const skip = useCallback(() => doComplete(), [doComplete]);
+
+  /* ------------------------------------------------------------------ */
+  /* The animation. Decoration over the schedule above.                  */
+  /* ------------------------------------------------------------------ */
   useGSAP(
     () => {
-      if (!rootRef.current) return;
+      if (reduced || document.hidden || !rootRef.current || !markRef.current) return;
+      const mark = markRef.current;
 
-      if (reduced) {
-        beginReveal();
-        complete();
-        return;
+      /**
+       * Measure where the mark is flying to.
+       *
+       * The navigation capsule is still translated out of view, so its live rect
+       * is off by its entrance transform. Neutralising that transform for one
+       * synchronous read — with no paint in between — gives the true resting
+       * position. If the capsule is not found, the mark simply exits upward.
+       */
+      let dx = 0;
+      let dy = -window.innerHeight * 0.34;
+      let ratio = 0.08;
+
+      const navMark = document.querySelector<HTMLElement>('[data-nav-mark]');
+      if (navMark) {
+        const holder = navMark.closest<HTMLElement>('.pointer-events-auto');
+        const prevTransform = holder?.style.transform ?? '';
+        if (holder) holder.style.transform = 'none';
+
+        const from = mark.getBoundingClientRect();
+        const to = navMark.getBoundingClientRect();
+
+        if (holder) holder.style.transform = prevTransform;
+
+        if (to.width > 0 && from.width > 0) {
+          ratio = to.width / from.width;
+          dx = to.left + to.width / 2 - (from.left + from.width / 2);
+          dy = to.top + to.height / 2 - (from.top + from.height / 2);
+        }
       }
 
-      const tl = gsap.timeline({ delay: 0.25 });
+      const tl = gsap.timeline();
 
+      /* --- the mark assembles out of depth --- */
       tl.fromTo(
         '[data-tile]',
         {
@@ -196,131 +234,47 @@ export function Preloader() {
           // Centre-out: MARK_TILES is pre-sorted by distance from centre.
           stagger: 0.075,
         },
+        T.assembleStart,
       )
         .fromTo(
           '[data-preload-word]',
-          { opacity: 0, y: 14, letterSpacing: '0.5em' },
-          { opacity: 1, y: 0, letterSpacing: '0.32em', duration: 1.1, ease: 'expo.out' },
-          1.15,
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 1.1, ease: 'expo.out' },
+          1.4,
         )
         .fromTo(
           '[data-preload-rule]',
           { scaleX: 0 },
           { scaleX: 1, duration: 1.4, ease: 'power2.inOut' },
-          1.25,
+          1.5,
         )
-        // A single slow breath so the assembled state is alive, not frozen,
-        // during however long readiness still takes.
-        .to(
-          '[data-mark]',
-          { scale: 1.025, duration: 1.6, ease: 'sine.inOut', yoyo: true, repeat: -1 },
-          2.2,
-        );
 
-      return () => tl.kill();
-    },
-    { scope: rootRef, dependencies: [reduced] },
-  );
-
-  /* --- the mark flies into the navigation capsule --- */
-  useGSAP(
-    () => {
-      /**
-       * Runs exactly once, guarded by a ref rather than by `phase`.
-       *
-       * This timeline calls `beginReveal()` from inside itself, which advances
-       * the phase. If `phase` were a dependency here, that call would re-run the
-       * effect, and `useGSAP` would revert and kill the very timeline that made
-       * the call — so `onComplete` never fired, `complete()` was never reached,
-       * and the preloader stayed on screen forever covering the page.
-       */
-      if (!done || reduced || flightStarted.current) return;
-      const root = rootRef.current;
-      const mark = markRef.current;
-      if (!root || !mark) return;
-      flightStarted.current = true;
-
-      /**
-       * Measure the destination.
-       *
-       * The nav capsule is still translated out of view at this moment, so its
-       * live rect is off by its entrance transform. Neutralising the transform
-       * for one synchronous read — with no paint in between — gives the true
-       * resting position to fly to.
-       */
-      const navMark = document.querySelector<HTMLElement>('[data-nav-mark]');
-      let dx = 0;
-      let dy = -window.innerHeight * 0.34;
-      let ratio = 0.08;
-
-      if (navMark) {
-        const holder = navMark.closest<HTMLElement>('.pointer-events-auto');
-        const prev = holder?.style.transform ?? '';
-        const prevOpacity = holder?.style.opacity ?? '';
-        if (holder) holder.style.transform = 'none';
-
-        const from = mark.getBoundingClientRect();
-        const to = navMark.getBoundingClientRect();
-
-        if (holder) {
-          holder.style.transform = prev;
-          holder.style.opacity = prevOpacity;
-        }
-
-        if (to.width > 0 && from.width > 0) {
-          ratio = to.width / from.width;
-          dx = to.left + to.width / 2 - (from.left + from.width / 2);
-          dy = to.top + to.height / 2 - (from.top + from.height / 2);
-        }
-      }
-
-      // Kill any previous looping breathing animation on the mark
-      gsap.killTweensOf('[data-mark]');
-
-      const tl = gsap.timeline({
-        // Let the assembled mark be read before it leaves.
-        delay: 0.15,
-        onComplete: () => {
-          // The ground hid the page while it settled; re-measure before handing
-          // scroll control to ScrollTrigger.
-          ScrollTrigger.refresh();
-          complete();
-        },
-      });
-
-      // Stop the breathing loop cleanly before the flight takes over scale.
-      tl.set('[data-mark]', { scale: 1 })
+        /* --- it leaves for the navigation capsule --- */
         .to(
           ['[data-preload-word]', '[data-preload-rule]'],
           { opacity: 0, y: -10, duration: 0.35, ease: 'power2.in' },
+          T.flightStart - 0.3,
         )
         .to(
           mark,
-          {
-            x: dx,
-            y: dy,
-            scale: ratio,
-            duration: 0.9,
-            // Settles cleanly into position
-            ease: 'power3.inOut',
-            onStart: beginReveal,
-          },
-          '-=0.15',
+          { x: dx, y: dy, scale: ratio, duration: 1.2, ease: 'power3.inOut' },
+          T.flightStart,
         )
-        // The ground parts once the mark is most of the way home
+
+        /* --- and the ground parts behind it --- */
         .to(
           '[data-curtain]',
-          { yPercent: (i) => (i === 0 ? -101 : 101), duration: 0.75, ease: 'power4.inOut' },
-          '-=0.6',
+          { yPercent: (i) => (i === 0 ? -101 : 101), duration: 1.0, ease: 'power4.inOut' },
+          T.curtainStart,
         )
-        .to(mark, { opacity: 0, duration: 0.25, ease: 'power2.in' }, '-=0.3')
-        .set(root, { pointerEvents: 'none' });
+        .to(mark, { opacity: 0, duration: 0.3, ease: 'power2.in' }, T.curtainStart + 0.5);
 
       return () => {
         tl.kill();
       };
     },
-    { scope: rootRef, dependencies: [done, reduced] },
+    // Built once. Nothing in the sequence may re-run or revert this.
+    { scope: rootRef, dependencies: [] },
   );
 
   if (phase === 'ready') return null;
@@ -328,14 +282,11 @@ export function Preloader() {
   return (
     <div
       ref={rootRef}
-      onClick={() => {
-        beginReveal();
-        complete();
-      }}
-      className="fixed inset-0 z-[120] overflow-hidden cursor-pointer"
+      onClick={skip}
+      className="fixed inset-0 z-[120] cursor-pointer overflow-hidden"
       role="status"
       aria-live="polite"
-      aria-label="Loading MahaInnovate (Click to skip)"
+      aria-label="Loading MahaInnovate. Click to skip."
     >
       {/* The ground, split so it can part. */}
       <div data-curtain className="absolute inset-x-0 top-0 h-1/2 bg-bone" />
@@ -373,8 +324,7 @@ export function Preloader() {
           />
           <span
             data-preload-word
-            className="font-mono text-[0.6875rem] uppercase text-ink/55"
-            style={{ letterSpacing: '0.32em' }}
+            className="font-mono text-[0.6875rem] uppercase tracking-[0.32em] text-ink/55"
           >
             MahaInnovate
           </span>

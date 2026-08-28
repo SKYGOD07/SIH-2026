@@ -35,3 +35,6 @@ dist/
 
 # Prisma Generated Client (when committed locally outside node_modules)
 *.tsbuildinfo
+
+# Isolated build output used to verify without disturbing a running dev server
+.next-verify/
