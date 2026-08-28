@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useLenis } from '@/lib/lenis/SmoothScrollProvider';
+import { useIntro } from '@/components/motion/IntroProvider';
 
 const LINKS = [
   { href: '/challenges', label: 'Challenges' },
@@ -15,9 +16,16 @@ const LINKS = [
 ];
 
 /**
- * Fixed navigation. Transparent over the hero, gaining a backdrop as the page
- * scrolls. Framer Motion owns the state transition; GSAP is not involved —
- * this is interface, not choreography.
+ * Fixed navigation.
+ *
+ * On the landing page, the navbar is hidden until the hero scroll animation
+ * finishes (signalled via `heroComplete` from IntroProvider). This creates an
+ * immersive full-screen opening experience like the Noomo reference sites.
+ *
+ * On sub-pages, the navbar shows immediately — there is no hero to wait for.
+ *
+ * Framer Motion owns the state transition; GSAP is not involved — this is
+ * interface, not choreography.
  */
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -25,6 +33,12 @@ export function Nav() {
   const pathname = usePathname();
   const lenis = useLenis();
   const reduceMotion = useReducedMotion();
+  const { heroComplete } = useIntro();
+
+  // On the landing page, nav is hidden until hero scroll finishes.
+  // On sub-pages, nav is always visible.
+  const isLanding = pathname === '/';
+  const navVisible = !isLanding || heroComplete;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -45,13 +59,31 @@ export function Nav() {
   return (
     <>
       <motion.header
-        initial={false}
-        animate={{
-          backgroundColor: scrolled ? 'rgba(244,241,234,0.82)' : 'rgba(244,241,234,0)',
-          borderBottomColor: scrolled ? 'rgba(23,22,26,0.12)' : 'rgba(23,22,26,0)',
-          backdropFilter: scrolled ? 'blur(16px)' : 'blur(0px)',
+        initial={isLanding ? { y: '-100%', opacity: 0 } : false}
+        animate={
+          navVisible
+            ? {
+                y: '0%',
+                opacity: 1,
+                backgroundColor: scrolled ? 'rgba(244,241,234,0.82)' : 'rgba(244,241,234,0)',
+                borderBottomColor: scrolled ? 'rgba(23,22,26,0.12)' : 'rgba(23,22,26,0)',
+                backdropFilter: scrolled ? 'blur(16px)' : 'blur(0px)',
+              }
+            : {
+                y: '-100%',
+                opacity: 0,
+                backgroundColor: 'rgba(244,241,234,0)',
+                borderBottomColor: 'rgba(23,22,26,0)',
+                backdropFilter: 'blur(0px)',
+              }
+        }
+        transition={{
+          y: { duration: 0.8, ease: [0.16, 1, 0.3, 1] },
+          opacity: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+          backgroundColor: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+          borderBottomColor: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+          backdropFilter: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
         }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="fixed inset-x-0 top-0 z-50 border-b"
         style={{ height: 'var(--nav-h)' }}
       >
