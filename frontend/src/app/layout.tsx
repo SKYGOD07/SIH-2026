@@ -4,12 +4,8 @@ import './globals.css';
 import { SmoothScrollProvider } from '@/lib/lenis/SmoothScrollProvider';
 import { AudienceProvider } from '@/components/motion/AudienceProvider';
 import { IntroProvider } from '@/components/motion/IntroProvider';
-import { Preloader } from '@/components/motion/Preloader';
-import { AmbientBackdrop } from '@/components/motion/AmbientBackdrop';
-import { GlobalScene } from '@/components/three/GlobalScene';
-import { Nav } from '@/components/navigation/Nav';
 import { CustomCursor } from '@/components/navigation/CustomCursor';
-import { SiteFooter } from '@/components/navigation/SiteFooter';
+import { SiteChrome } from '@/components/navigation/SiteChrome';
 
 /**
  * Type system.
@@ -99,25 +95,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <IntroProvider>
             <AudienceProvider>
               {/*
-                Stacking order, bottom to top:
-                  AmbientBackdrop (z-0, fixed)  — the drifting colour ground
-                  content         (z-10)        — sections, transparent over it
-                  Nav             (z-50)
-                  Preloader       (z-120)
-                Dark sections are intentionally not opaque so the backdrop reads
-                through them; see `.ground-void` in globals.css.
+                The cursor is the one piece of chrome that belongs to both
+                products — a console is still the same hand moving.
               */}
-              <AmbientBackdrop />
-              {/* One WebGL layer for the whole document — the forms travel through
-                  every section rather than appearing per screen. */}
-              <GlobalScene />
               <CustomCursor />
-              <Nav />
-              <div className="relative z-10">
-                <main id="main">{children}</main>
-                <SiteFooter />
-              </div>
-              <Preloader />
+              <SiteChrome>{children}</SiteChrome>
             </AudienceProvider>
           </IntroProvider>
         </SmoothScrollProvider>
