@@ -237,6 +237,92 @@
   }
 
   /**
+   * The console.
+   *
+   * The operational side of the product, built to the shape of a working
+   * dashboard: a fixed sidebar, a scrolling middle column, and a right rail of
+   * standing context. That shape is taken from the reference; the surface
+   * treatment is not, and could not be — the reference lifts white cards off a
+   * grey page with soft shadows, and a shadow is invisible on black.
+   *
+   * So the lift is carried by three things instead: a card ground one step off
+   * pure black, a hairline border, and a one-pixel inner highlight along the
+   * top edge that reads as a light source. Hover brightens the border rather
+   * than deepening a shadow. The result sits at the same visual weight as the
+   * reference without pretending the palette is something it isn't.
+   *
+   * `--nav-h: 0px` is the important line. The floating capsule does not appear
+   * over the console — the sidebar is the navigation here — so every component
+   * that reserves space under it (PageHeader, .nav-safe, full-height sections)
+   * collapses that reservation automatically rather than needing a variant.
+   */
+  .console-shell {
+    --nav-h: 0px;
+    --card: #0a0a0a;
+    --card-hover: #101010;
+    --hair: rgba(255, 255, 255, 0.08);
+    --hair-strong: rgba(255, 255, 255, 0.16);
+    --lift: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--hair);
+    border-radius: 14px;
+    box-shadow: var(--lift);
+  }
+
+  /* Cards that are buttons or links. Static cards must not claim to be. */
+  .card-interactive {
+    cursor: pointer;
+    transition:
+      border-color 180ms ease,
+      background 180ms ease,
+      transform 180ms ease;
+  }
+  .card-interactive:hover {
+    border-color: var(--hair-strong);
+    background: var(--card-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Pastel tint roles, rebuilt as low-alpha washes of our own five hues. */
+  .tint-signal {
+    background: rgba(255, 196, 0, 0.12);
+    color: #ffc400;
+  }
+  .tint-validated {
+    background: rgba(111, 207, 151, 0.12);
+    color: #6fcf97;
+  }
+  .tint-risk {
+    background: rgba(255, 107, 90, 0.12);
+    color: #ff6b5a;
+  }
+  .tint-chalk {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* The console scrolls two of its three columns independently. */
+  .console-scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  }
+  .console-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+  .console-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: 99px;
+  }
+  .console-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /**
    * The horizontal deck.
    *
    * The landing page is a slideshow read sideways: vertical scroll is pinned
