@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Inter_Tight, Instrument_Serif, JetBrains_Mono } from 'next/font/google';
+import { Inter, Poppins, Instrument_Serif, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { SmoothScrollProvider } from '@/lib/lenis/SmoothScrollProvider';
 import { AudienceProvider } from '@/components/motion/AudienceProvider';
@@ -16,11 +16,11 @@ import { SiteFooter } from '@/components/navigation/SiteFooter';
  *
  * Four faces, each with one job:
  *
- *  display   Inter Tight — a Swiss neo-grotesk with tight apertures, set very
- *            large at regular/medium weight with heavy negative tracking. This
- *            is the closest freely-licensed face to the Lausanne used on the
- *            reference sites, where the expressiveness comes from scale and
- *            tracking rather than from weight.
+ *  display   Poppins, at 800/900. A geometric sans set very large and very
+ *            heavy with tight negative tracking — the reference sets it at
+ *            80-200px with -0.05em. Weight is doing the work here, which is the
+ *            opposite of a Swiss grotesk and is the point: it reads as loud
+ *            rather than as refined.
  *  accent    Instrument Serif — a display serif used *inside* headlines for
  *            one or two words. That grotesk/serif mix is what makes the
  *            reference headlines read as composed rather than merely large.
@@ -30,9 +30,9 @@ import { SiteFooter } from '@/components/navigation/SiteFooter';
  * All loaded through next/font, so they are self-hosted, preloaded and subset:
  * no external stylesheet, no render-blocking CDN request, no FOUT mid-animation.
  */
-const display = Inter_Tight({
+const display = Poppins({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['600', '700', '800', '900'],
   variable: '--font-display',
   display: 'swap',
 });

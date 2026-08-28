@@ -49,7 +49,7 @@ const config: Config = {
         ring: 'hsl(var(--ring))',
       },
       fontFamily: {
-        display: ['var(--font-display)', 'Inter Tight', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        display: ['var(--font-display)', 'Poppins', 'Helvetica Neue', 'Arial', 'sans-serif'],
         /** Display serif, used for one or two words inside a headline. */
         accent: ['var(--font-accent)', 'Instrument Serif', 'Georgia', 'serif'],
         sans: ['var(--font-body)', 'Inter', 'system-ui', 'sans-serif'],
@@ -67,13 +67,13 @@ const config: Config = {
          * Every size clamps against `svh` as well as `vw`, so a short viewport
          * shrinks the type instead of pushing it under the navigation.
          */
-        'display-xs': ['clamp(1.2rem, min(2.3vw, 3.6svh), 2.1rem)', { lineHeight: '1.02', letterSpacing: '-0.03em' }],
-        'display-sm': ['clamp(1.8rem, min(4vw, 6.4svh), 3.6rem)', { lineHeight: '0.96', letterSpacing: '-0.04em' }],
-        'display-md': ['clamp(2.4rem, min(6.4vw, 10svh), 6rem)', { lineHeight: '0.93', letterSpacing: '-0.045em' }],
-        'display-lg': ['clamp(2.8rem, min(9vw, 14svh), 9rem)', { lineHeight: '0.9', letterSpacing: '-0.05em' }],
-        'display-xl': ['clamp(3.2rem, min(12vw, 18svh), 12rem)', { lineHeight: '0.88', letterSpacing: '-0.055em' }],
+        'display-xs': ['clamp(1.1rem, min(2.1vw, 3.3svh), 1.9rem)', { lineHeight: '1.04', letterSpacing: '-0.03em' }],
+        'display-sm': ['clamp(1.6rem, min(3.5vw, 5.6svh), 3.2rem)', { lineHeight: '0.98', letterSpacing: '-0.04em' }],
+        'display-md': ['clamp(2.1rem, min(5.6vw, 8.8svh), 5.2rem)', { lineHeight: '0.95', letterSpacing: '-0.05em' }],
+        'display-lg': ['clamp(2.5rem, min(7.6vw, 12svh), 7.5rem)', { lineHeight: '0.92', letterSpacing: '-0.05em' }],
+        'display-xl': ['clamp(2.9rem, min(10vw, 15svh), 10rem)', { lineHeight: '0.9', letterSpacing: '-0.055em' }],
         /** Hero: one word per line, filling the measure. */
-        'hero-line': ['clamp(2.6rem, min(11vw, 14.5svh), 11rem)', { lineHeight: '0.88', letterSpacing: '-0.052em' }],
+        'hero-line': ['clamp(2.4rem, min(9.2vw, 12.5svh), 9rem)', { lineHeight: '0.9', letterSpacing: '-0.05em' }],
         meta: ['0.6875rem', { lineHeight: '1.2', letterSpacing: '0.16em' }],
         'meta-lg': ['0.8125rem', { lineHeight: '1.2', letterSpacing: '0.14em' }],
       },

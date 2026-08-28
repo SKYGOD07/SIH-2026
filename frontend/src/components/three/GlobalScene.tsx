@@ -16,6 +16,11 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
  * Scroll position is written into a ref by one document-wide ScrollTrigger and
  * read inside the render loop, so the scene follows the reader at frame rate
  * without re-rendering the React tree.
+ *
+ * Held at low opacity on purpose. The forms are atmosphere, not subject: at full
+ * strength they competed with the type for the reader's attention, and the type
+ * is what carries the argument. Dimming here rather than in the materials keeps
+ * the lighting rig intact and makes the level a single number to tune.
  */
 export function GlobalScene() {
   const progress = useRef(0);
@@ -40,7 +45,7 @@ export function GlobalScene() {
   }, [reduced]);
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
+    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 opacity-[0.22]">
       <SceneCanvas
         alwaysRender
         rootMargin="0px"
