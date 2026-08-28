@@ -23,7 +23,7 @@ export function MetricGrid({
     <dl
       className={cn(
         'grid gap-px border-t sm:grid-cols-2 lg:grid-cols-5',
-        light ? 'border-ink/15' : 'border-ivory/12',
+        light ? 'border-ink/15' : 'border-ink/12',
         className,
       )}
     >
@@ -33,13 +33,13 @@ export function MetricGrid({
           data-metric
           className={cn(
             'border-b py-6 pr-6',
-            light ? 'border-ink/10' : 'border-ivory/10',
+            light ? 'border-ink/10' : 'border-ink/12',
           )}
         >
           <dt
             className={cn(
               'font-mono text-meta uppercase',
-              light ? 'text-graphite-light' : 'text-silver',
+              light ? 'text-ink-muted' : 'text-stone',
             )}
           >
             {m.label}
@@ -47,7 +47,7 @@ export function MetricGrid({
           <dd
             className={cn(
               'mt-4 font-display text-display-xs font-medium leading-none tabular-nums',
-              light ? 'text-ink' : 'text-ivory',
+              light ? 'text-ink' : 'text-ink',
             )}
           >
             <Counter value={m.value} suffix={m.unit ?? ''} duration={1.6} />
@@ -55,7 +55,7 @@ export function MetricGrid({
           <dd
             className={cn(
               'mt-3 text-xs leading-relaxed',
-              light ? 'text-graphite-light' : 'text-silver',
+              light ? 'text-ink-muted' : 'text-stone',
             )}
           >
             {m.hint}
