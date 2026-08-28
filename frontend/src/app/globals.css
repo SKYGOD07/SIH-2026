@@ -104,7 +104,11 @@
   }
 
   .label {
-    @apply font-mono text-meta uppercase text-white/50;
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
   }
 
   /**
@@ -191,10 +195,12 @@
   }
 
   .panel {
-    @apply border border-white/12 bg-white/[0.03];
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.03);
   }
   .panel-dark {
-    @apply border border-white/12 bg-white/[0.03];
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: rgba(255, 255, 255, 0.03);
   }
 }
 
