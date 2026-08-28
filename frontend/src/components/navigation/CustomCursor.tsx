@@ -99,17 +99,17 @@ export function CustomCursor() {
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[100]">
       <div
         ref={ringRef}
-        className="absolute -left-5 -top-5 flex h-10 w-10 items-center justify-center rounded-full border border-ivory/45 opacity-0 mix-blend-difference"
+        className="absolute -left-5 -top-5 flex h-10 w-10 items-center justify-center rounded-full border border-ink/50 opacity-0"
       >
         {label ? (
-          <span className="scale-[0.38] whitespace-nowrap font-mono text-[0.6rem] uppercase tracking-[0.16em] text-ivory">
+          <span className="scale-[0.38] whitespace-nowrap font-mono text-[0.6rem] uppercase tracking-[0.16em] text-ink">
             {label}
           </span>
         ) : null}
       </div>
       <div
         ref={dotRef}
-        className="absolute -left-[3px] -top-[3px] h-1.5 w-1.5 rounded-full bg-ivory opacity-0 mix-blend-difference"
+        className="absolute -left-[3px] -top-[3px] h-1.5 w-1.5 rounded-full bg-ink opacity-0"
       />
     </div>
   );
