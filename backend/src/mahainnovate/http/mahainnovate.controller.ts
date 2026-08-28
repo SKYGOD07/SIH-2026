@@ -130,6 +130,7 @@ export const dashboard = async (_req: Request, res: Response, next: NextFunction
     const coverage = await services.feedback.coverage();
     const ledger = await services.ledger.get('PL-3311');
     const summary = await services.ledger.summary('PL-3311');
+    const timing = await services.ledger.paymentTiming('PL-3311');
 
     const awaiting = ledger.milestones
       .filter((m) => m.status === 'EVIDENCE_SUBMITTED')
@@ -145,6 +146,7 @@ export const dashboard = async (_req: Request, res: Response, next: NextFunction
     return sendSuccess(res, {
       corpus: coverage,
       pilot: { id: ledger.pilotId, ...summary },
+      paymentTiming: timing,
       awaitingValidation: awaiting,
       milestones: ledger.milestones.map((m) => ({
         id: m.id,

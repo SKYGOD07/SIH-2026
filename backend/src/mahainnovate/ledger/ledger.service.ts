@@ -24,6 +24,18 @@ import {
  * state.
  */
 
+/**
+ * The service standard the pathway commits a department to: a milestone with
+ * evidence filed is decided, and paid, within this many days.
+ *
+ * This is our commitment, not a statutory figure — the problem statement asks
+ * for "timely startup payments" without naming a number, so the mechanism has
+ * to name one or the outcome is unmeasurable. It lives here as a single
+ * constant so the dashboard reports against the same figure the contract
+ * templates quote.
+ */
+export const PAYMENT_TARGET_DAYS = 15;
+
 /** Legal transitions. Anything absent here is refused. */
 const TRANSITIONS: Record<MilestoneStatus, MilestoneStatus[]> = {
   LOCKED: ['IN_PROGRESS'],
@@ -223,6 +235,80 @@ export class LedgerService {
       `${milestone.payment} released against approved evidence`,
     );
     return this.repo.save(ledger);
+  }
+
+  /**
+   * How long money actually took to reach the startup.
+   *
+   * The one PS outcome that cannot be asserted, only measured: a milestone is
+   * timed from the moment the last piece of evidence was filed to the moment
+   * the tranche was released, split at approval so a delay is attributable.
+   * Sitting in the department and sitting in the payment run are different
+   * failures with different fixes, and a single elapsed figure hides which one
+   * is happening.
+   *
+   * A milestone still waiting is reported with its age and no elapsed total —
+   * counting it as complete would flatter the median, and it is precisely the
+   * one an officer needs to see.
+   */
+  async paymentTiming(pilotId: string) {
+    const ledger = await this.load(pilotId);
+    const days = (from: string, to: string) =>
+      Math.max(0, Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000));
+
+    const filedAt = (m: Milestone): string | null =>
+      m.evidence.length === 0
+        ? null
+        : m.evidence.reduce(
+            (latest, e) => (e.submittedAt > latest ? e.submittedAt : latest),
+            m.evidence[0].submittedAt,
+          );
+
+    const now = new Date().toISOString();
+
+    const milestones = ledger.milestones.map((m) => {
+      const filed = filedAt(m);
+      const approved = m.approvedAt ?? null;
+      const paid = m.paidAt ?? null;
+
+      return {
+        code: m.code,
+        title: m.title,
+        payment: m.payment,
+        status: m.status,
+        filedAt: filed,
+        approvedAt: approved,
+        paidAt: paid,
+        /** Days the department held it before deciding. */
+        daysToDecide: filed && approved ? days(filed, approved) : null,
+        /** Days from approval to money leaving. */
+        daysToRelease: approved && paid ? days(approved, paid) : null,
+        /** Filed to paid. Null while anything is still outstanding. */
+        daysToPay: filed && paid ? days(filed, paid) : null,
+        /** How long an undecided milestone has been waiting, as of now. */
+        waitingDays: filed && !paid ? days(filed, now) : null,
+      };
+    });
+
+    const settled = milestones
+      .map((m) => m.daysToPay)
+      .filter((d): d is number => d !== null)
+      .sort((a, b) => a - b);
+
+    const median =
+      settled.length === 0
+        ? null
+        : settled.length % 2 === 1
+          ? settled[(settled.length - 1) / 2]
+          : Math.round((settled[settled.length / 2 - 1] + settled[settled.length / 2]) / 2);
+
+    return {
+      targetDays: PAYMENT_TARGET_DAYS,
+      medianDaysToPay: median,
+      settledCount: settled.length,
+      breachedCount: settled.filter((d) => d > PAYMENT_TARGET_DAYS).length,
+      milestones,
+    };
   }
 
   /** Released and outstanding value, for the dashboard. */
