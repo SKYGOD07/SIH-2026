@@ -92,7 +92,7 @@ export const WordCloud = forwardRef<WordCloudHandle, WordCloudProps>(function Wo
             data-offset-x={p.x}
             data-offset-y={p.y}
             className={cn(
-              'block whitespace-nowrap font-display text-[clamp(0.75rem,2vw,1.75rem)] font-medium uppercase tracking-tight text-ivory/50 will-3d',
+              'block whitespace-nowrap font-display text-[clamp(0.75rem,2vw,1.75rem)] font-medium uppercase tracking-tight text-ink/50 will-3d',
               wordClassName,
             )}
             style={{ transform: `scale(${p.scale}) rotate(${p.rotate}deg)` }}
