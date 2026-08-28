@@ -22,9 +22,9 @@ export function SceneFallback({
       <svg viewBox="0 0 400 400" className="h-[70%] w-auto max-w-[70%] opacity-70">
         <defs>
           <radialGradient id="sf-core" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#f6f3ec" stopOpacity="0.5" />
+            <stop offset="0%" stopColor="#ede7dd" stopOpacity="0.5" />
             <stop offset="70%" stopColor="#e8762b" stopOpacity="0.14" />
-            <stop offset="100%" stopColor="#0a0b0d" stopOpacity="0" />
+            <stop offset="100%" stopColor="#0d0f12" stopOpacity="0" />
           </radialGradient>
         </defs>
 
@@ -38,7 +38,7 @@ export function SceneFallback({
               rx="140"
               ry="58"
               fill="none"
-              stroke="#a6a49c"
+              stroke="#a8a49b"
               strokeOpacity="0.35"
             />
             {Array.from({ length: 8 }, (_, i) => {
@@ -49,11 +49,11 @@ export function SceneFallback({
                   cx={200 + Math.cos(a) * 140}
                   cy={200 + Math.sin(a) * 58}
                   r={i === 0 ? 8 : 4.5}
-                  fill={i === 0 ? '#e8762b' : '#a6a49c'}
+                  fill={i === 0 ? '#e8762b' : '#a8a49b'}
                 />
               );
             })}
-            <circle cx="200" cy="200" r="34" fill="none" stroke="#f6f3ec" strokeOpacity="0.4" />
+            <circle cx="200" cy="200" r="34" fill="none" stroke="#ede7dd" strokeOpacity="0.4" />
           </>
         ) : null}
 
@@ -68,7 +68,7 @@ export function SceneFallback({
                   cx={200 + Math.cos(a) * r}
                   cy={200 + Math.sin(a) * r * 0.6}
                   r={1.6}
-                  fill="#a6a49c"
+                  fill="#a8a49b"
                   fillOpacity={0.5}
                 />
               );
@@ -91,7 +91,7 @@ export function SceneFallback({
                   y={200 + Math.sin(a) * r - 15}
                   width="22"
                   height="30"
-                  fill="#f6f3ec"
+                  fill="#ede7dd"
                   fillOpacity="0.22"
                 />
               );
@@ -116,7 +116,7 @@ export function SceneFallback({
                   y={286 - h + iz * 14}
                   width="30"
                   height={h}
-                  fill="#33363b"
+                  fill="#2a2d33"
                 />
               );
             })}
