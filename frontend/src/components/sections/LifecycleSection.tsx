@@ -126,7 +126,7 @@ export function LifecycleSection() {
         <div className="flex items-start justify-between gap-8">
           <div>
             <Label index="—">The pathway</Label>
-            <h2 className="mt-5 max-w-[16ch] font-display text-display-sm font-medium uppercase leading-[0.92] text-ivory">
+            <h2 className="mt-5 max-w-[16ch] font-display text-display-sm font-medium uppercase leading-[0.92] text-bone">
               Eight stages. One record.
             </h2>
           </div>
@@ -144,8 +144,8 @@ export function LifecycleSection() {
                     i === active
                       ? 'text-saffron'
                       : i < active
-                        ? 'text-ivory/55'
-                        : 'text-ivory/25',
+                        ? 'text-bone/55'
+                        : 'text-bone/25',
                   )}
                   onClick={() => seekToStage(i)}
                   data-cursor="go"
@@ -169,25 +169,25 @@ export function LifecycleSection() {
             >
               <div className="flex items-baseline gap-5">
                 <span className="font-mono text-meta-lg text-saffron">{stage.index}</span>
-                <h3 className="font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory">
+                <h3 className="font-display text-display-sm font-medium uppercase leading-[0.9] text-bone">
                   {stage.label}
                 </h3>
               </div>
-              <p className="mt-5 max-w-[52ch] text-pretty text-lg leading-relaxed text-ivory/80">
+              <p className="mt-5 max-w-[52ch] text-pretty text-lg leading-relaxed text-bone/80">
                 {stage.summary}
               </p>
 
-              <dl className="mt-8 grid gap-6 border-t border-ivory/10 pt-6 sm:grid-cols-3">
+              <dl className="mt-8 grid gap-6 border-t border-bone/10 pt-6 sm:grid-cols-3">
                 <div>
-                  <dt className="font-mono text-meta uppercase text-silver">Government</dt>
-                  <dd className="mt-2 text-sm leading-relaxed text-ivory/70">{stage.government}</dd>
+                  <dt className="font-mono text-meta uppercase text-stone-light">Government</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-bone/70">{stage.government}</dd>
                 </div>
                 <div>
-                  <dt className="font-mono text-meta uppercase text-silver">Startup</dt>
-                  <dd className="mt-2 text-sm leading-relaxed text-ivory/70">{stage.startup}</dd>
+                  <dt className="font-mono text-meta uppercase text-stone-light">Startup</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-bone/70">{stage.startup}</dd>
                 </div>
                 <div>
-                  <dt className="font-mono text-meta uppercase text-silver">Standard template</dt>
+                  <dt className="font-mono text-meta uppercase text-stone-light">Standard template</dt>
                   <dd className="mt-2 text-sm leading-relaxed text-saffron">{stage.artifact}</dd>
                 </div>
               </dl>
