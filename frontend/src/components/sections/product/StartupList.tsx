@@ -20,7 +20,7 @@ const SORTS: { key: SortKey; label: string }[] = [
 ];
 
 const COMPLIANCE_TONE: Record<Startup['complianceStatus'], string> = {
-  VERIFIED: 'text-validated-light border-validated/60',
+  VERIFIED: 'text-validated border-validated/60',
   IN_REVIEW: 'text-saffron border-saffron/50',
   ACTION_REQUIRED: 'text-risk border-risk/50',
 };
@@ -61,7 +61,7 @@ export function StartupList({ startups }: { startups: Startup[] }) {
 
   return (
     <div ref={ref} className="edge mx-auto max-w-[110rem] pb-[clamp(5rem,12vh,9rem)]">
-      <div className="flex flex-wrap items-baseline justify-between gap-6 border-b border-ivory/10 pb-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-6 border-b border-ink/12 pb-4">
         <Label>Sort by evidence signal</Label>
         <div role="tablist" aria-label="Sort startups" className="flex flex-wrap gap-x-6 gap-y-2">
           {SORTS.map((s) => (
@@ -74,7 +74,7 @@ export function StartupList({ startups }: { startups: Startup[] }) {
               data-cursor="sort"
               className={cn(
                 'relative py-1 font-mono text-meta uppercase transition-colors',
-                sort === s.key ? 'text-ivory' : 'text-silver hover:text-ivory',
+                sort === s.key ? 'text-ink' : 'text-stone hover:text-ink',
               )}
             >
               {s.label}
@@ -100,7 +100,7 @@ export function StartupList({ startups }: { startups: Startup[] }) {
                 layout="position"
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                 data-startup-row
-                className="border-b border-ivory/10"
+                className="border-b border-ink/12"
               >
                 <button
                   type="button"
@@ -111,28 +111,28 @@ export function StartupList({ startups }: { startups: Startup[] }) {
                   className="group grid w-full grid-cols-1 items-baseline gap-x-8 gap-y-3 py-7 text-left md:grid-cols-[1fr_auto]"
                 >
                   <span>
-                    <span className="block font-display text-2xl uppercase leading-none text-ivory transition-colors group-hover:text-saffron">
+                    <span className="block font-display text-2xl uppercase leading-none text-ink transition-colors group-hover:text-saffron">
                       {s.name}
                     </span>
-                    <span className="mt-2 block font-mono text-meta uppercase text-silver">
+                    <span className="mt-2 block font-mono text-meta uppercase text-stone">
                       {s.technologies.join(' · ')} — {s.headquarters}
                     </span>
                   </span>
 
                   <span className="flex flex-wrap items-baseline gap-x-8 gap-y-2">
                     <span className="text-right">
-                      <span className="block font-display text-2xl leading-none text-ivory tabular-nums">
+                      <span className="block font-display text-2xl leading-none text-ink tabular-nums">
                         {s.matchScore}%
                       </span>
-                      <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-silver">
+                      <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone">
                         match
                       </span>
                     </span>
                     <span className="text-right">
-                      <span className="block font-display text-2xl leading-none text-ivory tabular-nums">
+                      <span className="block font-display text-2xl leading-none text-ink tabular-nums">
                         TRL {s.trl}
                       </span>
-                      <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-silver">
+                      <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone">
                         readiness
                       </span>
                     </span>
@@ -159,7 +159,7 @@ export function StartupList({ startups }: { startups: Startup[] }) {
                     >
                       <div className="grid gap-10 pb-10 lg:grid-cols-[1fr_1.15fr]">
                         <div>
-                          <p className="max-w-[46ch] text-base leading-relaxed text-ivory/85">
+                          <p className="max-w-[46ch] text-base leading-relaxed text-ink/80">
                             {s.summary}
                           </p>
 
@@ -170,21 +170,21 @@ export function StartupList({ startups }: { startups: Startup[] }) {
                               { k: 'Pilot score', v: s.pilotSuccessScore, suffix: ' / 100' },
                             ].map((x) => (
                               <div key={x.k}>
-                                <dt className="font-mono text-meta uppercase text-silver">{x.k}</dt>
-                                <dd className="mt-2 font-display text-2xl leading-none text-ivory">
+                                <dt className="font-mono text-meta uppercase text-stone">{x.k}</dt>
+                                <dd className="mt-2 font-display text-2xl leading-none text-ink">
                                   <Counter value={x.v} suffix={x.suffix ?? ''} duration={1.1} />
                                 </dd>
                               </div>
                             ))}
                             <div>
-                              <dt className="font-mono text-meta uppercase text-silver">Founded</dt>
-                              <dd className="mt-2 font-display text-2xl leading-none text-ivory">
+                              <dt className="font-mono text-meta uppercase text-stone">Founded</dt>
+                              <dd className="mt-2 font-display text-2xl leading-none text-ink">
                                 {s.founded}
                               </dd>
                             </div>
                           </dl>
 
-                          <p className="mt-8 border-t border-ivory/10 pt-4 text-xs leading-relaxed text-silver">
+                          <p className="mt-8 border-t border-ink/12 pt-4 text-xs leading-relaxed text-stone">
                             Capital raised: {formatLakh(s.fundingRaised)}. Recorded as one evidence
                             signal among several. It carries no weight in the evaluation criteria
                             and is not a sortable ranking on this register.
@@ -197,15 +197,15 @@ export function StartupList({ startups }: { startups: Startup[] }) {
                             {s.evidence.map((e, i) => (
                               <li
                                 key={e.year + e.label + i}
-                                className="flex items-baseline gap-5 border-b border-ivory/8 py-3"
+                                className="flex items-baseline gap-5 border-b border-ink/10 py-3"
                               >
-                                <span className="w-12 shrink-0 font-mono text-meta uppercase text-silver">
+                                <span className="w-12 shrink-0 font-mono text-meta uppercase text-stone">
                                   {e.year}
                                 </span>
                                 <span className="w-28 shrink-0 font-mono text-meta uppercase text-saffron">
                                   {e.label}
                                 </span>
-                                <span className="text-sm leading-snug text-ivory/80">{e.detail}</span>
+                                <span className="text-sm leading-snug text-ink/75">{e.detail}</span>
                               </li>
                             ))}
                           </ol>
