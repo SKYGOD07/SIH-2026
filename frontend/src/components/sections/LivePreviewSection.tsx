@@ -55,7 +55,7 @@ export function LivePreviewSection() {
       ref={rootRef}
       id="platform"
       aria-label="The platform"
-      className="relative w-full ground-ink py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-bone py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <div className="flex flex-wrap items-end justify-between gap-8">
@@ -64,7 +64,7 @@ export function LivePreviewSection() {
             <SplitText
               as="h2"
               type="lines"
-              className="mt-6 max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory"
+              className="mt-6 max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ink"
             >
               Underneath all of it, a working application.
             </SplitText>
@@ -75,12 +75,12 @@ export function LivePreviewSection() {
         </div>
 
         {/* --- the console --- */}
-        <div data-console className="mt-14 border border-ivory/12 bg-ink-900/60 backdrop-blur-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ivory/10 px-6 py-4">
-            <span className="font-mono text-meta uppercase text-ivory">
+        <div data-console className="mt-14 border border-ink/12 bg-bone-light/70 backdrop-blur-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ink/12 px-6 py-4">
+            <span className="font-mono text-meta uppercase text-ink">
               MahaInnovate · Department console
             </span>
-            <span className="font-mono text-meta uppercase text-silver">
+            <span className="font-mono text-meta uppercase text-stone">
               Simulated environment
             </span>
           </div>
@@ -103,13 +103,13 @@ export function LivePreviewSection() {
                     'Every pilot with its milestones, filed evidence and approval trail.',
                     'Every validated result, and every lesson from the ones that missed.',
                   ].map((line) => (
-                    <li key={line} className="flex items-baseline gap-4 border-b border-ivory/8 pb-4 text-sm leading-relaxed text-ivory/75">
+                    <li key={line} className="flex items-baseline gap-4 border-b border-ink/10 pb-4 text-sm leading-relaxed text-ink/70">
                       <span aria-hidden="true" className="mt-1 h-px w-5 shrink-0 bg-saffron" />
                       {line}
                     </li>
                   ))}
                 </ul>
-                <p className="mt-8 text-xs leading-relaxed text-silver">{DEMO_NOTICE}</p>
+                <p className="mt-8 text-xs leading-relaxed text-stone">{DEMO_NOTICE}</p>
               </div>
             </div>
           </div>
