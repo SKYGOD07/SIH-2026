@@ -99,10 +99,8 @@ export function Preloader() {
     let alive = true;
     const marks = { fonts: false, load: false, frame: false };
 
-    // On a warm cache every signal lands inside ~300ms, which would cut the
-    // mark off mid-assembly. The floor covers the build plus a beat to read it.
-    // Slow connections are unaffected — readiness is still binding there.
-    const ASSEMBLY_FLOOR = 3200;
+    // Fast, responsive loading floor so the mark assembles smoothly without stalling.
+    const ASSEMBLY_FLOOR = 1200;
     const started = performance.now();
     let floorTimer = 0;
 
@@ -131,13 +129,20 @@ export function Preloader() {
 
     requestAnimationFrame(() => requestAnimationFrame(() => bump('frame')));
 
-    const failsafe = window.setTimeout(() => alive && setDone(true), 6000);
+    // Hard failsafe: Never leave the user stuck on loading screen longer than 2.5s
+    const failsafe = window.setTimeout(() => {
+      if (alive) {
+        setDone(true);
+        beginReveal();
+        complete();
+      }
+    }, 2500);
     return () => {
       alive = false;
       window.clearTimeout(failsafe);
       window.clearTimeout(floorTimer);
     };
-  }, [reduced]);
+  }, [reduced, beginReveal, complete]);
 
   /* --- the mark assembles out of depth --- */
   useGSAP(
@@ -244,9 +249,12 @@ export function Preloader() {
         }
       }
 
+      // Kill any previous looping breathing animation on the mark
+      gsap.killTweensOf('[data-mark]');
+
       const tl = gsap.timeline({
         // Let the assembled mark be read before it leaves.
-        delay: 0.5,
+        delay: 0.15,
         onComplete: () => {
           // The ground hid the page while it settled; re-measure before handing
           // scroll control to ScrollTrigger.
@@ -259,7 +267,7 @@ export function Preloader() {
       tl.set('[data-mark]', { scale: 1 })
         .to(
           ['[data-preload-word]', '[data-preload-rule]'],
-          { opacity: 0, y: -10, duration: 0.45, ease: 'power2.in' },
+          { opacity: 0, y: -10, duration: 0.35, ease: 'power2.in' },
         )
         .to(
           mark,
@@ -267,27 +275,25 @@ export function Preloader() {
             x: dx,
             y: dy,
             scale: ratio,
-            duration: 1.35,
-            // Settles rather than arriving abruptly — the mark is landing in a
-            // slot, not being thrown at one.
+            duration: 0.9,
+            // Settles cleanly into position
             ease: 'power3.inOut',
             onStart: beginReveal,
           },
-          '-=0.25',
+          '-=0.15',
         )
-        // The ground parts once the mark is most of the way home, so the reader
-        // sees it land against the real page rather than against the curtain.
+        // The ground parts once the mark is most of the way home
         .to(
           '[data-curtain]',
-          { yPercent: (i) => (i === 0 ? -101 : 101), duration: 1.1, ease: 'power4.inOut' },
-          '-=0.85',
+          { yPercent: (i) => (i === 0 ? -101 : 101), duration: 0.75, ease: 'power4.inOut' },
+          '-=0.6',
         )
-        .to(mark, { opacity: 0, duration: 0.3, ease: 'power2.in' }, '-=0.45')
+        .to(mark, { opacity: 0, duration: 0.25, ease: 'power2.in' }, '-=0.3')
         .set(root, { pointerEvents: 'none' });
 
       return () => tl.kill();
     },
-    { scope: rootRef, dependencies: [done, reduced, phase] },
+    { scope: rootRef, dependencies: [done, reduced, phase, beginReveal, complete] },
   );
 
   if (phase === 'ready') return null;
@@ -295,10 +301,14 @@ export function Preloader() {
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 z-[120] overflow-hidden"
+      onClick={() => {
+        beginReveal();
+        complete();
+      }}
+      className="fixed inset-0 z-[120] overflow-hidden cursor-pointer"
       role="status"
       aria-live="polite"
-      aria-label="Loading MahaInnovate"
+      aria-label="Loading MahaInnovate (Click to skip)"
     >
       {/* The ground, split so it can part. */}
       <div data-curtain className="absolute inset-x-0 top-0 h-1/2 bg-bone" />
