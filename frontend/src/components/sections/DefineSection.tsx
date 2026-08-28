@@ -53,7 +53,7 @@ export function DefineSection() {
       if (!root) return;
 
       if (reduced) {
-        gsap.set('[data-mark]', { backgroundColor: 'rgba(232,118,43,0.16)', color: '#f6f3ec' });
+        gsap.set('[data-mark]', { backgroundColor: 'rgba(210,89,15,0.18)', color: '#17161a' });
         gsap.set('[data-extract]', { autoAlpha: 1, y: 0 });
         gsap.set('[data-structured]', { autoAlpha: 1, y: 0 });
         return;
@@ -88,7 +88,7 @@ export function DefineSection() {
             `[data-mark="${h.key}"]`,
             {
               backgroundColor: 'rgba(232,118,43,0.2)',
-              color: '#f6f3ec',
+              color: '#17161a',
               duration: 0.3,
               ease: 'power2.out'
             },
@@ -135,11 +135,11 @@ export function DefineSection() {
       ref={rootRef}
       id="define"
       aria-label="Define — turning a note into a measurable challenge"
-      className="relative flex h-[100svh] w-full flex-col overflow-hidden ground-ink"
+      className="relative flex h-[100svh] w-full flex-col overflow-hidden ground-bone"
     >
       <div className="edge mx-auto w-full max-w-[110rem] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <Label index="01">Define</Label>
-        <h2 className="mt-5 max-w-[20ch] font-display text-display-sm font-medium uppercase leading-[0.92] text-ivory">
+        <h2 className="mt-5 max-w-[20ch] font-display text-display-sm font-medium uppercase leading-[0.92] text-ink">
           Ambiguity in. Measurement out.
         </h2>
       </div>
@@ -154,7 +154,7 @@ export function DefineSection() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 top-0 h-16 origin-top scale-y-0 bg-gradient-to-b from-saffron/25 to-transparent"
             />
-            <p className="text-pretty text-lg leading-[1.65] text-ivory/70">
+            <p className="text-pretty text-lg leading-[1.65] text-ink/70">
               {segments.map((seg, i) =>
                 seg.key ? (
                   <span
@@ -169,7 +169,7 @@ export function DefineSection() {
                 ),
               )}
             </p>
-            <p className="mt-6 border-t border-ivory/10 pt-4 font-mono text-meta uppercase text-silver">
+            <p className="mt-6 border-t border-ink/12 pt-4 font-mono text-meta uppercase text-stone">
               Transport · received as written
             </p>
           </div>
@@ -188,8 +188,8 @@ export function DefineSection() {
                 className="border-l border-saffron/50 pl-4 opacity-0"
               >
                 <dt className="font-mono text-meta uppercase text-saffron">{h.label}</dt>
-                <dd className="mt-1.5 text-sm leading-snug text-ivory">{h.value}</dd>
-                <dd className="mt-1 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-silver">
+                <dd className="mt-1.5 text-sm leading-snug text-ink">{h.value}</dd>
+                <dd className="mt-1 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-stone">
                   from “{h.span}”
                 </dd>
               </div>
@@ -202,32 +202,32 @@ export function DefineSection() {
           <Label className="mb-1">Measurable challenge</Label>
 
           <div data-structured className="opacity-0">
-            <span className="font-mono text-meta uppercase text-silver">Target</span>
-            <p className="mt-2 font-display text-display-xs font-medium uppercase leading-[0.95] text-ivory">
+            <span className="font-mono text-meta uppercase text-stone">Target</span>
+            <p className="mt-2 font-display text-display-xs font-medium uppercase leading-[0.95] text-ink">
               30% reduction in unplanned breakdowns
             </p>
           </div>
 
-          <div data-structured className="grid grid-cols-2 gap-6 border-t border-ivory/10 pt-6 opacity-0">
+          <div data-structured className="grid grid-cols-2 gap-6 border-t border-ink/12 pt-6 opacity-0">
             <div>
-              <span className="font-mono text-meta uppercase text-silver">Pilot</span>
-              <p className="mt-2 font-display text-2xl uppercase text-ivory">
+              <span className="font-mono text-meta uppercase text-stone">Pilot</span>
+              <p className="mt-2 font-display text-2xl uppercase text-ink">
                 {DEFINE_EXAMPLE.structured.pilot}
               </p>
             </div>
             <div>
-              <span className="font-mono text-meta uppercase text-silver">Duration</span>
-              <p className="mt-2 font-display text-2xl uppercase text-ivory">
+              <span className="font-mono text-meta uppercase text-stone">Duration</span>
+              <p className="mt-2 font-display text-2xl uppercase text-ink">
                 {DEFINE_EXAMPLE.structured.duration}
               </p>
             </div>
           </div>
 
-          <div data-structured className="border-t border-ivory/10 pt-6 opacity-0">
-            <span className="font-mono text-meta uppercase text-silver">Success metrics</span>
+          <div data-structured className="border-t border-ink/12 pt-6 opacity-0">
+            <span className="font-mono text-meta uppercase text-stone">Success metrics</span>
             <ul className="mt-3 space-y-2">
               {DEFINE_EXAMPLE.structured.metrics.map((m) => (
-                <li key={m} className="flex items-baseline gap-3 text-sm text-ivory/85">
+                <li key={m} className="flex items-baseline gap-3 text-sm text-ink/80">
                   <span aria-hidden="true" className="h-px w-4 shrink-0 bg-saffron" />
                   {m}
                 </li>
@@ -235,7 +235,7 @@ export function DefineSection() {
             </ul>
           </div>
 
-          <p data-structured className="border-t border-ivory/10 pt-5 text-xs leading-relaxed text-silver opacity-0">
+          <p data-structured className="border-t border-ink/12 pt-5 text-xs leading-relaxed text-stone opacity-0">
             The department reviews and signs off the structured statement before it is published.
             Extraction is a drafting aid, not an approval.
           </p>
