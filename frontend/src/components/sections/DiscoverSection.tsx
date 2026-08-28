@@ -94,14 +94,14 @@ export function DiscoverSection() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(7,8,10,0.9)_0%,rgba(7,8,10,0.25)_45%,rgba(7,8,10,0.85)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(13,15,18,0.9)_0%,rgba(13,15,18,0.25)_45%,rgba(13,15,18,0.85)_100%)]"
       />
 
       <div className="edge relative z-10 mx-auto flex h-full min-h-0 max-w-[110rem] flex-col justify-between pb-[clamp(4rem,10vh,7rem)] pt-[calc(var(--nav-safe)+clamp(0.75rem,3vh,2.5rem))]">
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div>
             <Label index="02">Discover</Label>
-            <h2 className="mt-5 max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.92] text-ivory">
+            <h2 className="mt-5 max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.92] text-bone">
               Every filter, on the record.
             </h2>
           </div>
@@ -112,7 +112,7 @@ export function DiscoverSection() {
                 key={f.rule}
                 className={cn(
                   'flex items-baseline gap-4 font-mono text-meta uppercase transition-colors duration-500',
-                  i === step ? 'text-saffron' : i < step ? 'text-ivory/50' : 'text-ivory/20',
+                  i === step ? 'text-saffron-light' : i < step ? 'text-bone/50' : 'text-bone/25',
                 )}
               >
                 <span className="w-16 text-right tabular-nums">{f.count.toLocaleString('en-IN')}</span>
@@ -133,13 +133,13 @@ export function DiscoverSection() {
                 exit={{ opacity: 0, y: -14 }}
                 transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
               >
-                <span className="block font-display text-display-md font-medium tabular-nums leading-none text-ivory">
+                <span className="block font-display text-display-md font-medium tabular-nums leading-none text-bone">
                   <Counter value={current.count} grouped duration={0.9} />
                 </span>
-                <span className="mt-4 block font-mono text-meta-lg uppercase text-saffron">
+                <span className="mt-4 block font-mono text-meta-lg uppercase text-saffron-light">
                   {current.caption}
                 </span>
-                <p className="mt-3 max-w-[34ch] text-sm leading-relaxed text-silver">
+                <p className="mt-3 max-w-[34ch] text-sm leading-relaxed text-stone-light">
                   Filter applied: {current.rule.toLowerCase()}.
                 </p>
               </motion.div>
@@ -163,13 +163,13 @@ export function DiscoverSection() {
                     transition={{ delay: 0.08 * i, duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                     className="min-w-[9rem]"
                   >
-                    <span className="block font-display text-2xl uppercase leading-none text-ivory">
+                    <span className="block font-display text-2xl uppercase leading-none text-bone">
                       {s.name}
                     </span>
-                    <span className="mt-2 block font-mono text-meta uppercase text-saffron">
+                    <span className="mt-2 block font-mono text-meta uppercase text-saffron-light">
                       {s.matchScore}% match
                     </span>
-                    <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-silver">
+                    <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-stone-light">
                       TRL {s.trl} · {s.governmentDeployments} gov deployments
                     </span>
                   </motion.li>
@@ -179,7 +179,7 @@ export function DiscoverSection() {
           </AnimatePresence>
         </div>
 
-        <p className="mt-6 max-w-[62ch] border-t border-ivory/10 pt-4 text-xs leading-relaxed text-silver">
+        <p className="mt-6 max-w-[62ch] border-t border-bone/12 pt-4 text-xs leading-relaxed text-stone-light">
           Match scores rank candidates for human review. They do not select a supplier, and no
           award follows from them.
         </p>
