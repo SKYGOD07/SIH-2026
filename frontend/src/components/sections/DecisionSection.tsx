@@ -76,14 +76,14 @@ export function DecisionSection() {
       ref={rootRef}
       id="procure"
       aria-label="Procurement decision"
-      className="relative w-full ground-ink py-[clamp(6rem,14vh,11rem)]"
+      className="relative w-full ground-bone py-[clamp(6rem,14vh,11rem)]"
     >
       <div className="edge mx-auto max-w-[110rem]">
         <Label index="07">Procure</Label>
         <SplitText
           as="h2"
           type="lines"
-          className="mt-6 max-w-[14ch] font-display text-display-md font-medium uppercase leading-[0.88] text-ivory"
+          className="mt-6 max-w-[14ch] font-display text-display-md font-medium uppercase leading-[0.88] text-ink"
         >
           The pilot has spoken.
         </SplitText>
@@ -130,14 +130,14 @@ export function DecisionSection() {
                     b.tone === 'validated'
                       ? 'border-validated'
                       : b.tone === 'risk'
-                        ? 'border-risk/60'
-                        : 'border-ivory/20',
+                        ? 'border-risk/50'
+                        : 'border-ink/20',
                   )}
                 >
                   <p
                     className={cn(
                       'font-display text-display-xs font-medium uppercase leading-none',
-                      taken ? 'text-ivory' : 'text-ivory/35',
+                      taken ? 'text-ink' : 'text-ink/40',
                     )}
                   >
                     {b.label}
@@ -145,7 +145,7 @@ export function DecisionSection() {
                   <p
                     className={cn(
                       'mt-4 max-w-[34ch] text-sm leading-relaxed',
-                      taken ? 'text-ivory/75' : 'text-silver/60',
+                      taken ? 'text-ink/70' : 'text-stone/70',
                     )}
                   >
                     {b.detail}
@@ -153,7 +153,7 @@ export function DecisionSection() {
                   <p
                     className={cn(
                       'mt-5 font-mono text-meta uppercase',
-                      taken ? 'text-validated-light' : 'text-silver/50',
+                      taken ? 'text-validated' : 'text-stone/60',
                     )}
                   >
                     {taken ? 'Recorded for this pilot' : 'Available outcome'}
@@ -168,17 +168,17 @@ export function DecisionSection() {
         <div className="mt-20 grid gap-12 lg:grid-cols-[1fr_1fr]">
           <div data-decision-evidence>
             <Label>Decision basis</Label>
-            <dl className="mt-6 grid grid-cols-2 gap-px border-t border-ivory/10">
+            <dl className="mt-6 grid grid-cols-2 gap-px border-t border-ink/12">
               {DECISION_EVIDENCE.map((e) => (
-                <div key={e.label} data-evidence-cell className="border-b border-ivory/10 py-5 pr-6">
-                  <dt className="font-mono text-meta uppercase text-silver">{e.label}</dt>
-                  <dd className="mt-2 font-display text-3xl uppercase leading-none text-ivory">
+                <div key={e.label} data-evidence-cell className="border-b border-ink/12 py-5 pr-6">
+                  <dt className="font-mono text-meta uppercase text-stone">{e.label}</dt>
+                  <dd className="mt-2 font-display text-3xl uppercase leading-none text-ink">
                     {e.value}
                   </dd>
                 </div>
               ))}
             </dl>
-            <p className="mt-6 max-w-[52ch] text-xs leading-relaxed text-silver">
+            <p className="mt-6 max-w-[52ch] text-xs leading-relaxed text-stone">
               The decision, its basis and any dissent are recorded together. A later department
               reading this file sees what was decided and why.
             </p>
@@ -186,13 +186,13 @@ export function DecisionSection() {
 
           <div className="flex items-center">
             <div data-verdict className="opacity-0">
-              <span className="font-mono text-meta uppercase text-validated-light">
+              <span className="font-mono text-meta uppercase text-validated">
                 Recorded decision
               </span>
-              <p className="mt-5 font-display text-display-sm font-medium uppercase leading-[0.88] text-ivory">
+              <p className="mt-5 font-display text-display-sm font-medium uppercase leading-[0.88] text-ink">
                 Proceed to procurement
               </p>
-              <p className="mt-6 max-w-[42ch] text-base leading-relaxed text-silver">
+              <p className="mt-6 max-w-[42ch] text-base leading-relaxed text-stone">
                 A compliant procurement pathway opens on the strength of validated pilot evidence —
                 not on the strength of the pitch that started it.
               </p>
