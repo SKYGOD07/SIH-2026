@@ -236,6 +236,61 @@
     backface-visibility: hidden;
   }
 
+  /**
+   * The horizontal deck.
+   *
+   * The landing page is a slideshow read sideways: vertical scroll is pinned
+   * and converted into horizontal travel across a row of full-viewport slides.
+   *
+   * The layout switch lives here rather than in JavaScript so it cannot drift
+   * out of step with the matchMedia query that installs the pin. Both are
+   * keyed on exactly the same condition — wide enough for a sideways read, and
+   * the reader has not asked for reduced motion. Anywhere else the same slides
+   * stack vertically and behave like an ordinary page, which is also the
+   * server-rendered state, so nothing depends on JavaScript to be legible.
+   */
+  .deck-shell {
+    position: relative;
+    width: 100%;
+  }
+
+  .deck-track {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .deck-slide {
+    position: relative;
+    width: 100%;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .deck-shell {
+      height: 100svh;
+      overflow: hidden;
+    }
+
+    .deck-track {
+      flex-direction: row;
+      height: 100svh;
+      width: max-content;
+      /* Promoted once, up front: the track is translated every scroll frame. */
+      will-change: transform;
+    }
+
+    .deck-slide {
+      /* No shrink, no grow — every slide is exactly one viewport wide. */
+      flex: 0 0 100vw;
+      width: 100vw;
+      height: 100svh;
+      min-height: 0;
+    }
+  }
+
   .mask-fade-y {
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
