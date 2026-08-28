@@ -135,7 +135,7 @@ export function ScaleSection() {
               data-map-interior
               d={d}
               fill="none"
-              stroke="#f6f3ec"
+              stroke="#ede7dd"
               strokeOpacity="0.1"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
@@ -148,8 +148,8 @@ export function ScaleSection() {
           <path
             data-map-outline
             d={MAHARASHTRA_PATH}
-            fill="rgba(246,243,236,0.02)"
-            stroke="#a6a49c"
+            fill="rgba(237,231,221,0.03)"
+            stroke="#a8a49b"
             strokeOpacity="0.55"
             strokeWidth="1.5"
             vectorEffect="non-scaling-stroke"
@@ -206,7 +206,7 @@ export function ScaleSection() {
                     fillOpacity: live ? 1 : 0.22,
                   }}
                   transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  fill={live ? '#e8762b' : '#a6a49c'}
+                  fill={live ? '#e8762b' : '#a8a49b'}
                 />
                 {live ? (
                   <motion.text
@@ -218,7 +218,7 @@ export function ScaleSection() {
                     className="font-mono"
                     fontSize="13"
                     letterSpacing="1.6"
-                    fill="#f6f3ec"
+                    fill="#ede7dd"
                     fillOpacity="0.75"
                   >
                     {d.label.toUpperCase()}
@@ -239,7 +239,7 @@ export function ScaleSection() {
         <div className="flex flex-wrap items-start justify-between gap-8">
           <div>
             <Label index="08">Scale</Label>
-            <h2 className="mt-5 max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory">
+            <h2 className="mt-5 max-w-[18ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-bone">
               Prove once. Scale where it fits.
             </h2>
           </div>
@@ -250,7 +250,7 @@ export function ScaleSection() {
                 key={s.label + s.count}
                 className={cn(
                   'flex items-baseline gap-4 font-mono text-meta uppercase transition-colors duration-500',
-                  i === step ? 'text-saffron' : i < step ? 'text-ivory/50' : 'text-ivory/20',
+                  i === step ? 'text-saffron' : i < step ? 'text-bone/50' : 'text-bone/20',
                 )}
               >
                 <span className="w-6 text-right tabular-nums">{s.count}</span>
@@ -269,11 +269,11 @@ export function ScaleSection() {
               exit={{ opacity: 0, y: -14 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
-              <p className="font-display text-display-md font-medium leading-none text-ivory">
+              <p className="font-display text-display-md font-medium leading-none text-bone">
                 <Counter value={current.count} duration={0.8} />
               </p>
               <p className="mt-3 font-mono text-meta-lg uppercase text-saffron">{current.unit}</p>
-              <p className="mt-3 max-w-[40ch] text-sm leading-relaxed text-silver">{current.note}</p>
+              <p className="mt-3 max-w-[40ch] text-sm leading-relaxed text-stone-light">{current.note}</p>
             </motion.div>
           </AnimatePresence>
 
@@ -283,7 +283,7 @@ export function ScaleSection() {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="max-w-[36ch] text-pretty text-sm leading-relaxed text-silver"
+                className="max-w-[36ch] text-pretty text-sm leading-relaxed text-stone-light"
               >
                 Where it fits is a judgement each department makes on its own conditions. What
                 transfers is the evidence and the pathway — not an obligation to adopt.
