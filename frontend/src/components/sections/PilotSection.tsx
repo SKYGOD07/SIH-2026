@@ -84,7 +84,7 @@ export function PilotSection() {
       ref={rootRef}
       id="pilot"
       aria-label="Pilot — a controlled sandbox deployment"
-      className="relative h-[100svh] w-full overflow-hidden ground-ink"
+      className="relative h-[100svh] w-full overflow-hidden ground-abyss"
     >
       <div className="absolute inset-0" aria-hidden="true">
         <SceneCanvas
@@ -104,7 +104,7 @@ export function PilotSection() {
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
             <Label index="05">Pilot sandbox</Label>
-            <h2 className="mt-5 max-w-[16ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-ivory">
+            <h2 className="mt-5 max-w-[16ch] font-display text-display-sm font-medium uppercase leading-[0.9] text-bone">
               {PRIMARY_CHALLENGE.title}
             </h2>
           </div>
@@ -117,8 +117,8 @@ export function PilotSection() {
               { k: 'Department', v: PRIMARY_CHALLENGE.department },
             ].map((item) => (
               <div key={item.k}>
-                <dt className="font-mono text-meta uppercase text-silver">{item.k}</dt>
-                <dd className="mt-1.5 text-sm text-ivory">{item.v}</dd>
+                <dt className="font-mono text-meta uppercase text-stone-light">{item.k}</dt>
+                <dd className="mt-1.5 text-sm text-bone">{item.v}</dd>
               </div>
             ))}
           </dl>
@@ -126,7 +126,7 @@ export function PilotSection() {
 
         <div>
           {/* --- milestone rail --- */}
-          <ol className="flex flex-wrap items-stretch gap-px border-t border-ivory/10 pt-6">
+          <ol className="flex flex-wrap items-stretch gap-px border-t border-bone/10 pt-6">
             {milestones.map((m, i) => (
               <li key={m.id} className="min-w-[7rem] flex-1">
                 <div
@@ -136,8 +136,8 @@ export function PilotSection() {
                     (i === milestone
                       ? 'border-saffron text-saffron'
                       : i < milestone
-                        ? 'border-validated text-ivory/60'
-                        : 'border-ivory/15 text-ivory/25')
+                        ? 'border-validated text-bone/60'
+                        : 'border-bone/15 text-bone/25')
                   }
                 >
                   <span className="font-mono text-meta uppercase">{m.code}</span>
@@ -157,25 +157,25 @@ export function PilotSection() {
               className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]"
             >
               <div>
-                <p className="max-w-[52ch] text-pretty text-lg leading-relaxed text-ivory/85">
+                <p className="max-w-[52ch] text-pretty text-lg leading-relaxed text-bone/85">
                   {current.description}
                 </p>
-                <p className="mt-4 font-mono text-meta uppercase text-silver">
+                <p className="mt-4 font-mono text-meta uppercase text-stone-light">
                   Due {new Date(current.dueOn).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
 
-              <div className="border-l border-ivory/15 pl-6">
+              <div className="border-l border-bone/15 pl-6">
                 <Label tone="accent">Evidence required before approval</Label>
                 <ul className="mt-4 space-y-2">
                   {current.evidenceRequired.map((e) => (
-                    <li key={e} className="flex items-baseline gap-3 text-sm text-ivory/80">
+                    <li key={e} className="flex items-baseline gap-3 text-sm text-bone/80">
                       <span aria-hidden="true" className="h-px w-4 shrink-0 bg-saffron" />
                       {e}
                     </li>
                   ))}
                 </ul>
-                <p className="mt-5 font-mono text-meta uppercase text-silver">
+                <p className="mt-5 font-mono text-meta uppercase text-stone-light">
                   Releases {formatLakh(current.payment)} on approval
                 </p>
               </div>
