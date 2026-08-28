@@ -4,9 +4,6 @@ import { useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { gsap, SCRUB } from '@/lib/gsap';
-import { SceneCanvas } from '@/components/three/SceneCanvas';
-import { SceneFallback } from '@/components/three/SceneFallback';
-import { LazyEvidenceField } from '@/components/three/scenes';
 import { Label } from '@/components/typography';
 import {
   EVIDENCE_SOURCES,
@@ -96,16 +93,9 @@ export function EvidenceSection() {
       ref={rootRef}
       id="evidence"
       aria-label="Evidence retrieval"
-      className="relative h-[100svh] w-full overflow-hidden ground-abyss"
+      className="relative h-[100svh] w-full overflow-hidden ground-abyss-veil"
     >
-      <div className="absolute inset-0" aria-hidden="true">
-        <SceneCanvas
-          camera={{ position: [0, 0, 9], fov: 46 }}
-          fallback={<SceneFallback variant="archive" />}
-        >
-          <LazyEvidenceField progress={sceneProgress} />
-        </SceneCanvas>
-      </div>
+      {/* The page-wide 3D layer supplies this section's depth; see GlobalScene. */}
 
       <div
         aria-hidden="true"

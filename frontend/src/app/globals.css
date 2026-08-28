@@ -136,6 +136,16 @@
       radial-gradient(ellipse 90% 65% at 50% 45%, #1e2228 0%, #14161a 62%, #0d0f12 100%);
   }
 
+  /**
+   * Dark punctuation that still lets the page-wide 3D layer through.
+   * A fully opaque dark section would hide the travelling forms entirely, which
+   * is the one thing the global scene exists to prevent.
+   */
+  .ground-abyss-veil {
+    background-image:
+      radial-gradient(ellipse 95% 70% at 50% 45%, rgba(30, 34, 40, 0.86) 0%, rgba(20, 22, 26, 0.94) 58%, rgba(13, 15, 18, 0.97) 100%);
+  }
+
   /* Scrim behind the navigation so type never collides with it. */
   .nav-scrim {
     background-image: linear-gradient(

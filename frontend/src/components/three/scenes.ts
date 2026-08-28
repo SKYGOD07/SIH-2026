@@ -7,12 +7,7 @@ import dynamic from 'next/dynamic';
  *
  * Three.js plus the scene graph is by far the heaviest thing on the page; none
  * of it belongs in the initial bundle, and none of it can render on the server.
- * Importing from here — rather than calling `dynamic()` at each call site — keeps
- * that guarantee in one place.
+ * Importing from here keeps that guarantee in one place.
  */
 
-export const LazyProblemForms = dynamic(() => import('./ProblemForms'), { ssr: false });
-export const LazyLifecycleOrbit = dynamic(() => import('./LifecycleOrbit'), { ssr: false });
-export const LazyStartupNetwork = dynamic(() => import('./StartupNetwork'), { ssr: false });
-export const LazyEvidenceField = dynamic(() => import('./EvidenceField'), { ssr: false });
-export const LazyPilotCity = dynamic(() => import('./PilotCity'), { ssr: false });
+export const LazyJourneyForms = dynamic(() => import('./JourneyForms'), { ssr: false });

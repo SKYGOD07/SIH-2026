@@ -3,8 +3,6 @@
 import { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, SCRUB } from '@/lib/gsap';
-import { SceneCanvas } from '@/components/three/SceneCanvas';
-import { LazyProblemForms } from '@/components/three/scenes';
 import { useIntro } from '@/components/motion/IntroProvider';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { DEMO_NOTICE } from '@/data/challenges';
@@ -208,16 +206,11 @@ export function Hero() {
         }}
       />
 
-      {/* Spatial layer — BEHIND text (z-1). Atmospheric only, never fighting type. */}
-      <div className="absolute inset-0 z-[1]" aria-hidden="true">
-        <SceneCanvas
-          alwaysRender
-          rootMargin="60% 0px"
-          camera={{ position: [0, 0, 11], fov: 42 }}
-        >
-          <LazyProblemForms progress={sceneProgress} />
-        </SceneCanvas>
-      </div>
+      {/*
+        No canvas here. The 3D forms live in one page-wide layer (GlobalScene)
+        so they travel continuously through every section instead of appearing
+        and disappearing per screen.
+      */}
 
       <div className="relative z-[3] flex h-full flex-col pb-[clamp(1rem,3vh,2rem)]">
         <h1 className="sr-only">

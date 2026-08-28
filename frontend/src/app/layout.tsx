@@ -6,6 +6,7 @@ import { AudienceProvider } from '@/components/motion/AudienceProvider';
 import { IntroProvider } from '@/components/motion/IntroProvider';
 import { Preloader } from '@/components/motion/Preloader';
 import { AmbientBackdrop } from '@/components/motion/AmbientBackdrop';
+import { GlobalScene } from '@/components/three/GlobalScene';
 import { Nav } from '@/components/navigation/Nav';
 import { CustomCursor } from '@/components/navigation/CustomCursor';
 import { SiteFooter } from '@/components/navigation/SiteFooter';
@@ -86,6 +87,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 through them; see `.ground-bone` in globals.css.
               */}
               <AmbientBackdrop />
+              {/* One WebGL layer for the whole document — the forms travel through
+                  every section rather than appearing per screen. */}
+              <GlobalScene />
               <CustomCursor />
               <Nav />
               <div className="relative z-10">
