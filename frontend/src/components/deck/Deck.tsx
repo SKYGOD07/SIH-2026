@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
@@ -30,6 +30,29 @@ import { cn } from '@/lib/utils';
  *     a ScrollTrigger aimed at a slide from outside would measure nonsense.
  */
 
+/**
+ * The deck's horizontal tween, published to everything inside it.
+ *
+ * Anything that wants to animate as the reader *arrives at it* has the same
+ * problem the navigation had: the slides are translated by a tween, so their
+ * position in the document never changes and an ordinary ScrollTrigger measures
+ * nothing. GSAP solves this with `containerAnimation` — a trigger given the
+ * tween that moves its target resolves horizontal start and end positions
+ * against that tween instead of against the scroll position.
+ *
+ * So the tween is put on a context. `mode` says which world a consumer is in,
+ * because the same slides also stack vertically on a phone, where triggers are
+ * ordinary and the horizontal start/end strings would be meaningless.
+ */
+interface DeckContextValue {
+  container: gsap.core.Tween | null;
+  mode: 'horizontal' | 'stacked';
+}
+
+const DeckContext = createContext<DeckContextValue>({ container: null, mode: 'stacked' });
+
+export const useDeck = () => useContext(DeckContext);
+
 export interface DeckProps {
   children: ReactNode;
   /** Slide names, in order. Drawn in the rail along the bottom edge. */
@@ -43,6 +66,14 @@ export function Deck({ children, chapters }: DeckProps) {
   const railFillRef = useRef<HTMLSpanElement>(null);
   const reduced = usePrefersReducedMotion();
   const { setHeroComplete } = useIntro();
+
+  /*
+   * State rather than a ref: consumers are React components that have to
+   * re-render once the tween exists, and there is exactly one transition per
+   * layout — cheap, and it cannot be missed the way a ref read on mount can.
+   */
+  const [container, setContainer] = useState<gsap.core.Tween | null>(null);
+  const [mode, setMode] = useState<'horizontal' | 'stacked'>('stacked');
 
   useGSAP(
     () => {
@@ -93,7 +124,12 @@ export function Deck({ children, chapters }: DeckProps) {
           },
         });
 
+        setContainer(tween);
+        setMode('horizontal');
+
         return () => {
+          setContainer(null);
+          setMode('stacked');
           tween.scrollTrigger?.kill();
           tween.kill();
           gsap.set(track, { x: 0 });
@@ -102,6 +138,7 @@ export function Deck({ children, chapters }: DeckProps) {
 
       // Stacked fallback: the same boundary, measured the ordinary way.
       mm.add('(max-width: 767px), (prefers-reduced-motion: reduce)', () => {
+        setMode('stacked');
         const second = track.querySelector('[data-slide]:nth-of-type(2)');
         if (!second) return;
         const st = ScrollTrigger.create({
@@ -121,10 +158,12 @@ export function Deck({ children, chapters }: DeckProps) {
     { scope: shellRef, dependencies: [reduced, chapters.length, setHeroComplete] },
   );
 
+  const deck = useMemo<DeckContextValue>(() => ({ container, mode }), [container, mode]);
+
   return (
     <div ref={shellRef} className="deck-shell ground-void">
       <div ref={trackRef} className="deck-track">
-        {children}
+        <DeckContext.Provider value={deck}>{children}</DeckContext.Provider>
       </div>
     </div>
   );
@@ -135,7 +174,7 @@ export interface SlideProps {
   index: string;
   label: string;
   children: ReactNode;
-  /** Full-bleed yellow. Deliberately rare — once in the deck. */
+  /** Full-bleed accent. Deliberately rare — the deck ends on it. */
   invert?: boolean;
   className?: string;
 }
@@ -154,16 +193,16 @@ export function Slide({ id, index, label, children, invert = false, className }:
       data-slide
       aria-label={label}
       data-invert={invert ? '' : undefined}
-      className={cn('deck-slide', invert ? 'ground-signal' : 'ground-void', className)}
+      className={cn('deck-slide', invert ? 'ground-flare' : 'ground-void', className)}
     >
       <div className="edge nav-safe flex h-full w-full flex-col justify-center pb-[clamp(4rem,10vh,7rem)]">
         <span
           className={cn(
             'mb-[clamp(1.5rem,4vh,2.75rem)] inline-flex items-center gap-3 font-mono text-meta uppercase',
-            invert ? 'text-void/60' : 'text-chalk/45',
+            invert ? 'text-chalk/70' : 'text-chalk/45',
           )}
         >
-          <span className={invert ? 'text-void' : 'text-signal'}>{index}</span>
+          <span className={invert ? 'text-chalk' : 'text-flare-bright'}>{index}</span>
           <span aria-hidden="true" className="h-px w-8 bg-current opacity-30" />
           {label}
         </span>
