@@ -268,10 +268,9 @@ export function Nav() {
     <>
       <header
         ref={headerRef}
-        // The pre-animation state, so the first paint matches where the
-        // entrance starts rather than flashing the header in position.
-        style={{ transform: 'translateY(-100px)', opacity: 0, visibility: 'hidden' }}
-        className="pointer-events-none fixed inset-x-0 top-0 z-[60] flex justify-center px-4 pt-[clamp(0.75rem,2vh,1.25rem)] md:px-6"
+        // `.nav-shell` holds the pre-entrance position. Deliberately not a
+        // `style` prop — see the note on that class in globals.css.
+        className="nav-shell pointer-events-none fixed inset-x-0 top-0 z-[60] flex justify-center px-4 pt-[clamp(0.75rem,2vh,1.25rem)] md:px-6"
       >
         <nav
           aria-label="Primary"
@@ -403,7 +402,6 @@ export function Nav() {
          * defence if a browser does not support it at all.
          */
         {...({ inert: open ? undefined : '' } as Record<string, string | undefined>)}
-        style={{ opacity: 0, visibility: 'hidden' }}
         className="nav-menu fixed inset-0 z-50 bg-void"
       >
         {/* The per-link previews, stacked behind everything. */}
