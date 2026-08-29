@@ -527,6 +527,35 @@
   }
 
   /**
+   * The cover that contracts back into the link you clicked to leave.
+   *
+   * Inert and unpainted unless a transition is running — an unconditional
+   * full-viewport element would sit over the deck for the rest of the session,
+   * and `pointer-events: none` only conceals that until something needs to
+   * hit-test through it.
+   *
+   * Above everything, including the preloader, because for the length of the
+   * animation it *is* the page.
+   */
+  .route-minimize {
+    display: none;
+  }
+
+  .route-minimize[data-minimizing] {
+    --route-reveal: 0px;
+    --route-ox: 50%;
+    --route-oy: 0%;
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    pointer-events: none;
+    background: #000000;
+    clip-path: circle(var(--route-reveal) at var(--route-ox) var(--route-oy));
+    will-change: clip-path;
+  }
+
+  /**
    * The console maximising in.
    *
    * The clip is attached to a data attribute rather than to the class, and the

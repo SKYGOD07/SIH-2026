@@ -7,6 +7,7 @@ import { IntroProvider } from '@/components/motion/IntroProvider';
 import { CustomCursor } from '@/components/navigation/CustomCursor';
 import { SiteChrome } from '@/components/navigation/SiteChrome';
 import { MaximizeOrigin } from '@/components/console/MaximizeOrigin';
+import { MinimizeReveal } from '@/components/console/MinimizeReveal';
 
 /**
  * Type system.
@@ -110,6 +111,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   navigation. Renders nothing. */}
               <MaximizeOrigin />
               <SiteChrome>{children}</SiteChrome>
+              {/* The cover that contracts on the way back out of the console.
+                  Lives here so it survives the route change it animates. */}
+              <MinimizeReveal />
             </AudienceProvider>
           </IntroProvider>
         </SmoothScrollProvider>
