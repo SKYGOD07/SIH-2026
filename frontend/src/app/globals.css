@@ -253,6 +253,119 @@
   }
 
   /**
+   * The marquee band.
+   *
+   * A white ribbon on a grained red ground, tilted a few degrees, with heavy
+   * uppercase type scrolling through it forever. Streetwear signage, and it
+   * works here for the same reason it works there: it is loud, it is one idea,
+   * and it reads at a glance from the back of a room.
+   *
+   * Three things are load-bearing:
+   *
+   *   - The loop is one duplicated track translated by exactly -50%. At the end
+   *     of the cycle the second copy sits precisely where the first began, so
+   *     the reset is invisible. Any other distance leaves a visible jump.
+   *   - The band's vertical padding is derived from the tilt, not guessed. A
+   *     ribbon of width W rotated by θ lifts its corners by (W/2)·sin θ, so at
+   *     120% width and 3.5° that is 3.7vw — less padding and the corners get
+   *     clipped into points; much more and the red band bloats.
+   *   - Only `transform` animates. A marquee runs for as long as the page is
+   *     open, so anything that touches layout would cost a reflow every frame
+   *     of an animation that never ends.
+   */
+  .marquee-band {
+    --marquee-angle: -3.5deg;
+    --marquee-duration: 26s;
+    /* sin(3.5deg) x half of the 120% ribbon width — the corner lift. */
+    --marquee-lift: 3.7vw;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding-block: var(--marquee-lift);
+    background-color: #c40d12;
+    /* Contains the grain's blend mode so it cannot reach the page behind. */
+    isolation: isolate;
+  }
+
+  /*
+   * Grain. An inline feTurbulence rather than an image: it costs no request,
+   * cannot 404, and tiles at any size. `overlay` keeps the red's hue and moves
+   * only its luminance, which is what stops the texture reading as grey dust
+   * sitting on top of the colour.
+   */
+  .marquee-band::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.24;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  .marquee-ribbon {
+    position: relative;
+    z-index: 1;
+    /* Wider than the viewport so the tilted ends never expose the red. */
+    width: 120%;
+    margin-left: -10%;
+    overflow: hidden;
+    background: #ffffff;
+    transform: rotate(var(--marquee-angle));
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    animation: marquee-scroll var(--marquee-duration) linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes marquee-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  /* Held still on hover, so a phrase can actually be read. */
+  .marquee-band:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /*
+   * Solid black is the base, and the outline is layered on only where the
+   * browser can actually draw it. Setting `color: transparent` unconditionally
+   * would render the outlined items invisible anywhere the stroke is not
+   * supported — a failure that is silent and total.
+   */
+  .marquee-outline {
+    color: #000000;
+  }
+
+  @supports (-webkit-text-stroke: 2px #000000) {
+    .marquee-outline {
+      color: transparent;
+      -webkit-text-stroke: 2px #000000;
+    }
+  }
+
+  .marquee-solid {
+    color: #000000;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+
+  /**
    * Scroll-revealed text.
    *
    * Every word is on the page from the start, sitting in a near-black that is
