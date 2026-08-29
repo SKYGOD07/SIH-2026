@@ -129,10 +129,11 @@ const FORMS: Form[] = [
     ],
   },
   {
-    // The one accent form. A single warm object against five neutrals.
+    // The one accent form. A single hot object against five neutrals, in the
+    // deck's red — a yellow one reads as a second accent competing with it.
     kind: 'box',
     base: 0.66,
-    tone: '#FFC400',
+    tone: '#BD0A0A',
     spin: 0.09,
     track: [
       { p: 0.0, x: 1.9, y: 0.0, z: 1.4, s: 1 },
@@ -255,7 +256,7 @@ function SoftLight() {
       <ambientLight intensity={0.55} color="#FFFFFF" />
       <directionalLight position={[3, 6, 5]} intensity={2.6} color="#FFFFFF" />
       <directionalLight position={[-5, 1, 2]} intensity={0.7} color="#7A8390" />
-      <directionalLight position={[0, -4, 3]} intensity={0.45} color="#FFC400" />
+      <directionalLight position={[0, -4, 3]} intensity={0.45} color="#BD0A0A" />
     </>
   );
 }
