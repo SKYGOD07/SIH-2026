@@ -50,7 +50,10 @@ export function MaximizeOrigin() {
       const keyboard = event.clientX === 0 && event.clientY === 0;
       if (keyboard) {
         const rect = anchor.getBoundingClientRect();
-        rememberOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+        rememberOrigin({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        });
         return;
       }
 

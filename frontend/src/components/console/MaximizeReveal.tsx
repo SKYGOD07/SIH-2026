@@ -83,7 +83,9 @@ export function MaximizeReveal({ children }: { children: ReactNode }) {
         tl.kill();
         if (ref.current) {
           delete ref.current.dataset.maximizing;
-          gsap.set(ref.current, { clearProps: 'transform,scale,transformOrigin' });
+          gsap.set(ref.current, {
+            clearProps: 'transform,scale,transformOrigin',
+          });
         }
       };
     },
