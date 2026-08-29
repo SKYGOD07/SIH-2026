@@ -393,8 +393,16 @@ export function Nav() {
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
-        // Inert until opened, so its links are never tabbable behind the page.
-        {...(open ? {} : { inert: '' })}
+        /*
+         * Inert until opened, so its links are never tabbable behind the page.
+         *
+         * Spread rather than written as a prop: this React does not know `inert`
+         * as a boolean, so `inert={true}` is dropped silently. The HTML spec
+         * wants the attribute present or absent, which is what the empty string
+         * and `undefined` give — and `visibility: hidden` is the second line of
+         * defence if a browser does not support it at all.
+         */
+        {...({ inert: open ? undefined : '' } as Record<string, string | undefined>)}
         style={{ opacity: 0, visibility: 'hidden' }}
         className="nav-menu fixed inset-0 z-50 bg-void"
       >
