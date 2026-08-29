@@ -164,7 +164,9 @@ export function Nav() {
 
     gsap.set(menu, { ['--nav-ox']: `${ox}px`, ['--nav-oy']: `${oy}px` });
 
-    const items = listRef.current ? gsap.utils.toArray<HTMLElement>('.nav-item', listRef.current) : [];
+    // Every item in the panel, not only the links — the closing notice belongs
+    // to the same entrance, and leaving it out makes it appear to arrive late.
+    const items = gsap.utils.toArray<HTMLElement>('.nav-item', menu);
 
     const tl = gsap.timeline({ paused: true });
     tl.fromTo(
@@ -250,18 +252,22 @@ export function Nav() {
   /**
    * Hover bookkeeping.
    *
-   * The link being left is remembered for the length of its own transition, so
-   * its preview fades out under the incoming one instead of being unmounted
-   * mid-fade. Without this, moving quickly down the list cuts each preview to
-   * nothing the instant the next is entered.
+   * The link being left keeps its leaving class while the next one enters, so
+   * the two previews cross-fade rather than the outgoing one being cut. That is
+   * why `enter` does not clear `leaving`: clearing it would drop the outgoing
+   * preview back to the base rule mid-transition, and moving quickly down the
+   * list would strobe.
+   *
+   * A stale `leaving` is harmless — that layer is already at zero opacity.
    */
-  const enter = (href: string) => {
-    setHovered(href);
-    setLeaving(null);
-  };
+  const enter = (href: string) => setHovered(href);
   const leave = (href: string) => {
-    setHovered((current) => (current === href ? null : current));
+    // Both writes are plain calls. Setting state from inside an updater would
+    // run twice under StrictMode's double-invocation and is not what an updater
+    // is for. Marking a link as leaving when it was not the hovered one is
+    // harmless: that layer is already at zero and carries no enter class.
     setLeaving(href);
+    setHovered((current) => (current === href ? null : current));
   };
 
   return (
@@ -457,6 +463,7 @@ export function Nav() {
           </ul>
 
           <p className="nav-item mt-[clamp(1.75rem,5vh,3rem)] max-w-[42ch] text-sm leading-relaxed text-chalk/40">
+            {/* Outside `.nav-list`, so the hover dim never reaches it. */}
             Demonstration data throughout. Nothing here is a procurement notice, an eligibility
             determination or a government commitment.
           </p>
