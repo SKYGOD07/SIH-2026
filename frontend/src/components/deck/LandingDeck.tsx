@@ -19,10 +19,12 @@ import { cn } from '@/lib/utils';
  *
  * Two rules hold the deck together.
  *
- * The type is already there. Every word renders from the first frame in a
+ * The type is already there. From the second slide on, every word renders in a
  * near-black that reads as shape but not as language, and wipes to white as the
  * reader arrives at it — scrubbed against horizontal travel, not faded in on a
- * timer. Nothing appears late and nothing is missing from a screenshot.
+ * timer. Nothing appears late and nothing is missing from a screenshot. The
+ * opening slide is exempt: it is on screen before anyone has scrolled, so there
+ * is no arrival for a reveal to be tied to.
  *
  * And a number is drawn, not written. The counts in this deck are the argument:
  * 142 narrowing to 3 is the product working, and a funnel says that in a way
@@ -44,6 +46,7 @@ function Head({
   className?: string;
   on?: string;
   off?: string;
+  reveal?: boolean;
 }) {
   return (
     <WipeText
@@ -72,6 +75,7 @@ function Line({
   className?: string;
   on?: string;
   off?: string;
+  reveal?: boolean;
 }) {
   return (
     <WipeText
@@ -107,18 +111,27 @@ function Cap({ children, className }: { children: ReactNode; className?: string 
 
 /* ------------------------------------------------------------------ 01 */
 
+/**
+ * The opening slide, lit from the first frame.
+ *
+ * The wipe needs an arrival to be tied to, and this slide has none — it is on
+ * screen before anyone has scrolled. Revealing it on scroll would mean a reader
+ * landing on the page sees near-black text on black and concludes the site is
+ * broken, which is the one thing this technique must never do. So the effect
+ * starts on the second slide, where there is genuinely a moment of arriving.
+ */
 function WhatItIs() {
   return (
     <Slide index="01" label="MahaInnovate" id="deck-what">
-      <Head size="xl" className="max-w-[14ch]">
+      <Head size="xl" reveal={false} className="max-w-[14ch]">
         Which startup should we test for this problem?
       </Head>
 
-      <WipeReveal className="mt-[clamp(1.5rem,4vh,2.5rem)]">
+      <WipeReveal reveal={false} className="mt-[clamp(1.5rem,4vh,2.5rem)]">
         <span className="inline-block h-[3px] w-[7rem] bg-flare-bright" />
       </WipeReveal>
 
-      <Line className="max-w-[54ch]">
+      <Line reveal={false} className="max-w-[54ch]">
         MahaInnovate helps a government officer answer that for a specific departmental problem,
         from real evidence, policy rules and the results of pilots already run.
       </Line>
