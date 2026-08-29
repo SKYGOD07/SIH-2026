@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 
 const ITEMS: { href: string; label: string; icon: IconName; badge?: number }[] = [
   { href: '/dashboard', label: 'Console', icon: 'console' },
-  { href: '/ledger', label: 'Ledger', icon: 'ledger', badge: 1 },
+  { href: '/ledger', label: 'Ledger', icon: 'ledger' },
   { href: '/pilots', label: 'Pilots', icon: 'flask' },
   { href: '/templates', label: 'Forms', icon: 'templates' },
   { href: '/corpus', label: 'Evidence', icon: 'corpus' },

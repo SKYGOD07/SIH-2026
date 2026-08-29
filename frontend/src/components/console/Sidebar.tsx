@@ -29,13 +29,19 @@ interface NavItem {
   href: string;
   label: string;
   icon: IconName;
-  /** Count shown as a red badge. Only ever a number that needs a person. */
+  /**
+   * Count shown as a red badge. Only ever a number that needs a person.
+   *
+   * Nothing sets one today. It used to be hardcoded to 1 on the ledger, which
+   * meant the navigation asserted an outstanding decision on every page of the
+   * console whether or not one existed.
+   */
   badge?: number;
 }
 
 const WORKSPACE: NavItem[] = [
   { href: '/dashboard', label: 'Console', icon: 'console' },
-  { href: '/ledger', label: 'Ledger', icon: 'ledger', badge: 1 },
+  { href: '/ledger', label: 'Ledger', icon: 'ledger' },
   { href: '/pilots', label: 'Pilots', icon: 'flask' },
   { href: '/challenges', label: 'Challenges', icon: 'target' },
   { href: '/startups', label: 'Startups', icon: 'users' },
