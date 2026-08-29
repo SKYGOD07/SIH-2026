@@ -136,6 +136,22 @@
     border-color: rgba(0, 0, 0, 0.18);
   }
 
+  /*
+   * The deck's one full-bleed slide.
+   *
+   * White type on the accent rather than black type on it: at this saturation
+   * the red is dark enough to carry white, and white keeps the slide reading as
+   * the same voice as the eight black ones before it rather than as a sudden
+   * inversion.
+   */
+  .ground-flare {
+    background-color: #bd0a0a;
+    color: #ffffff;
+  }
+  .ground-flare * {
+    border-color: rgba(255, 255, 255, 0.24);
+  }
+
   /* Scrim behind the navigation so type never collides with it. */
   .nav-scrim {
     background-image: linear-gradient(
@@ -234,6 +250,69 @@
     will-change: transform, opacity;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
+  }
+
+  /**
+   * Scroll-revealed text.
+   *
+   * Every word is on the page from the start, sitting in a near-black that is
+   * legible as shape but not as reading, and wipes to white left-to-right as
+   * the reader arrives at it. The type is never absent and never fades in from
+   * nothing — it is already there, and the reader's progress is what turns it
+   * on. That is measurably what the reference does: each unit carries a
+   * two-stop gradient clipped to the glyphs, and the stop position is animated
+   * from 0% to 100%.
+   *
+   * `@property` is what makes this cheap. Registering `--wipe` as a percentage
+   * lets the browser interpolate it natively and keeps the gradient on the
+   * compositor instead of re-parsing a string every frame. Browsers without it
+   * still work — the value simply steps rather than glides, and a scrubbed
+   * animation updates often enough that the difference is invisible.
+   */
+  .wipe-unit {
+    /* Defaults, so a unit renders correctly even with no tone set on it. */
+    --wipe: 0%;
+    --wipe-on: #ffffff;
+    --wipe-off: #252525;
+    background-image: linear-gradient(
+      90deg,
+      var(--wipe-on) 0%,
+      var(--wipe-on) var(--wipe),
+      var(--wipe-off) var(--wipe),
+      var(--wipe-off) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* Descenders are clipped by the background box without this. */
+    padding-bottom: 0.08em;
+    margin-bottom: -0.08em;
+  }
+
+  /*
+   * A word must not break across lines, or the gradient — which is painted per
+   * element — restarts mid-word and the wipe reads as a glitch.
+   */
+  .wipe-word {
+    display: inline-block;
+    white-space: pre;
+  }
+
+  /*
+   * Reduced motion, and the no-JavaScript case: fully revealed. A reader who
+   * never triggers the scrub must not be left looking at near-black text on
+   * black, which is the one failure mode of this whole technique.
+   */
+  /* Fully revealed: set by the component whenever no scrub will ever run. */
+  .wipe-static .wipe-unit,
+  .wipe-unit.wipe-static {
+    --wipe: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wipe-unit {
+      --wipe: 100%;
+    }
   }
 
   /**
@@ -375,17 +454,27 @@
    * Progress rail. Meaningless when the deck is stacked, so it is not drawn.
    *
    * Its ink is a variable because the rail is fixed while the slides travel
-   * underneath it — over the one full-bleed yellow slide the white hairlines
+   * underneath it — over the one full-bleed accent slide the white hairlines
    * would disappear, so the deck flips `data-tone` as that slide arrives.
    */
   .deck-rail {
-    display: none !important;
+    /*
+     * No `!important` here: the media query below is what turns the rail on,
+     * and an important declaration would win against it and leave the deck with
+     * no progress indicator at all.
+     */
+    display: none;
+    --rail-ink: rgba(255, 255, 255, 0.38);
+    --rail-line: rgba(255, 255, 255, 0.12);
+    --rail-fill: #bd0a0a;
+    color: var(--rail-ink);
+    transition: color 0.4s ease;
   }
 
   .deck-rail[data-tone='invert'] {
-    --rail-ink: rgba(0, 0, 0, 0.55);
-    --rail-line: rgba(0, 0, 0, 0.18);
-    --rail-fill: #000000;
+    --rail-ink: rgba(255, 255, 255, 0.6);
+    --rail-line: rgba(255, 255, 255, 0.24);
+    --rail-fill: #ffffff;
   }
 
   @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
@@ -419,6 +508,19 @@
     -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
     mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
   }
+}
+
+/**
+ * The wipe position, registered so the browser can interpolate it.
+ *
+ * An unregistered custom property is a string to the animation engine, so a
+ * tween on it steps rather than glides. Registered as a percentage it animates
+ * natively — which matters here because a slide can carry a few hundred units.
+ */
+@property --wipe {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
 }
 
 /* Gloss sweep across the navigation capsule. Transform only. */
