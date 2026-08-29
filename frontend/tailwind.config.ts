@@ -31,6 +31,23 @@ const config: Config = {
           DEFAULT: '#FFC400',
           deep: '#E0AC00',
         },
+        /**
+         * The deck's accent. A hot, saturated red, taken from the reference the
+         * landing page is built to.
+         *
+         * Deliberately not the same colour as `signal`. The two surfaces have
+         * different jobs: the deck is an argument made once to a room, and wants
+         * a colour that shouts; the console is a tool used every day, where the
+         * accent has to coexist with a `risk` state that is itself red. One
+         * accent doing both would either be too loud to work at a desk or too
+         * quiet to carry a hall.
+         */
+        flare: {
+          DEFAULT: '#BD0A0A',
+          bright: '#E01414',
+        },
+        /** The dim state every wipe-revealed word starts in. */
+        dim: { DEFAULT: '#252525' },
         validated: { DEFAULT: '#6FCF97' },
         risk: { DEFAULT: '#FF6B5A' },
 
