@@ -17,7 +17,7 @@ export const SOURCE_LABEL: Record<SourceKind, string> = {
   agreement: 'Agreement',
   cybersecurity: 'Cybersecurity',
   'ip-data': 'IP & data',
-  report: 'Report',
+  'pilot-report': 'Pilot report',
   evaluation: 'Evaluation',
 };
 
