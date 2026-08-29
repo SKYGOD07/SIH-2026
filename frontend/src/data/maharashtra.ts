@@ -61,38 +61,15 @@ export const getDistrict = (id: string) => DISTRICTS.find((d) => d.id === id);
  * The scale sequence. Each step names what actually expanded — a proven result
  * being offered outward, not the same pilot being re-run.
  */
-export const SCALE_STEPS = [
-  {
-    label: 'Pilot',
-    count: 1,
-    unit: 'pilot',
-    districts: ['pune'],
-    note: 'Three wards. One department. One validated result.',
-  },
-  {
-    label: 'Districts',
-    count: 3,
-    unit: 'districts',
-    districts: ['pune', 'nashik', 'thane'],
-    note: 'Comparable networks adopt the validated configuration.',
-  },
-  {
-    label: 'Districts',
-    count: 8,
-    unit: 'districts',
-    districts: ['pune', 'nashik', 'thane', 'mumbai', 'aurangabad', 'kolhapur', 'solapur', 'nagpur'],
-    note: 'Evidence accepted once is reused, not re-established.',
-  },
-  {
-    label: 'Departments',
-    count: 14,
-    unit: 'departments',
-    districts: DISTRICTS.map((d) => d.id),
-    note: 'The pathway, the templates and the evidence transfer across departments.',
-  },
-] as const;
+/**
+ * Adoption trajectory.
+ *
+ * Emptied in the truth pass — this previously asserted a run from one pilot to
+ * three districts to eight departments, which had never happened. It fills from
+ * scale decisions actually recorded on the platform.
+ */
+export const SCALE_STEPS: { label: string; count: number; caption: string }[] = [];
 
-/** Connection lines drawn between activated points at the widest step. */
 export const NETWORK_EDGES: [string, string][] = [
   ['pune', 'nashik'],
   ['pune', 'thane'],
