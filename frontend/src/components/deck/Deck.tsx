@@ -126,34 +126,6 @@ export function Deck({ children, chapters }: DeckProps) {
       <div ref={trackRef} className="deck-track">
         {children}
       </div>
-
-      {/* The rail. A slideshow needs to say how far along it is, and this is
-          also the only affordance telling a reader that scrolling moves the
-          page sideways rather than that the page has stopped. */}
-      <div
-        ref={railRef}
-        aria-hidden="true"
-        data-tone="default"
-        className="deck-rail pointer-events-none absolute inset-x-0 bottom-0 z-20"
-      >
-        <div className="edge flex items-end justify-between pb-6">
-          <ol className="flex items-center gap-5">
-            {chapters.map((chapter, i) => (
-              <li key={chapter} className="font-mono text-[0.5625rem] uppercase tracking-[0.16em]">
-                <span className="opacity-60">{String(i + 1).padStart(2, '0')}</span> {chapter}
-              </li>
-            ))}
-          </ol>
-          <span className="font-mono text-[0.5625rem] uppercase tracking-[0.16em]">Scroll →</span>
-        </div>
-        <span className="block h-px w-full" style={{ background: 'var(--rail-line)' }}>
-          <span
-            ref={railFillRef}
-            className="block h-px origin-left scale-x-0"
-            style={{ background: 'var(--rail-fill)' }}
-          />
-        </span>
-      </div>
     </div>
   );
 }
