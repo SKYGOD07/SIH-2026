@@ -45,6 +45,16 @@ export interface WipeTextProps {
   end?: number;
   /** Seconds between units. 0 wipes the whole block as one. */
   stagger?: number;
+  /**
+   * Set false to render at full strength and attach no scrub.
+   *
+   * The opening slide uses this. It is on screen before anyone has scrolled, so
+   * there is no arrival for a reveal to be tied to — a reader landing on the
+   * page would simply be looking at near-black text on black and wondering what
+   * broke. The effect needs somewhere to have been scrolled from, and the first
+   * slide is the one place that does not exist.
+   */
+  reveal?: boolean;
 }
 
 /** Split preserving spaces, so `white-space: pre` can hold the word shapes. */
@@ -63,6 +73,7 @@ export function WipeText({
   start = 0.85,
   end = 0.45,
   stagger = 0.06,
+  reveal = true,
 }: WipeTextProps) {
   const ref = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
@@ -71,7 +82,7 @@ export function WipeText({
   useGSAP(
     () => {
       const root = ref.current;
-      if (!root || reduced) return;
+      if (!root || reduced || !reveal) return;
 
       const targets = gsap.utils.toArray<HTMLElement>('.wipe-unit', root);
       if (targets.length === 0) return;
@@ -108,20 +119,22 @@ export function WipeText({
         tween.kill();
       };
     },
-    { scope: ref, dependencies: [reduced, container, mode, stagger, start, end] },
+    { scope: ref, dependencies: [reduced, reveal, container, mode, stagger, start, end] },
   );
 
   const parts = units(children, split);
 
+  /*
+   * Shown at full strength whenever no scrub will ever run it: the caller opted
+   * out, or the deck has not yet reported which world it is in. Unreadable text
+   * is the one failure mode of this technique, so the default is always lit.
+   */
+  const stat = !reveal || (mode === 'stacked' && container === null);
+
   return (
     <Tag
       ref={ref}
-      className={cn(
-        // Until the deck reports which world it is in, no scrub can be attached
-        // — so the text is shown at full strength rather than left unreadable.
-        mode === 'stacked' && container === null ? 'wipe-static' : undefined,
-        className,
-      )}
+      className={cn(stat && 'wipe-static', className)}
       style={{ ['--wipe-on' as string]: on, ['--wipe-off' as string]: off }}
     >
       {parts.map((part, i) =>
@@ -152,6 +165,7 @@ export function WipeReveal({
   start = 0.85,
   end = 0.5,
   from = 0.12,
+  reveal = true,
 }: {
   children: ReactNode;
   className?: string;
@@ -159,6 +173,8 @@ export function WipeReveal({
   end?: number;
   /** Resting opacity. Never 0 — the point is that the page is already there. */
   from?: number;
+  /** Set false on the opening slide, which has no arrival to animate against. */
+  reveal?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
@@ -167,7 +183,7 @@ export function WipeReveal({
   useGSAP(
     () => {
       const root = ref.current;
-      if (!root || reduced) return;
+      if (!root || reduced || !reveal) return;
 
       const horizontal = mode === 'horizontal' && container !== null;
 
@@ -193,7 +209,7 @@ export function WipeReveal({
         tween.kill();
       };
     },
-    { scope: ref, dependencies: [reduced, container, mode, start, end, from] },
+    { scope: ref, dependencies: [reduced, reveal, container, mode, start, end, from] },
   );
 
   return (
