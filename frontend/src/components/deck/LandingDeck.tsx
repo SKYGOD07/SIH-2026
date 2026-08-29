@@ -30,6 +30,13 @@ import { cn } from '@/lib/utils';
  * 142 narrowing to 3 is the product working, and a funnel says that in a way
  * four lines of prose cannot. Where a slide could be a paragraph or a figure,
  * it is a figure.
+ *
+ * Those counts are an illustration and say so on the slide. The walk they
+ * describe is real — a problem in, technologies out, a shortlist narrowing, a
+ * suitability breakdown — but the platform holds no startup records yet, so the
+ * numbers are chosen rather than computed. `Illustration` marks every slide where
+ * that is true, because a figure on a dark slide reads as a measurement unless
+ * something next to it says otherwise.
  */
 
 /* ------------------------------------------------------------------ type */
@@ -92,6 +99,28 @@ function Line({
     >
       {children}
     </WipeText>
+  );
+}
+
+/**
+ * Marks a slide whose figures are an illustration rather than a measurement.
+ *
+ * Slides 05 to 08 walk through a worked example — a water-leakage challenge,
+ * a shortlist narrowing, a suitability breakdown. The shape of that walk is the
+ * argument and it is honest; the numbers in it are chosen, not computed, because
+ * the platform holds no startup records yet.
+ *
+ * So the numbers stay and the claim is corrected. Saying "illustration" next to
+ * a figure costs one line and is the difference between explaining a mechanism
+ * and asserting a result.
+ */
+function Illustration() {
+  return (
+    <span
+      className="mt-[clamp(1rem,2.5vh,1.5rem)] inline-flex items-center gap-2 border border-flare-bright/40 px-3 py-1.5 font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-flare-bright"
+    >
+      Illustration — not a measured result
+    </span>
   );
 }
 
@@ -350,6 +379,8 @@ function ProblemIn() {
           </p>
         </div>
       </WipeReveal>
+
+      <Illustration />
     </Slide>
   );
 }
@@ -419,6 +450,8 @@ function ShortlistFunnel() {
         Every drop between two rows is a rule that can be named, and an officer can ask which one
         removed a given startup.
       </Line>
+
+      <Illustration />
     </Slide>
   );
 }
@@ -477,6 +510,8 @@ function WhyThisStartup() {
           </p>
         </div>
       </WipeReveal>
+
+      <Illustration />
     </Slide>
   );
 }
@@ -518,6 +553,8 @@ function Evidence() {
         This is the difference between a recommendation and a ranking: the officer can open any
         figure and see the pilot it came from.
       </Line>
+
+      <Illustration />
     </Slide>
   );
 }
