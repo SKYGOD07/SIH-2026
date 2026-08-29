@@ -55,7 +55,14 @@ export const useDeck = () => useContext(DeckContext);
 
 export interface DeckProps {
   children: ReactNode;
-  /** Slide names, in order. Drawn in the rail along the bottom edge. */
+  /**
+   * Slide names, in order.
+   *
+   * No longer drawn — the rail is a bare hairline now. They stay because the
+   * deck needs to know how many slides it has to decide when the first one is
+   * behind the reader, and a named list is a better record of that than a
+   * number nobody can check against the slides below.
+   */
   chapters: string[];
 }
 
@@ -167,9 +174,14 @@ export function Deck({ children, chapters }: DeckProps) {
       </div>
 
       {/*
-        The rail. A slideshow has to say how far along it is, and this is also
-        the only affordance telling a reader that scrolling moves the page
-        sideways rather than that the page has stopped.
+        The rail: one hairline along the bottom edge, filling as the deck moves.
+
+        It used to carry the nine chapter names and a "Scroll" prompt. That was
+        a second table of contents competing with the slide it sat under — nine
+        labels is more words than most of the slides above them, and a reader
+        looking at a full-viewport statement does not need a list of the other
+        eight. The line alone still answers the only question the rail exists
+        for: how much of this is left.
 
         It sits outside the track so it does not travel with the slides, and it
         flips `data-tone` as the accent slide arrives — see `.deck-rail`.
@@ -180,16 +192,6 @@ export function Deck({ children, chapters }: DeckProps) {
         data-tone="default"
         className="deck-rail pointer-events-none absolute inset-x-0 bottom-0 z-20"
       >
-        <div className="edge flex items-end justify-between pb-6">
-          <ol className="flex items-center gap-5">
-            {chapters.map((chapter, i) => (
-              <li key={chapter} className="font-mono text-[0.5625rem] uppercase tracking-[0.16em]">
-                <span className="opacity-60">{String(i + 1).padStart(2, '0')}</span> {chapter}
-              </li>
-            ))}
-          </ol>
-          <span className="font-mono text-[0.5625rem] uppercase tracking-[0.16em]">Scroll →</span>
-        </div>
         <span className="block h-px w-full" style={{ background: 'var(--rail-line)' }}>
           <span
             ref={railFillRef}
