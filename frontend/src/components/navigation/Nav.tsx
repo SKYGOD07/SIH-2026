@@ -2,57 +2,243 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
+import { gsap } from '@/lib/gsap';
 import { cn } from '@/lib/utils';
 import { useLenis } from '@/lib/lenis/SmoothScrollProvider';
 import { useIntro } from '@/components/motion/IntroProvider';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { Mark } from '@/components/brand/Mark';
 
-const LINKS = [
-  { href: '/challenges', label: 'Challenges' },
-  { href: '/startups', label: 'Startups' },
-  { href: '/pilots', label: 'Pilots' },
-  { href: '/intelligence', label: 'Intelligence' },
+/**
+ * Navigation — a floating capsule, and a full-screen menu behind it.
+ *
+ * The capsule is unchanged in recipe: a full-width fixed header that is
+ * pointer-events-none, centring a single pointer-events-auto pill with a 999px
+ * radius, a hairline border and a heavy backdrop blur with saturation. The
+ * header never blocks the page; only the pill does. It still carries the Mark
+ * the preloader assembles and still exposes `data-nav-mark`, so the opener can
+ * measure it and fly the large mark into this exact position.
+ *
+ * What changed is where navigation lives. The pill used to grow a row of four
+ * inline links once the hero was past. Those are gone: a four-item bar and a
+ * full-screen menu holding the same four items is the same navigation built
+ * twice, and the one that can carry a description and a preview is the one
+ * worth keeping. The pill now holds the mark, the wordmark, the primary action
+ * and the button that opens everything else.
+ *
+ * The menu opens as a circle growing out of the button. Its geometry is
+ * measured, not assumed — see `openMenu` — because the button is at the end of
+ * a centred pill rather than in the top-right corner the usual recipe expects.
+ */
+
+interface NavLink {
+  href: string;
+  label: string;
+  /** One line, shown beside the link. */
+  detail: string;
+  /** The preview this link brings up behind the menu. */
+  background: string;
+}
+
+const LINKS: NavLink[] = [
+  {
+    href: '/dashboard',
+    label: 'Console',
+    detail: 'What is waiting on a decision',
+    background:
+      'radial-gradient(120% 90% at 78% 12%, rgba(189,10,10,0.55) 0%, rgba(189,10,10,0.10) 42%, rgba(0,0,0,0) 72%)',
+  },
+  {
+    href: '/pilots',
+    label: 'Pilots',
+    detail: 'Bounded deployments under contract',
+    background:
+      'radial-gradient(120% 90% at 22% 78%, rgba(255,196,0,0.34) 0%, rgba(255,196,0,0.07) 44%, rgba(0,0,0,0) 74%)',
+  },
+  {
+    href: '/templates',
+    label: 'Templates',
+    detail: 'The seven standard forms',
+    background:
+      'radial-gradient(120% 90% at 82% 82%, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.04) 44%, rgba(0,0,0,0) 74%)',
+  },
+  {
+    href: '/corpus',
+    label: 'Evidence base',
+    detail: 'What the corpus knows, by domain',
+    background:
+      'radial-gradient(120% 90% at 18% 20%, rgba(111,207,151,0.28) 0%, rgba(111,207,151,0.05) 44%, rgba(0,0,0,0) 74%)',
+  },
 ];
 
-/**
- * Navigation — a centred floating glass capsule that opens after the hero.
- *
- * Built to the same recipe as the zexvro reference: a full-width fixed header
- * that is pointer-events-none, centring a single pointer-events-auto capsule
- * with a 999px radius, a hairline border and a heavy backdrop blur with
- * saturation. The header never blocks the page; only the capsule does.
- *
- * Two states:
- *   CLOSED  over the hero — the mark alone. A bar of links laid across a
- *           full-screen statement competes with it, so there is not one.
- *   OPEN    once the hero is scrolled past — wordmark, links and CTA slide out
- *           and the capsule grows to fit via a layout animation.
- *
- * The capsule carries the same Mark the preloader assembles and exposes
- * `data-nav-mark`, so the opener can measure it and fly the large mark into
- * this exact position.
- */
 export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+  /** The last link hovered, kept so its preview can animate out rather than cut. */
+  const [leaving, setLeaving] = useState<string | null>(null);
+
   const pathname = usePathname();
   const lenis = useLenis();
-  const reduceMotion = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const { canAnimate, heroComplete } = useIntro();
 
+  const headerRef = useRef<HTMLElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const revealRef = useRef<gsap.core.Timeline | null>(null);
+
   const isLanding = pathname === '/';
-  // Appears as the opener hands off. Sub-pages have no opener.
   const visible = !isLanding || canAnimate;
   /*
-   * Opens once the deck's opening slide is behind the reader, and closes again
-   * on the way back. The deck reports that boundary itself through the intro
-   * context: its slides are pinned and translated horizontally, so a
+   * The pill expands once the deck's opening slide is behind the reader, and
+   * closes again on the way back. The deck reports that boundary itself through
+   * the intro context: its slides are pinned and translated horizontally, so a
    * ScrollTrigger aimed at one of them from out here would be measuring an
    * element that never moves.
    */
   const expanded = !isLanding || heroComplete;
+
+  /* ---------------------------------------------------------- entrance --- */
+
+  /**
+   * The header drops in once, on load.
+   *
+   * Held at -100 until `visible`, so it cannot start underneath the preloader
+   * and be finished by the time the curtain lifts. `overwrite` matters here:
+   * without it a fast route change can leave two entrance tweens fighting over
+   * the same y and the header settles a few pixels high.
+   */
+  useGSAP(
+    () => {
+      const header = headerRef.current;
+      if (!header) return;
+
+      if (reduced) {
+        gsap.set(header, { y: 0, autoAlpha: visible ? 1 : 0 });
+        return;
+      }
+
+      gsap.to(header, {
+        y: visible ? 0 : -100,
+        autoAlpha: visible ? 1 : 0,
+        duration: 0.8,
+        ease: 'power3.out',
+        overwrite: 'auto',
+      });
+    },
+    { dependencies: [visible, reduced] },
+  );
+
+  /* -------------------------------------------------------------- menu --- */
+
+  /**
+   * Build the open/close timeline.
+   *
+   * The circle is anchored to the button's measured centre and sized to reach
+   * the furthest corner of the viewport from there. A fixed 150% works when the
+   * origin is a corner; from an arbitrary point it either overshoots badly or —
+   * worse — leaves an unfilled wedge in the far corner, which appears only on
+   * some window shapes and so tends to survive review.
+   */
+  const buildReveal = useCallback(() => {
+    const menu = menuRef.current;
+    const button = buttonRef.current;
+    if (!menu || !button) return null;
+
+    const rect = button.getBoundingClientRect();
+    const ox = rect.left + rect.width / 2;
+    const oy = rect.top + rect.height / 2;
+
+    const radius = Math.ceil(
+      Math.max(
+        Math.hypot(ox, oy),
+        Math.hypot(window.innerWidth - ox, oy),
+        Math.hypot(ox, window.innerHeight - oy),
+        Math.hypot(window.innerWidth - ox, window.innerHeight - oy),
+      ),
+    );
+
+    gsap.set(menu, { ['--nav-ox']: `${ox}px`, ['--nav-oy']: `${oy}px` });
+
+    const items = listRef.current ? gsap.utils.toArray<HTMLElement>('.nav-item', listRef.current) : [];
+
+    const tl = gsap.timeline({ paused: true });
+    tl.fromTo(
+      menu,
+      { ['--nav-reveal']: '0px' },
+      { ['--nav-reveal']: `${radius}px`, duration: 0.85, ease: 'power3.inOut' },
+    ).fromTo(
+      items,
+      { y: 40, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.6, stagger: 0.1, ease: 'power3.out' },
+      // Overlapping, so the links are arriving while the circle is still
+      // growing. Waiting for it to finish reads as two separate animations.
+      '-=0.45',
+    );
+
+    return tl;
+  }, []);
+
+  useGSAP(
+    () => {
+      const menu = menuRef.current;
+      if (!menu) return;
+
+      if (reduced) {
+        gsap.set(menu, { autoAlpha: open ? 1 : 0 });
+        gsap.set('.nav-item', { y: 0, autoAlpha: 1 });
+        return;
+      }
+
+      if (open) {
+        // Rebuilt on each open: the button moves when the pill expands, and the
+        // viewport may have been resized while the menu was shut.
+        revealRef.current?.kill();
+        const tl = buildReveal();
+        revealRef.current = tl;
+        gsap.set(menu, { autoAlpha: 1 });
+        tl?.play(0);
+      } else if (revealRef.current) {
+        revealRef.current.reverse().then(() => {
+          if (!menuRef.current) return;
+          gsap.set(menuRef.current, { autoAlpha: 0 });
+        });
+      } else {
+        gsap.set(menu, { autoAlpha: 0 });
+      }
+    },
+    { dependencies: [open, reduced, buildReveal] },
+  );
+
+  /* Scroll is held while the menu is open, or the page moves underneath it. */
+  useEffect(() => {
+    if (!lenis) return;
+    if (open) lenis.stop();
+    else lenis.start();
+  }, [open, lenis]);
+
+  /* Escape closes, and focus goes back to the control that opened it. */
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setOpen(false);
+      buttonRef.current?.focus();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  /* A route change closes the menu; the destination is already arriving. */
+  useEffect(() => {
+    setOpen(false);
+    setHovered(null);
+    setLeaving(null);
+  }, [pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 80);
@@ -61,192 +247,215 @@ export function Nav() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    if (!lenis) return;
-    if (open) lenis.stop();
-    else lenis.start();
-  }, [open, lenis]);
-
-  useEffect(() => setOpen(false), [pathname]);
-
-  // A closed capsule has no menu to keep open.
-  useEffect(() => {
-    if (!expanded) setOpen(false);
-  }, [expanded]);
-
-  /** Width-collapsing reveal used by everything that hides over the hero. */
-  const reveal = {
-    initial: { opacity: 0, width: 0 },
-    animate: { opacity: 1, width: 'auto' },
-    exit: { opacity: 0, width: 0 },
-    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+  /**
+   * Hover bookkeeping.
+   *
+   * The link being left is remembered for the length of its own transition, so
+   * its preview fades out under the incoming one instead of being unmounted
+   * mid-fade. Without this, moving quickly down the list cuts each preview to
+   * nothing the instant the next is entered.
+   */
+  const enter = (href: string) => {
+    setHovered(href);
+    setLeaving(null);
+  };
+  const leave = (href: string) => {
+    setHovered((current) => (current === href ? null : current));
+    setLeaving(href);
   };
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-[clamp(0.75rem,2vh,1.25rem)] md:px-6">
-        <motion.div
-          className="pointer-events-auto max-w-full"
-          initial={isLanding ? { opacity: 0, y: -14, scale: 0.94 } : false}
-          animate={visible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: -14, scale: 0.94 }}
-          // Lands a beat after the preloader mark arrives, so the capsule reads
-          // as receiving the mark rather than racing it.
-          transition={{ duration: 0.7, delay: isLanding ? 0.45 : 0, ease: [0.16, 1, 0.3, 1] }}
+      <header
+        ref={headerRef}
+        // The pre-animation state, so the first paint matches where the
+        // entrance starts rather than flashing the header in position.
+        style={{ transform: 'translateY(-100px)', opacity: 0, visibility: 'hidden' }}
+        className="pointer-events-none fixed inset-x-0 top-0 z-[60] flex justify-center px-4 pt-[clamp(0.75rem,2vh,1.25rem)] md:px-6"
+      >
+        <nav
+          aria-label="Primary"
+          className={cn(
+            'pointer-events-auto relative flex h-[3.125rem] max-w-full items-center overflow-hidden rounded-full transition-[gap,padding,background-color] duration-500',
+            expanded ? 'gap-3 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-2.5' : 'gap-2 px-3 sm:px-3.5',
+          )}
+          style={{
+            // The reference recipe: hairline border, heavy blur with
+            // saturation so whatever passes underneath tints the glass.
+            border: '0.8px solid rgba(255,255,255,0.18)',
+            backdropFilter: 'blur(22px) saturate(1.55)',
+            WebkitBackdropFilter: 'blur(22px) saturate(1.55)',
+            backgroundColor: open
+              ? 'rgba(0,0,0,0.4)'
+              : scrolled
+                ? 'rgba(0,0,0,0.62)'
+                : 'rgba(0,0,0,0.28)',
+            boxShadow: '0 1px 0 0 rgba(255,255,255,0.14) inset, 0 8px 30px -12px rgba(0,0,0,0.6)',
+          }}
         >
-          <motion.nav
-            aria-label="Primary"
-            layout
-            transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
-            className={cn(
-              'relative flex h-[3.125rem] items-center overflow-hidden rounded-full transition-colors duration-500',
-              expanded ? 'gap-3 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-2.5' : 'px-4 sm:px-5',
-            )}
-            style={{
-              // The reference recipe: hairline border, heavy blur with
-              // saturation so whatever passes underneath tints the glass.
-              border: '0.8px solid rgba(255,255,255,0.18)',
-              backdropFilter: 'blur(22px) saturate(1.55)',
-              WebkitBackdropFilter: 'blur(22px) saturate(1.55)',
-              backgroundColor: scrolled ? 'rgba(0,0,0,0.62)' : 'rgba(0,0,0,0.28)',
-              boxShadow:
-                '0 1px 0 0 rgba(255,255,255,0.14) inset, 0 8px 30px -12px rgba(0,0,0,0.6)',
-            }}
+          {/* Gloss sweep, clipped to the capsule. */}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
           >
-            {/* Gloss sweep, clipped to the capsule. */}
             <span
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
-            >
-              <span
-                className="absolute inset-y-0 -left-1/3 w-1/3 opacity-40"
-                style={{
-                  background:
-                    'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
-                  animation: 'markGloss 7s ease-in-out infinite',
-                }}
-              />
+              className="absolute inset-y-0 -left-1/3 w-1/3 opacity-40"
+              style={{
+                background:
+                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+                animation: 'markGloss 7s ease-in-out infinite',
+              }}
+            />
+          </span>
+
+          {/* --- the mark: present in both states --- */}
+          <Link
+            href="/"
+            data-cursor="home"
+            aria-label="MahaInnovate home"
+            className="relative flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-80"
+          >
+            {/* Wrapped so the preloader can measure this exact box. */}
+            <span data-nav-mark className="block w-[1.35rem] shrink-0">
+              <Mark radius="22%" />
             </span>
 
-            {/* --- the mark: present in both states with written name --- */}
-            <Link
-              href="/"
-              data-cursor="home"
-              aria-label="MahaInnovate home"
-              className="relative flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-80"
+            <span
+              className={cn(
+                'whitespace-nowrap font-display text-[0.8125rem] font-bold uppercase tracking-[0.2em] text-chalk transition-all duration-500',
+                expanded ? 'max-w-[12rem] opacity-100' : 'max-w-0 overflow-hidden opacity-0',
+              )}
             >
-              {/* Wrapped so the preloader can measure this exact box. */}
-              <span data-nav-mark className="block w-[1.35rem] shrink-0">
-                <Mark radius="22%" />
-              </span>
+              MahaInnovate
+            </span>
+          </Link>
 
-              <span className="whitespace-nowrap font-display text-[0.8125rem] font-bold uppercase tracking-[0.2em] text-chalk">
-                MahaInnovate
-              </span>
-            </Link>
+          {/* --- the primary action --- */}
+          <Link
+            href="/dashboard"
+            data-cursor="enter"
+            className={cn(
+              'hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-chalk px-4 py-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-void transition-all duration-500 hover:bg-flare hover:text-chalk sm:inline-flex',
+              expanded ? 'max-w-[10rem] opacity-100' : 'max-w-0 overflow-hidden px-0 opacity-0',
+            )}
+          >
+            Enter
+            <span aria-hidden="true">→</span>
+          </Link>
 
-            {/* --- links and CTA: only once the hero is past --- */}
-            <AnimatePresence initial={false}>
-              {expanded ? (
-                <motion.div
-                  key="expanded"
-                  {...reveal}
-                  className="relative flex items-center gap-3 overflow-hidden sm:gap-4"
-                >
-                  <span aria-hidden="true" className="hidden h-4 w-px shrink-0 bg-chalk/15 lg:block" />
+          {/* --- the hamburger, which morphs to a close --- */}
+          <button
+            ref={buttonRef}
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="site-menu"
+            data-cursor="open"
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-chalk/10"
+          >
+            <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
 
-                  <ul className="hidden items-center gap-5 lg:flex">
-                    {LINKS.map((link) => {
-                      const active = pathname === link.href;
-                      return (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            data-cursor="open"
-                            className={cn(
-                              'group relative block whitespace-nowrap py-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] transition-colors',
-                              active ? 'text-chalk' : 'text-chalk/50 hover:text-chalk',
-                            )}
-                          >
-                            {link.label}
-                            <span
-                              aria-hidden="true"
-                              className={cn(
-                                'absolute -bottom-0.5 left-0 h-px w-full origin-left bg-signal transition-transform duration-500 ease-editorial',
-                                active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
-                              )}
-                            />
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-
-                  <Link
-                    href="/dashboard"
-                    data-cursor="enter"
-                    className="hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-chalk px-4 py-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-void transition-colors hover:bg-signal sm:inline-flex"
-                  >
-                    Enter
-                    <span aria-hidden="true">→</span>
-                  </Link>
-
-                  <button
-                    type="button"
-                    onClick={() => setOpen((v) => !v)}
-                    aria-expanded={open}
-                    aria-controls="mobile-nav"
-                    className="flex h-9 w-9 shrink-0 flex-col items-center justify-center gap-[5px] lg:hidden"
-                  >
-                    <span className="sr-only">{open ? 'Close menu' : 'Open menu'}</span>
-                    <motion.span
-                      className="block h-px w-4 bg-chalk"
-                      animate={{ rotate: open ? 45 : 0, y: open ? 3 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                    <motion.span
-                      className="block h-px w-4 bg-chalk"
-                      animate={{ rotate: open ? -45 : 0, y: open ? -3 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  </button>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </motion.nav>
-        </motion.div>
+            {/*
+              Three lines that become a cross. The outer two translate to the
+              centre and rotate; the middle scales to nothing. Both halves of the
+              morph are on `transform` alone, so it composites.
+            */}
+            <span aria-hidden="true" className="relative block h-[0.875rem] w-[1.125rem]">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    'absolute left-0 block h-[1.5px] w-full origin-center rounded-full bg-chalk transition-transform duration-[450ms] ease-editorial',
+                    i === 0 && 'top-0',
+                    i === 1 && 'top-1/2 -translate-y-1/2',
+                    i === 2 && 'bottom-0',
+                  )}
+                  style={{
+                    transform: open
+                      ? i === 0
+                        ? 'translateY(calc(0.4375rem - 0.75px)) rotate(45deg)'
+                        : i === 1
+                          ? 'translateY(-50%) scaleX(0)'
+                          : 'translateY(calc(-0.4375rem + 0.75px)) rotate(-45deg)'
+                      : undefined,
+                  }}
+                />
+              ))}
+            </span>
+          </button>
+        </nav>
       </header>
 
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            id="mobile-nav"
-            key="sheet"
-            initial={{ opacity: 0, y: reduceMotion ? 0 : -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: reduceMotion ? 0 : -12 }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-x-4 top-[4.75rem] z-40 rounded-3xl border border-chalk/15 bg-void/95 p-2 backdrop-blur-xl lg:hidden"
-          >
-            <ul className="flex flex-col">
-              {[...LINKS, { href: '/dashboard', label: 'Enter platform' }].map((link, i) => (
-                <motion.li
-                  key={link.href}
-                  initial={{ opacity: 0, x: reduceMotion ? 0 : -14 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 + i * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                >
+      {/* ------------------------------------------------------------ menu */}
+      <div
+        ref={menuRef}
+        id="site-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        // Inert until opened, so its links are never tabbable behind the page.
+        {...(open ? {} : { inert: '' })}
+        style={{ opacity: 0, visibility: 'hidden' }}
+        className="nav-menu fixed inset-0 z-50 bg-void"
+      >
+        {/* The per-link previews, stacked behind everything. */}
+        <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+          {LINKS.map((link) => (
+            <span
+              key={link.href}
+              className={cn(
+                'nav-bg',
+                hovered === link.href && 'is-bg-enter',
+                hovered !== link.href && leaving === link.href && 'is-bg-leave',
+              )}
+              style={{ backgroundImage: link.background }}
+            />
+          ))}
+        </div>
+
+        <div className="edge relative flex h-full w-full flex-col justify-center pb-[clamp(3rem,8vh,5rem)] pt-[calc(var(--nav-h)+2rem)]">
+          <span className="font-mono text-meta uppercase tracking-[0.16em] text-chalk/35">
+            Menu
+          </span>
+
+          <ul ref={listRef} className="nav-list mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[64rem]">
+            {LINKS.map((link) => {
+              const active = pathname === link.href;
+              return (
+                <li key={link.href} className="nav-item">
                   <Link
                     href={link.href}
-                    className="block rounded-2xl px-4 py-3 font-display text-xl uppercase text-chalk transition-colors hover:bg-chalk/5"
+                    data-cursor="open"
+                    aria-current={active ? 'page' : undefined}
+                    onMouseEnter={() => enter(link.href)}
+                    onMouseLeave={() => leave(link.href)}
+                    onFocus={() => enter(link.href)}
+                    onBlur={() => leave(link.href)}
+                    className="group flex flex-wrap items-baseline gap-x-8 gap-y-1 border-b border-chalk/[0.08] py-[clamp(0.75rem,2.2vh,1.5rem)]"
                   >
-                    {link.label}
+                    <span
+                      className={cn(
+                        'font-display text-display-md font-black uppercase leading-none transition-colors duration-500',
+                        active ? 'text-flare-bright' : 'text-chalk',
+                      )}
+                    >
+                      {link.label}
+                    </span>
+                    <span className="font-mono text-meta uppercase tracking-[0.14em] text-chalk/40 transition-colors duration-500 group-hover:text-chalk/70">
+                      {link.detail}
+                    </span>
                   </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                </li>
+              );
+            })}
+          </ul>
+
+          <p className="nav-item mt-[clamp(1.75rem,5vh,3rem)] max-w-[42ch] text-sm leading-relaxed text-chalk/40">
+            Demonstration data throughout. Nothing here is a procurement notice, an eligibility
+            determination or a government commitment.
+          </p>
+        </div>
+      </div>
     </>
   );
 }
