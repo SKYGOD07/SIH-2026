@@ -17,6 +17,6 @@ export const getStartup = (id: string) => STARTUPS.find((s) => s.id === id);
 
 export const COMPLIANCE_LABEL: Record<Startup['complianceStatus'], string> = {
   VERIFIED: 'Verified',
-  PENDING: 'Pending',
-  INCOMPLETE: 'Incomplete',
+  IN_REVIEW: 'In review',
+  ACTION_REQUIRED: 'Action required',
 };
