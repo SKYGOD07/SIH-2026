@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { isConsoleHref, rememberOrigin } from '@/lib/console/maximize';
+import { isCrossing, rememberOrigin } from '@/lib/console/maximize';
 
 /**
  * Records where a console-bound click happened.
@@ -17,17 +17,15 @@ import { isConsoleHref, rememberOrigin } from '@/lib/console/maximize';
  * Capture phase matters: Next's router intercepts anchor clicks during bubbling,
  * so a bubbling listener races the navigation. Capture runs first, always.
  *
- * Clicks that originate inside the console are ignored. The console shell does
- * not remount when moving between its own routes, so there is nothing to animate
- * — and a maximise on every sidebar click would be unbearable by the third one.
+ * Only boundary crossings are recorded — into the console from outside, or back
+ * out to the landing page. Moving between two console routes leaves the shell
+ * mounted with nothing to reveal, and a maximise on every sidebar click would be
+ * unbearable by the third one.
  */
 export function MaximizeOrigin() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Already inside the console: every link from here is a within-shell move.
-    if (isConsoleHref(pathname)) return;
-
     const onClick = (event: MouseEvent) => {
       // Modified clicks open a new tab; nothing maximises in this one.
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -39,7 +37,7 @@ export function MaximizeOrigin() {
       const anchor = target.closest('a[href]');
       if (!(anchor instanceof HTMLAnchorElement)) return;
       if (anchor.target && anchor.target !== '_self') return;
-      if (!isConsoleHref(anchor.getAttribute('href') ?? '')) return;
+      if (!isCrossing(pathname, anchor.getAttribute('href') ?? '')) return;
 
       /*
        * Keyboard activation reports a pointer at (0, 0), which would open the

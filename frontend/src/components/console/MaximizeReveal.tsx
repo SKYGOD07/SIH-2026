@@ -3,7 +3,7 @@
 import { useRef, type ReactNode } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap } from '@/lib/gsap';
-import { takeOrigin, radiusToCorner } from '@/lib/console/maximize';
+import { takeOrigin, radiusToCorner, type Origin } from '@/lib/console/maximize';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 /**
@@ -36,6 +36,22 @@ export function MaximizeReveal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = usePrefersReducedMotion();
 
+  /*
+   * The origin is read once and kept, because `takeOrigin` is destructive and
+   * this effect runs twice.
+   *
+   * StrictMode mounts, cleans up and mounts again on the same instance. Without
+   * this the first pass would consume the stored coordinate and the second —
+   * the one whose animation the reader actually sees — would find nothing and
+   * fall back to the top of the viewport. The console would then always open
+   * from the same place in development and from the clicked point in
+   * production, which is the worst possible split: the bug is invisible exactly
+   * where it would be noticed.
+   *
+   * `undefined` means not yet read; `null` means read, and there was none.
+   */
+  const originRef = useRef<Origin | null | undefined>(undefined);
+
   useGSAP(
     () => {
       const el = ref.current;
@@ -43,7 +59,8 @@ export function MaximizeReveal({ children }: { children: ReactNode }) {
 
       // Consumed either way, so a stored origin can never apply to a later
       // arrival — including the one where the reader has asked for less motion.
-      const origin = takeOrigin();
+      if (originRef.current === undefined) originRef.current = takeOrigin();
+      const origin = originRef.current;
       if (reduced) return;
 
       /*

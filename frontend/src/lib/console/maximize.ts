@@ -44,6 +44,24 @@ export const CONSOLE_ROUTES = [
   '/settings',
 ] as const;
 
+/** The landing route, and the only thing outside the console we animate to. */
+export function isLandingHref(href: string): boolean {
+  if (!href.startsWith('/')) return false;
+  return (href.split(/[?#]/)[0].replace(/\/+$/, '') || '/') === '/';
+}
+
+/**
+ * Whether a click crosses the console boundary in either direction.
+ *
+ * Only crossings are animated. Moving between two console routes leaves the
+ * shell mounted and has nothing to reveal, and moving around inside the landing
+ * page is not a navigation at all.
+ */
+export function isCrossing(fromPath: string, toHref: string): boolean {
+  const inConsole = isConsoleHref(fromPath);
+  return inConsole ? isLandingHref(toHref) : isConsoleHref(toHref);
+}
+
 export function isConsoleHref(href: string): boolean {
   // Same-origin, path-only. An absolute URL to another host is not our route.
   if (!href.startsWith('/')) return false;
