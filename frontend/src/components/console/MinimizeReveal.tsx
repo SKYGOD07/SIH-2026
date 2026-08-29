@@ -88,7 +88,18 @@ export function MinimizeReveal() {
         ease: 'power3.inOut',
       });
 
+      /*
+       * Same insurance as the maximise, and it matters more here: a stranded
+       * cover is a full-viewport black rectangle over the deck. It cannot be
+       * clicked through to escape either, because the page underneath is what
+       * the reader wanted and the cover is the thing hiding it.
+       */
+      const watchdog = window.setTimeout(() => {
+        if (ref.current) delete ref.current.dataset.minimizing;
+      }, 2500);
+
       return () => {
+        window.clearTimeout(watchdog);
         tl.kill();
         if (ref.current) delete ref.current.dataset.minimizing;
       };

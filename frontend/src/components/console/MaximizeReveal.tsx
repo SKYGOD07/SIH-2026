@@ -96,7 +96,24 @@ export function MaximizeReveal({ children }: { children: ReactNode }) {
         ease: 'power3.inOut',
       }).to(el, { scale: 1, duration: 0.9, ease: 'power3.out' }, 0);
 
+      /*
+       * If the timeline never completes, the console stays clipped to a small
+       * circle and the page is effectively blank. GSAP's ticker is driven by
+       * requestAnimationFrame, which does not run in a background tab — so a
+       * reader who opens this in a tab they are not looking at, then comes back,
+       * is exactly the case that strands it.
+       *
+       * The watchdog clears the clip regardless. Losing the animation is a
+       * disappointment; losing the page is a bug.
+       */
+      const watchdog = window.setTimeout(() => {
+        if (!ref.current) return;
+        delete ref.current.dataset.maximizing;
+        gsap.set(ref.current, { clearProps: 'transform,scale,transformOrigin' });
+      }, 2500);
+
       return () => {
+        window.clearTimeout(watchdog);
         tl.kill();
         if (ref.current) {
           delete ref.current.dataset.maximizing;
