@@ -273,6 +273,27 @@
     --nav-oy: 0%;
     clip-path: circle(var(--nav-reveal) at var(--nav-ox) var(--nav-oy));
     will-change: clip-path;
+    /* The resting state, in CSS rather than in a React style prop. See below. */
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /*
+   * The header's pre-entrance position.
+   *
+   * These live here, not in a `style` prop, and the distinction is not cosmetic.
+   * React owns the whole style attribute of any element it is given a `style`
+   * prop for, so it rewrites it on every render — which would reset whatever
+   * GSAP had animated the moment any unrelated state changed. The scroll
+   * listener alone was enough to make the header disappear mid-page.
+   *
+   * With no style prop, React never touches the attribute and GSAP's inline
+   * values simply override this class for the life of the element.
+   */
+  .nav-shell {
+    transform: translateY(-100px);
+    opacity: 0;
+    visibility: hidden;
   }
 
   /*
