@@ -70,6 +70,11 @@ export const metadata: Metadata = {
     'milestone contracting',
     'evidence-based procurement',
   ],
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export const viewport: Viewport = {
