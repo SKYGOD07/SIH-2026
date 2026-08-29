@@ -10,9 +10,9 @@ import { useDeviceTier } from '@/hooks/useDeviceTier';
  * The page's atmospheric ground.
  *
  * Soft colour pools sit behind everything, fixed to the viewport, drifting as
- * the reader scrolls. On the light palette these are very low-contrast — a
- * warm blush, a cool haze and a paper lift — because the point is that the
- * ground is never the same temperature twice, not that it is colourful.
+ * the reader scrolls. Very low contrast — an accent blush, a cool haze and a
+ * paper lift — because the point is that the ground is never the same
+ * temperature twice, not that it is colourful.
  *
  * Performance is the design constraint: radial gradients with soft stops do the
  * blurring, never `filter: blur()`, which would re-rasterise a viewport-sized
@@ -31,9 +31,10 @@ interface Pool {
 
 const POOLS: Pool[] = [
   {
-    // Warm blush — strongest early and through the outcome sections.
+    // Accent blush — strongest early and through the outcome slides. Carries
+    // the deck's red, so the ground never disagrees with the type on top of it.
     background:
-      'radial-gradient(circle, rgba(255,196,0,0.16) 0%, rgba(255,196,0,0.05) 36%, rgba(0,0,0,0) 68%)',
+      'radial-gradient(circle, rgba(189,10,10,0.20) 0%, rgba(189,10,10,0.06) 36%, rgba(0,0,0,0) 68%)',
     size: '95vmax',
     from: { x: -20, y: -16, scale: 1, opacity: 0.8 },
     to: { x: 24, y: 32, scale: 1.3, opacity: 0.5 },
