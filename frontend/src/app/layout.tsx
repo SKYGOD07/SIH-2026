@@ -6,6 +6,7 @@ import { AudienceProvider } from '@/components/motion/AudienceProvider';
 import { IntroProvider } from '@/components/motion/IntroProvider';
 import { CustomCursor } from '@/components/navigation/CustomCursor';
 import { SiteChrome } from '@/components/navigation/SiteChrome';
+import { MaximizeOrigin } from '@/components/console/MaximizeOrigin';
 
 /**
  * Type system.
@@ -99,6 +100,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 products — a console is still the same hand moving.
               */}
               <CustomCursor />
+              {/* Records where a console-bound click happened, so the console
+                  can maximise out of that point on the other side of the
+                  navigation. Renders nothing. */}
+              <MaximizeOrigin />
               <SiteChrome>{children}</SiteChrome>
             </AudienceProvider>
           </IntroProvider>

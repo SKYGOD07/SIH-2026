@@ -1,6 +1,7 @@
 import { Sidebar } from '@/components/console/Sidebar';
 import { RightRail } from '@/components/console/RightRail';
 import { MobileNav } from '@/components/console/MobileNav';
+import { MaximizeReveal } from '@/components/console/MaximizeReveal';
 import { fetchDashboard } from '@/lib/api/mahainnovate';
 import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { DEMO_NOTICE } from '@/data/challenges';
@@ -30,7 +31,8 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
   const rail = buildRailContext(snapshot, new Date());
 
   return (
-    <div className="console-shell mx-auto grid min-h-svh w-full max-w-[112rem] grid-cols-1 lg:grid-cols-[13.25rem_minmax(0,1fr)] xl:grid-cols-[13.25rem_minmax(0,1fr)_17rem]">
+    <MaximizeReveal>
+      <div className="console-shell mx-auto grid min-h-svh w-full max-w-[112rem] grid-cols-1 lg:grid-cols-[13.25rem_minmax(0,1fr)] xl:grid-cols-[13.25rem_minmax(0,1fr)_17rem]">
       <Sidebar />
 
       <div className="flex min-w-0 flex-col gap-7 px-5 pb-24 pt-7 md:px-8 lg:pb-12">
@@ -58,7 +60,8 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         reminders={rail.reminders}
       />
 
-      <MobileNav />
-    </div>
+        <MobileNav />
+      </div>
+    </MaximizeReveal>
   );
 }

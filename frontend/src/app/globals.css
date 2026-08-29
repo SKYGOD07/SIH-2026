@@ -527,6 +527,23 @@
   }
 
   /**
+   * The console maximising in.
+   *
+   * The clip is attached to a data attribute rather than to the class, and the
+   * attribute is removed the instant the animation ends. `clip-path` clips
+   * fixed-position descendants, and the console has two — the mobile navigation
+   * bar and the notifications panel — so a rule left applied at 100% would look
+   * finished and quietly break both.
+   */
+  .console-maximize[data-maximizing] {
+    --console-reveal: 0px;
+    --console-ox: 50%;
+    --console-oy: 0%;
+    clip-path: circle(var(--console-reveal) at var(--console-ox) var(--console-oy));
+    will-change: clip-path, transform;
+  }
+
+  /**
    * The console.
    *
    * The operational side of the product, built to the shape of a working
