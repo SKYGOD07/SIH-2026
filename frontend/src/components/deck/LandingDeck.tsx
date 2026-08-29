@@ -3,174 +3,238 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Deck, Slide } from './Deck';
-import { useSlideReveal } from './useSlideReveal';
-import { PATHWAY, DEPARTMENT_PAINS, STARTUP_PAINS } from '@/data/pathway';
+import { WipeText, WipeReveal } from './WipeText';
 import { cn } from '@/lib/utils';
 
 /**
  * The landing deck.
  *
- * Eight slides, read sideways:
+ * Nine slides, read sideways, answering one question: *which startup should we
+ * test for this problem?* Everything on the page serves that, and anything that
+ * did not has been taken off it.
  *
- *   01 the pathway    02 the problem   03 the idea      04 the mechanism
- *   05 what is built  06 what it does  07 what it refuses   08 the way in
+ *   01 what it is        02 what it is not     03 who uses it
+ *   04 the five questions 05 the problem in    06 the shortlist
+ *   07 why this one      08 the evidence       09 start the pilot
  *
- * The type is doing the work. Poppins at 800/900, set very large with tight
- * negative tracking, on black — weight rather than refinement, which is the
- * register the reference sites use and the one that survives being projected
- * on a wall at the back of a hall.
+ * Two rules hold the deck together.
  *
- * The word budget is the design constraint. A slide gets a label, a headline
- * and one figure; anything that will not fit that shape belongs on a product
- * route or in the dashboard, where a reader who wants it is already going.
+ * The type is already there. Every word renders from the first frame in a
+ * near-black that reads as shape but not as language, and wipes to white as the
+ * reader arrives at it — scrubbed against horizontal travel, not faded in on a
+ * timer. Nothing appears late and nothing is missing from a screenshot.
+ *
+ * And a number is drawn, not written. The counts in this deck are the argument:
+ * 142 narrowing to 3 is the product working, and a funnel says that in a way
+ * four lines of prose cannot. Where a slide could be a paragraph or a figure,
+ * it is a figure.
  */
 
-/** The deck's one headline treatment. Heavy, tight, upper case. */
+/* ------------------------------------------------------------------ type */
+
+/** The deck's headline. Heavy, tight, upper case, wiped per character. */
 function Head({
   children,
   size = 'lg',
-  invert = false,
   className,
+  ...rest
 }: {
-  children: ReactNode;
-  size?: 'lg' | 'xl' | 'md';
-  invert?: boolean;
+  children: string;
+  size?: 'md' | 'lg' | 'xl';
   className?: string;
+  on?: string;
+  off?: string;
 }) {
   return (
-    <h2
-      data-reveal
+    <WipeText
+      as="h2"
+      split="chars"
+      stagger={0.012}
       className={cn(
         'font-display font-black uppercase',
         size === 'xl' ? 'text-display-xl' : size === 'lg' ? 'text-display-lg' : 'text-display-md',
-        invert ? 'text-void' : 'text-chalk',
         className,
       )}
+      {...rest}
     >
       {children}
-    </h2>
+    </WipeText>
   );
 }
 
 /** The single line under a headline. One line — never two. */
-function Line({ children, invert = false }: { children: ReactNode; invert?: boolean }) {
+function Line({
+  children,
+  className,
+  ...rest
+}: {
+  children: string;
+  className?: string;
+  on?: string;
+  off?: string;
+}) {
   return (
-    <p
-      data-reveal
+    <WipeText
+      as="p"
+      split="words"
+      stagger={0.03}
+      off="#2A2A2A"
+      on="rgba(255,255,255,0.62)"
       className={cn(
-        'mt-[clamp(1.25rem,3vh,2rem)] max-w-[46ch] text-[0.9375rem] leading-relaxed',
-        invert ? 'text-void/70' : 'text-chalk/55',
+        'mt-[clamp(1.25rem,3vh,2rem)] max-w-[52ch] text-[0.9375rem] leading-relaxed',
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </WipeText>
+  );
+}
+
+/** Small monospace caption used inside figures. */
+function Cap({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <span
+      className={cn(
+        'font-mono text-[0.625rem] uppercase tracking-[0.16em] text-chalk/40',
+        className,
       )}
     >
       {children}
-    </p>
+    </span>
   );
 }
 
 /* ------------------------------------------------------------------ 01 */
 
-function Opening() {
-  const ref = useSlideReveal<HTMLDivElement>();
+function WhatItIs() {
   return (
-    <Slide index="01" label="MahaInnovate" id="deck-opening">
-      <div ref={ref}>
-        <Head size="xl" className="max-w-[13ch]">
-          Identify. Pilot. Procure. Scale.
-        </Head>
-        <Line>
-          A startup-friendly procurement pathway for Government of Maharashtra departments — one
-          record from the first challenge to the final award.
-        </Line>
-      </div>
+    <Slide index="01" label="MahaInnovate" id="deck-what">
+      <Head size="xl" className="max-w-[14ch]">
+        Which startup should we test for this problem?
+      </Head>
+
+      <WipeReveal className="mt-[clamp(1.5rem,4vh,2.5rem)]">
+        <span className="inline-block h-[3px] w-[7rem] bg-flare-bright" />
+      </WipeReveal>
+
+      <Line className="max-w-[54ch]">
+        MahaInnovate helps a government officer answer that for a specific departmental problem,
+        from real evidence, policy rules and the results of pilots already run.
+      </Line>
     </Slide>
   );
 }
 
 /* ------------------------------------------------------------------ 02 */
 
-function Problem() {
-  const ref = useSlideReveal<HTMLDivElement>();
-  return (
-    <Slide index="02" label="The problem" id="deck-problem">
-      <div ref={ref}>
-        <Head className="max-w-[16ch]">
-          Rules written for desks and diesel, applied to the unproven.
-        </Head>
+const NOT = ['A startup directory', 'An investment platform', 'Another GeM', 'A chatbot'];
 
-        <div className="mt-[clamp(2rem,6vh,4rem)] grid max-w-[68rem] gap-x-14 gap-y-8 sm:grid-cols-2">
-          <div data-reveal>
-            <span className="font-mono text-meta uppercase text-signal">Departments cannot</span>
-            <ul className="mt-4 border-t border-chalk/12">
-              {DEPARTMENT_PAINS.slice(0, 4).map((pain) => (
-                <li key={pain} className="border-b border-chalk/12 py-2.5 text-sm text-chalk/85">
-                  {pain}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div data-reveal>
-            <span className="font-mono text-meta uppercase text-signal">Startups face</span>
-            <ul className="mt-4 border-t border-chalk/12">
-              {STARTUP_PAINS.slice(0, 4).map((pain) => (
-                <li key={pain} className="border-b border-chalk/12 py-2.5 text-sm text-chalk/85">
-                  {pain}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
+function WhatItIsNot() {
+  return (
+    <Slide index="02" label="What it is not" id="deck-not">
+      <Head size="md" className="max-w-[16ch]">
+        Four things it is not.
+      </Head>
+
+      <ol className="mt-[clamp(1.75rem,5vh,3rem)] max-w-[46rem]">
+        {NOT.map((item, i) => (
+          <li key={item} className="border-b border-chalk/[0.08] py-[clamp(0.6rem,1.6vh,1rem)]">
+            <span className="flex items-baseline gap-6">
+              <Cap className="w-6 shrink-0">{String(i + 1).padStart(2, '0')}</Cap>
+
+              <span className="relative min-w-0">
+                <WipeText
+                  as="span"
+                  split="chars"
+                  stagger={0.01}
+                  className="block font-display text-display-sm font-extrabold uppercase"
+                >
+                  {item}
+                </WipeText>
+
+                {/* Struck through in the accent: present, and ruled out. */}
+                <WipeReveal
+                  from={0}
+                  start={0.8}
+                  end={0.5}
+                  className="pointer-events-none absolute inset-x-0 top-1/2 origin-left"
+                >
+                  <span className="block h-[2px] w-full bg-flare-bright" />
+                </WipeReveal>
+              </span>
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      <Line>
+        It is one decision support tool for one decision, and it is judged on whether that decision
+        gets better.
+      </Line>
     </Slide>
   );
 }
 
 /* ------------------------------------------------------------------ 03 */
 
-/** Every comparable pilot already run, converging into one designed pilot. */
-function Convergence() {
-  const rows = [0, 1, 2, 3, 4];
-  return (
-    <div data-reveal className="max-w-[60rem]">
-      <svg viewBox="0 0 1000 220" className="h-auto w-full" aria-hidden="true">
-        {rows.map((i) => {
-          const y = 24 + i * 43;
-          return (
-            <g key={i}>
-              <circle cx="46" cy={y} r="4" fill="#FFFFFF" fillOpacity="0.5" />
-              <path
-                d={`M 58 ${y} C 380 ${y}, 520 110, 856 110`}
-                fill="none"
-                stroke="#FFC400"
-                strokeOpacity="0.45"
-                strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
-              />
-            </g>
-          );
-        })}
-        <circle cx="876" cy="110" r="14" fill="#FFC400" />
-      </svg>
-      <div className="mt-4 flex justify-between font-mono text-meta uppercase text-chalk/45">
-        <span>Comparable pilots already run</span>
-        <span className="text-signal">One designed pilot</span>
-      </div>
-    </div>
-  );
-}
+const SECONDARY = [
+  {
+    who: 'Startup',
+    wants: ['Discover challenges', 'Check eligibility', 'Track the pilot', 'Get paid on milestones'],
+  },
+  {
+    who: 'Evaluator',
+    wants: ['Structured evaluation', 'Evidence to hand', 'Transparent scoring', 'An audit trail'],
+  },
+];
 
-function Idea() {
-  const ref = useSlideReveal<HTMLDivElement>();
+function WhoUsesIt() {
   return (
-    <Slide index="03" label="What our idea is" id="deck-idea">
-      <div ref={ref}>
-        <Head className="max-w-[15ch]">Design the pilot from evidence, before it is funded.</Head>
-        <div className="mt-[clamp(2rem,6vh,3.5rem)]">
-          <Convergence />
-        </div>
-        <Line>
-          It does not forecast success. It reads what comparable pilots actually needed, and turns
-          that into scope, duration, milestones and thresholds.
-        </Line>
+    <Slide index="03" label="Who uses it" id="deck-who">
+      <Head size="md" className="max-w-[20ch]">
+        The officer is the main character.
+      </Head>
+
+      <div className="mt-[clamp(1.75rem,5vh,3rem)] grid max-w-[74rem] gap-x-12 gap-y-8 lg:grid-cols-[1.15fr_1fr]">
+        {/* --- the primary user --- */}
+        <WipeReveal>
+          <div className="border border-flare-bright/50 bg-flare/[0.07] p-[clamp(1.1rem,2.6vh,1.75rem)]">
+            <Cap className="text-flare-bright">Primary user</Cap>
+            <p className="mt-3 font-display text-display-xs font-extrabold uppercase text-chalk">
+              Government innovation &amp; procurement officer
+            </p>
+            <p className="mt-4 border-l-2 border-flare-bright pl-4 text-[0.9375rem] leading-relaxed text-chalk/70">
+              &ldquo;We need a technology solution to reduce municipal water leakage.&rdquo;
+            </p>
+            <p className="mt-4 text-[0.8125rem] leading-relaxed text-chalk/45">
+              They open MahaInnovate with a problem, not a shortlist. Everything else on this page
+              exists to get them to a defensible pilot decision.
+            </p>
+          </div>
+        </WipeReveal>
+
+        {/* --- the two secondary users --- */}
+        <WipeReveal start={0.75} className="grid gap-x-10 gap-y-6 sm:grid-cols-2">
+          {SECONDARY.map((group) => (
+            <div key={group.who}>
+              <Cap>Secondary</Cap>
+              <p className="mt-2 font-display text-lg font-extrabold uppercase tracking-[-0.02em] text-chalk/85">
+                {group.who}
+              </p>
+              <ul className="mt-3 border-t border-chalk/[0.08]">
+                {group.wants.map((want) => (
+                  <li
+                    key={want}
+                    className="border-b border-chalk/[0.06] py-2 text-[0.8125rem] text-chalk/55"
+                  >
+                    {want}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </WipeReveal>
       </div>
     </Slide>
   );
@@ -178,216 +242,317 @@ function Idea() {
 
 /* ------------------------------------------------------------------ 04 */
 
-function Mechanism() {
-  const ref = useSlideReveal<HTMLDivElement>();
+const QUESTIONS = [
+  'What exactly is the problem?',
+  'Which startups can solve it?',
+  'Are they eligible and credible?',
+  'Which one should we pilot?',
+  'Did the pilot actually work?',
+];
+
+function FiveQuestions() {
   return (
-    <Slide index="04" label="The mechanism" id="deck-mechanism">
-      <div ref={ref}>
-        <Head size="md" className="max-w-[18ch]">
-          Ten stages. Seven templates. One record.
-        </Head>
+    <Slide index="04" label="The five questions" id="deck-questions">
+      <Head size="md" className="max-w-[18ch]">
+        Five questions, in order.
+      </Head>
 
-        <ol
-          data-reveal
-          className="mt-[clamp(2rem,6vh,3.5rem)] flex max-w-[76rem] flex-wrap gap-x-px gap-y-4"
-        >
-          {PATHWAY.map((stage) => (
-            <li
-              key={stage.id}
-              className={cn(
-                'min-w-[6.5rem] flex-1 border-t pt-3',
-                stage.isOurs ? 'border-signal' : 'border-chalk/25',
-              )}
-            >
-              <span
-                className={cn(
-                  'block font-mono text-[0.5625rem] uppercase tracking-[0.16em]',
-                  stage.isOurs ? 'text-signal' : 'text-chalk/40',
-                )}
-              >
-                {stage.index}
-              </span>
-              <span className="mt-1.5 block font-display text-sm font-bold uppercase tracking-[-0.01em] text-chalk">
-                {stage.label}
-              </span>
-            </li>
-          ))}
-        </ol>
+      <WipeReveal
+        start={0.82}
+        className="mt-[clamp(1.75rem,5vh,3rem)] grid max-w-[80rem] gap-x-6 gap-y-7 sm:grid-cols-3 lg:grid-cols-5"
+      >
+        {QUESTIONS.map((question, i) => (
+          <div key={question} className="border-t border-flare-bright/60 pt-4">
+            <span className="font-display text-[2rem] font-black leading-none tracking-[-0.05em] text-flare-bright">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <p className="mt-3 font-display text-[0.9375rem] font-bold uppercase leading-snug tracking-[-0.02em] text-chalk">
+              {question}
+            </p>
+          </div>
+        ))}
+      </WipeReveal>
 
-        <Line>
-          Every stage the problem statement names, in its order. Stage 05 is the one addition: the
-          simulation that designs the pilot before a rupee is committed.
-        </Line>
-      </div>
+      <Line>
+        Answer all five and the department has a pilot it can defend. Answer none and it has a
+        tender.
+      </Line>
     </Slide>
   );
 }
 
 /* ------------------------------------------------------------------ 05 */
 
-const SERVICES = [
-  { id: 'BE-01', name: 'Pilot corpus' },
-  { id: 'BE-02', name: 'Comparable retrieval' },
-  { id: 'BE-03', name: 'Design & risk engine' },
-  { id: 'BE-04', name: 'Policy retrieval' },
-  { id: 'BE-05', name: 'Milestone ledger' },
-  { id: 'BE-06', name: 'Feedback loop' },
-];
+const TECHNOLOGIES = ['Computer vision', 'IoT', 'Pipeline monitoring', 'Predictive analytics'];
 
-function Built() {
-  const ref = useSlideReveal<HTMLDivElement>();
+function ProblemIn() {
   return (
-    <Slide index="05" label="What we have built" id="deck-built">
-      <div ref={ref}>
-        <Head className="max-w-[12ch]">Six services. All running.</Head>
+    <Slide index="05" label="The problem goes in" id="deck-problem">
+      <Head size="md" className="max-w-[20ch]">
+        A problem in. Technologies out.
+      </Head>
 
-        <ol
-          data-reveal
-          className="mt-[clamp(1.75rem,5vh,3rem)] max-w-[64rem] border-t border-chalk/15"
-        >
-          {SERVICES.map((service) => (
-            <li
-              key={service.id}
-              className="flex items-center gap-6 border-b border-chalk/12 py-3.5 sm:gap-10"
-            >
-              <span className="w-16 shrink-0 font-mono text-meta uppercase text-chalk/40">
-                {service.id}
-              </span>
-              <span className="flex-1 font-display text-lg font-bold uppercase tracking-[-0.02em] text-chalk">
-                {service.name}
-              </span>
-              <span className="shrink-0 font-mono text-meta uppercase text-validated">Running</span>
-            </li>
-          ))}
-        </ol>
+      <WipeReveal
+        start={0.82}
+        className="mt-[clamp(1.75rem,5vh,3rem)] grid max-w-[78rem] items-center gap-x-10 gap-y-8 lg:grid-cols-[1fr_auto_1fr]"
+      >
+        {/* --- what the officer types --- */}
+        <div className="border border-chalk/15 p-[clamp(1.1rem,2.6vh,1.75rem)]">
+          <Cap>Government problem</Cap>
+          <p className="mt-3 font-display text-display-xs font-extrabold uppercase leading-tight text-chalk">
+            Reduce municipal water leakage by 20% in 90 days.
+          </p>
+          <p className="mt-4 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-chalk/35">
+            <span>Baseline 31%</span>
+            <span>Target 24%</span>
+            <span>3 wards</span>
+          </p>
+        </div>
 
-        <Line>
-          Storage sits behind repository interfaces, so the database drops in without touching a
-          single service.
-        </Line>
-      </div>
+        {/* --- the arrow --- */}
+        <div className="hidden items-center gap-3 lg:flex">
+          <span className="block h-px w-16 bg-flare-bright" />
+          <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-flare-bright">
+            reads
+          </span>
+          <span className="block h-px w-16 bg-flare-bright" />
+        </div>
+
+        {/* --- what comes back --- */}
+        <div>
+          <Cap className="text-flare-bright">Related technologies</Cap>
+          <ul className="mt-4 flex flex-wrap gap-2.5">
+            {TECHNOLOGIES.map((tech) => (
+              <li
+                key={tech}
+                className="border border-chalk/20 px-4 py-2 font-display text-[0.8125rem] font-bold uppercase tracking-[-0.01em] text-chalk"
+              >
+                {tech}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-5 max-w-[38ch] text-[0.8125rem] leading-relaxed text-chalk/45">
+            Derived from the problem, not chosen from a menu — which is what stops the challenge
+            being written as a product specification.
+          </p>
+        </div>
+      </WipeReveal>
     </Slide>
   );
 }
 
 /* ------------------------------------------------------------------ 06 */
 
-const OUTPUTS = [
-  { n: '01', name: 'Pilot design', figure: '90 → 120 days', bar: 'bg-signal' },
-  { n: '02', name: 'Risk register', figure: '2 preconditions', bar: 'bg-risk' },
-  { n: '03', name: 'Confidence', figure: '2 of 5 met', bar: 'bg-validated' },
+const FUNNEL = [
+  { n: 142, label: 'Relevant', note: 'Match the technology profile' },
+  { n: 23, label: 'Potentially eligible', note: 'Clear the policy gate' },
+  { n: 8, label: 'Strong matches', note: 'Evidence supports the claim' },
+  { n: 3, label: 'Recommended for pilot', note: 'Ranked, with reasons' },
 ];
 
-function Capability() {
-  const ref = useSlideReveal<HTMLDivElement>();
+/**
+ * The narrowing, drawn to scale.
+ *
+ * Each bar's width is its count as a fraction of the widest, so the collapse
+ * from 142 to 3 is visible rather than asserted. This is the single most
+ * persuasive figure in the deck and it is the one place a proportional bar
+ * earns its space over a number set large.
+ */
+function ShortlistFunnel() {
+  const widest = FUNNEL[0].n;
+
   return (
-    <Slide index="06" label="What it can do" id="deck-capability">
-      <div ref={ref}>
-        <Head className="max-w-[14ch]">Three outputs. Every one cited.</Head>
+    <Slide index="06" label="The shortlist" id="deck-shortlist">
+      <Head size="md" className="max-w-[16ch]">
+        142 down to 3.
+      </Head>
 
-        <div
-          data-reveal
-          className="mt-[clamp(2rem,6vh,3.5rem)] grid max-w-[64rem] gap-x-12 gap-y-8 sm:grid-cols-3"
-        >
-          {OUTPUTS.map((output) => (
-            <div key={output.n}>
-              <span className="font-mono text-meta uppercase text-chalk/40">{output.n}</span>
-              <p className="mt-2 font-display text-display-xs font-extrabold uppercase text-chalk">
-                {output.name}
-              </p>
-              <span className="mt-4 block h-[3px] w-full bg-chalk/12">
-                <span className={cn('block h-[3px] w-full', output.bar)} />
-              </span>
-              <p className="mt-3 font-mono text-meta uppercase text-chalk/55">{output.figure}</p>
-            </div>
-          ))}
-        </div>
+      <WipeReveal start={0.82} className="mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[72rem]">
+        <ol>
+          {FUNNEL.map((step, i) => {
+            const last = i === FUNNEL.length - 1;
+            return (
+              <li key={step.label} className="py-[clamp(0.5rem,1.4vh,0.9rem)]">
+                <div className="flex items-baseline justify-between gap-6">
+                  <span className="flex items-baseline gap-5">
+                    <span
+                      className={cn(
+                        'font-display text-[clamp(1.6rem,3.4vw,2.75rem)] font-black leading-none tracking-[-0.05em] tabular-nums',
+                        last ? 'text-flare-bright' : 'text-chalk',
+                      )}
+                    >
+                      {step.n}
+                    </span>
+                    <span className="font-display text-[0.9375rem] font-bold uppercase tracking-[-0.02em] text-chalk/85">
+                      {step.label}
+                    </span>
+                  </span>
+                  <Cap className="hidden sm:block">{step.note}</Cap>
+                </div>
 
-        <Line>Each figure traces back to the prior pilots it was derived from, by id.</Line>
-      </div>
+                <span className="mt-2.5 block h-[6px] w-full bg-chalk/[0.07]">
+                  <span
+                    className={cn('block h-full', last ? 'bg-flare-bright' : 'bg-chalk/70')}
+                    style={{ width: `${(step.n / widest) * 100}%` }}
+                  />
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </WipeReveal>
+
+      <Line>
+        Every drop between two rows is a rule that can be named, and an officer can ask which one
+        removed a given startup.
+      </Line>
     </Slide>
   );
 }
 
 /* ------------------------------------------------------------------ 07 */
 
-const REFUSALS = [
-  'Predict whether a pilot will succeed',
-  'Release payment before evidence is validated',
-  'Record a failure without a named cause',
-  'Answer a policy question it has no clause for',
+const SCORES = [
+  { label: 'Problem fit', score: 92 },
+  { label: 'Technical evidence', score: 88 },
+  { label: 'Deployment experience', score: 91 },
+  { label: 'Compliance', score: 94 },
+  { label: 'Pilot evidence', score: 86 },
 ];
 
-function Refusals() {
-  const ref = useSlideReveal<HTMLDivElement>();
-  return (
-    <Slide index="07" label="What it refuses" id="deck-refusals" invert>
-      <div ref={ref}>
-        <Head invert className="max-w-[14ch]">
-          Four things it will not do.
-        </Head>
+const OVERALL = 90;
 
-        <ol
-          data-reveal
-          className="mt-[clamp(1.75rem,5vh,3rem)] max-w-[56rem] border-t border-void/20"
-        >
-          {REFUSALS.map((refusal, i) => (
-            <li
-              key={refusal}
-              className="flex items-baseline gap-6 border-b border-void/20 py-3.5 text-void"
-            >
-              <span className="font-mono text-meta uppercase opacity-60">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span className="font-display text-lg font-bold uppercase tracking-[-0.02em]">
-                {refusal}
+function WhyThisStartup() {
+  return (
+    <Slide index="07" label="Why this one" id="deck-why">
+      <Head size="md" className="max-w-[18ch]">
+        Why this startup, in five numbers.
+      </Head>
+
+      <WipeReveal
+        start={0.82}
+        className="mt-[clamp(1.5rem,4vh,2.5rem)] grid max-w-[76rem] gap-x-14 gap-y-8 lg:grid-cols-[1.5fr_1fr]"
+      >
+        {/* --- the five criteria --- */}
+        <ol>
+          {SCORES.map((row) => (
+            <li key={row.label} className="py-[clamp(0.4rem,1.2vh,0.75rem)]">
+              <div className="flex items-baseline justify-between gap-6">
+                <span className="font-display text-[0.9375rem] font-bold uppercase tracking-[-0.02em] text-chalk/85">
+                  {row.label}
+                </span>
+                <span className="font-display text-[1.125rem] font-extrabold tabular-nums text-chalk">
+                  {row.score}
+                </span>
+              </div>
+              <span className="mt-2 block h-[4px] w-full bg-chalk/[0.07]">
+                <span className="block h-full bg-chalk/70" style={{ width: `${row.score}%` }} />
               </span>
             </li>
           ))}
         </ol>
 
-        <Line invert>
-          A procurement system that cannot say no is not a procurement system. Each refusal is
-          enforced in code, not in guidance.
-        </Line>
-      </div>
+        {/* --- the composite --- */}
+        <div className="flex flex-col justify-center border border-flare-bright/50 bg-flare/[0.07] p-[clamp(1.1rem,2.6vh,1.75rem)]">
+          <Cap className="text-flare-bright">Overall suitability</Cap>
+          <span className="mt-2 font-display text-[clamp(3.5rem,7vw,5.5rem)] font-black leading-none tracking-[-0.05em] tabular-nums text-flare-bright">
+            {OVERALL}
+          </span>
+          <p className="mt-4 text-[0.8125rem] leading-relaxed text-chalk/55">
+            A weighted read of the five, not an opinion. Every component is traceable to the
+            evidence behind it, so a rejected startup can be told which number moved.
+          </p>
+        </div>
+      </WipeReveal>
     </Slide>
   );
 }
 
 /* ------------------------------------------------------------------ 08 */
 
-function WayIn() {
-  const ref = useSlideReveal<HTMLDivElement>();
-  return (
-    <Slide index="08" label="The way in" id="deck-enter">
-      <div ref={ref}>
-        <Head size="xl" className="max-w-[11ch]">
-          See it running.
-        </Head>
+const EVIDENCE = [
+  { figure: '3', label: 'Previous pilots', note: 'Outcomes recorded against baselines' },
+  { figure: '4', label: 'Government deployments', note: 'In production, named departments' },
+  { figure: '✓', label: 'Verified compliance', note: 'Screened against the policy corpus' },
+  { figure: '✓', label: 'Technology capability', note: 'Matched to the challenge profile' },
+];
 
-        <div data-reveal className="mt-[clamp(2rem,5vh,3rem)] flex flex-wrap items-center gap-4">
+function Evidence() {
+  return (
+    <Slide index="08" label="The evidence" id="deck-evidence">
+      <Head size="md" className="max-w-[18ch]">
+        Every number has a source.
+      </Head>
+
+      <WipeReveal
+        start={0.82}
+        className="mt-[clamp(1.75rem,5vh,3rem)] grid max-w-[80rem] gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        {EVIDENCE.map((item) => (
+          <div key={item.label} className="border-t border-chalk/20 pt-4">
+            <span className="font-display text-[clamp(2.5rem,5vw,3.75rem)] font-black leading-none tracking-[-0.05em] text-flare-bright">
+              {item.figure}
+            </span>
+            <p className="mt-3 font-display text-[0.9375rem] font-bold uppercase tracking-[-0.02em] text-chalk">
+              {item.label}
+            </p>
+            <p className="mt-2 text-[0.8125rem] leading-relaxed text-chalk/45">{item.note}</p>
+          </div>
+        ))}
+      </WipeReveal>
+
+      <Line>
+        This is the difference between a recommendation and a ranking: the officer can open any
+        figure and see the pilot it came from.
+      </Line>
+    </Slide>
+  );
+}
+
+/* ------------------------------------------------------------------ 09 */
+
+function StartPilot() {
+  return (
+    <Slide index="09" label="Start the pilot" id="deck-start" invert>
+      <WipeText
+        as="h2"
+        split="chars"
+        stagger={0.012}
+        on="#FFFFFF"
+        off="rgba(255,255,255,0.22)"
+        className="max-w-[12ch] font-display text-display-xl font-black uppercase"
+      >
+        Start the pilot.
+      </WipeText>
+
+      <WipeReveal start={0.78} className="mt-[clamp(1.75rem,5vh,2.75rem)]">
+        <p className="max-w-[46ch] text-[0.9375rem] leading-relaxed text-chalk/75">
+          From here it is a milestone contract: bounded scope, evidence named before day one, and
+          payment released only against evidence the department has validated.
+        </p>
+
+        <div className="mt-[clamp(1.5rem,4vh,2.25rem)] flex flex-wrap items-center gap-4">
           <Link
             href="/dashboard"
             data-cursor="enter"
-            className="inline-flex items-center gap-3 rounded-full bg-chalk px-7 py-3.5 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-void transition-colors hover:bg-signal"
+            className="inline-flex items-center gap-3 rounded-full bg-chalk px-7 py-3.5 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-flare transition-opacity hover:opacity-85"
           >
-            Open the dashboard
+            Open the console
             <span aria-hidden="true">→</span>
           </Link>
           <Link
-            href="/pilots"
+            href="/templates"
             data-cursor="open"
-            className="inline-flex items-center gap-3 rounded-full border border-chalk/25 px-7 py-3.5 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-chalk transition-colors hover:border-signal hover:text-signal"
+            className="inline-flex items-center gap-3 rounded-full border border-chalk/40 px-7 py-3.5 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-chalk transition-colors hover:border-chalk"
           >
-            Browse pilots
+            The pilot agreement
           </Link>
         </div>
 
-        <Line>
-          Smart India Hackathon · Government of Maharashtra · startup-friendly public procurement.
-        </Line>
-      </div>
+        <p className="mt-[clamp(1.5rem,4vh,2.25rem)] font-mono text-[0.625rem] uppercase tracking-[0.16em] text-chalk/60">
+          Smart India Hackathon · Government of Maharashtra
+        </p>
+      </WipeReveal>
     </Slide>
   );
 }
@@ -395,27 +560,29 @@ function WayIn() {
 /* ------------------------------------------------------------------ */
 
 const CHAPTERS = [
-  'Pathway',
-  'Problem',
-  'Idea',
-  'Mechanism',
-  'Built',
-  'Capability',
-  'Refusals',
-  'Enter',
+  'What it is',
+  'What it is not',
+  'Who uses it',
+  'Five questions',
+  'Problem in',
+  'Shortlist',
+  'Why this one',
+  'Evidence',
+  'Start',
 ];
 
 export function LandingDeck() {
   return (
     <Deck chapters={CHAPTERS}>
-      <Opening />
-      <Problem />
-      <Idea />
-      <Mechanism />
-      <Built />
-      <Capability />
-      <Refusals />
-      <WayIn />
+      <WhatItIs />
+      <WhatItIsNot />
+      <WhoUsesIt />
+      <FiveQuestions />
+      <ProblemIn />
+      <ShortlistFunnel />
+      <WhyThisStartup />
+      <Evidence />
+      <StartPilot />
     </Deck>
   );
 }
