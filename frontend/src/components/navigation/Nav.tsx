@@ -88,7 +88,6 @@ export function Nav() {
   const headerRef = useRef<HTMLElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
   const revealRef = useRef<gsap.core.Timeline | null>(null);
 
   const isLanding = pathname === '/';
@@ -430,7 +429,7 @@ export function Nav() {
             Menu
           </span>
 
-          <ul ref={listRef} className="nav-list mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[64rem]">
+          <ul className="nav-list mt-[clamp(1.5rem,4vh,2.5rem)] max-w-[64rem]">
             {LINKS.map((link) => {
               const active = pathname === link.href;
               return (
