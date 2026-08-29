@@ -4,10 +4,14 @@ import { MarqueeBand } from '@/components/marquee';
 /**
  * The band between the deck and the footer.
  *
- * Six words, which are the four verbs the problem statement names plus the two
- * commitments the mechanism actually makes. It earns its place as the hinge in
- * the page: the deck ends black, the footer is red, and a tilted white ribbon
- * is what turns that from a collision into a transition.
+ * Six words: the four verbs the problem statement names, plus the two
+ * commitments the mechanism actually makes.
+ *
+ * It lands in a run of red — the deck's last slide, this band, then the footer.
+ * That is deliberate rather than accidental: the page reads as one red terminal
+ * zone with a white ribbon cut through it, and the ribbon is the only thing
+ * that needs to separate them. If the run ever wants breaking, the honest fix
+ * is to take the red off the last slide, not to bleach the band.
  */
 const TICKER = [
   'Identify',
