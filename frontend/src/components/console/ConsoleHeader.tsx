@@ -36,8 +36,15 @@ export function ConsoleHeader({
 }: {
   title: string;
   subtitle: string;
-  /** Whether the figures on this page came from the API or the fixtures. */
-  source?: 'live' | 'demonstration';
+  /**
+   * Where this page's figures came from.
+   *
+   * There is deliberately no 'live' state. The backend serves demonstration
+   * seeds, so a successful call says nothing about the provenance of the
+   * payload — and a green "Live API" badge over invented records is worse than
+   * no badge at all.
+   */
+  source?: 'demonstration' | 'unavailable';
   notifications?: Notification[];
 }) {
   const [open, setOpen] = useState(false);
@@ -74,8 +81,8 @@ export function ConsoleHeader({
 
       <div className="flex items-center gap-3">
         {source ? (
-          <Pill tone={source === 'live' ? 'validated' : 'chalk'}>
-            {source === 'live' ? 'Live API' : 'Demonstration data'}
+          <Pill tone={source === 'unavailable' ? 'risk' : 'signal'}>
+            {source === 'unavailable' ? 'API unavailable' : 'Prototype — no live records'}
           </Pill>
         ) : null}
 

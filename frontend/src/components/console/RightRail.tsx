@@ -8,13 +8,14 @@ import { cn } from '@/lib/utils';
  * The standing context column.
  *
  * The reference carries profile, calendar, schedule and reminders here — things
- * true regardless of which page you are on. Ours carries the same four, filled
- * with the only things that are constant across this console: who is signed in
- * and what they can therefore approve, what is dated, what is next, and what is
- * overdue.
+ * true regardless of which page you are on. Ours carries the same four, and
+ * currently all four are empty, because the platform holds no session, no
+ * milestones and no pilots.
  *
- * Everything in the rail is a link. A column of context you cannot act from is
- * a column of decoration, and it is the first thing to get ignored.
+ * They render as stated absences rather than being hidden. A rail that
+ * disappears when it has nothing to say leaves a reader unsure whether the
+ * feature exists; one that says "nothing overdue" has actually answered the
+ * question.
  */
 
 export interface RailItem {
@@ -28,48 +29,48 @@ export interface RailItem {
 }
 
 export function RightRail({
-  officer,
-  role,
-  department,
+  sessionNotice,
+  sessionRequires,
   today,
   events,
   upcoming,
   reminders,
 }: {
-  officer: string;
-  role: string;
-  department: string;
+  /** Why there is no officer named here. */
+  sessionNotice: string;
+  /** What a real session will have to carry. */
+  sessionRequires: string[];
   /** Local YYYY-MM-DD, computed by the server. */
   today: string;
   events: CalendarEvent[];
   upcoming: RailItem[];
   reminders: RailItem[];
 }) {
-  const initials = officer
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('');
-
   return (
     <aside
       aria-label="Context"
       className="console-scroll sticky top-0 hidden h-svh flex-col gap-5 border-l border-chalk/[0.08] px-5 pb-7 pt-7 xl:flex"
     >
-      {/* --- who is signed in, and what that lets them do --- */}
-      <div className="card p-[1.125rem] text-center">
-        <span className="mx-auto grid h-[4.25rem] w-[4.25rem] place-items-center rounded-full bg-signal font-display text-[1.25rem] font-extrabold text-void">
-          {initials}
-        </span>
-        <p className="mt-3 font-display text-[0.875rem] font-bold uppercase tracking-[-0.01em] text-chalk">
-          {officer}
-        </p>
-        <p className="mt-1 text-[0.71875rem] leading-relaxed text-chalk/45">{role}</p>
-        <p className="mt-0.5 text-[0.71875rem] text-chalk/35">{department}</p>
+      {/*
+        Who is signed in — which is nobody.
 
-        <p className="mt-3 border-t border-chalk/[0.08] pt-3 text-[0.6875rem] leading-relaxed text-chalk/45">
-          Authorised to approve milestone evidence and to sign a scale decision.
-        </p>
+        This card previously named an officer and asserted their authority to
+        approve payments. Both were invented, and an invented approver is the
+        detail a reader is least likely to question.
+      */}
+      <div className="card p-[1.125rem]">
+        <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal">
+          No session
+        </span>
+        <p className="mt-2.5 text-[0.75rem] leading-relaxed text-chalk/55">{sessionNotice}</p>
+
+        <ul className="mt-3 border-t border-chalk/[0.08] pt-3">
+          {sessionRequires.map((item) => (
+            <li key={item} className="py-1 text-[0.6875rem] leading-relaxed text-chalk/40">
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <MiniCalendar today={today} events={events} />
@@ -79,6 +80,12 @@ export function RightRail({
         <h3 className="mb-3 font-display text-[0.8125rem] font-bold uppercase tracking-[-0.01em] text-chalk">
           Next up
         </h3>
+        {upcoming.length === 0 ? (
+          <p className="rounded-[14px] border border-dashed border-chalk/12 px-4 py-5 text-[0.71875rem] leading-relaxed text-chalk/35">
+            Nothing scheduled. Milestone dates appear here once a pilot is contracted.
+          </p>
+        ) : null}
+
         <ul className="flex flex-col gap-2.5">
           {upcoming.map((item) => (
             <li key={item.id}>
@@ -125,6 +132,12 @@ export function RightRail({
         <h3 className="mb-3 font-display text-[0.8125rem] font-bold uppercase tracking-[-0.01em] text-chalk">
           Reminders
         </h3>
+        {reminders.length === 0 ? (
+          <p className="rounded-[14px] border border-dashed border-chalk/12 px-4 py-5 text-[0.71875rem] leading-relaxed text-chalk/35">
+            Nothing overdue. Breaches of the payment standard are raised here.
+          </p>
+        ) : null}
+
         <ul className="flex flex-col gap-2.5">
           {reminders.map((item) => (
             <li key={item.id}>

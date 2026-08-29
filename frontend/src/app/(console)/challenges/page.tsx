@@ -1,40 +1,33 @@
 import type { Metadata } from 'next';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { ChallengeList } from '@/components/sections/product/ChallengeList';
-import { CHALLENGES } from '@/data/challenges';
+import { ConsoleHeader } from '@/components/console/ConsoleHeader';
+import { AwaitingData } from '@/components/console/Figure';
+import { fetchDashboard } from '@/lib/api/mahainnovate';
 
 export const metadata: Metadata = {
   title: 'Challenges',
-  description:
-    'Outcome-based departmental challenges, each published with its baseline, target and measurement criteria.',
+  description: 'Departmental problems written as outcome-based challenges.',
 };
 
-export default function ChallengesPage() {
-  const open = CHALLENGES.filter((c) => c.status === 'OPEN').length;
+export const dynamic = 'force-dynamic';
+
+/**
+ * Challenges.
+ *
+ * Empty, and stating why. The six challenges previously listed here — with budgets, baselines and application counts — were invented for the prototype.
+ */
+export default async function Page() {
+  const { source } = await fetchDashboard();
 
   return (
     <>
-      <PageHeader
-        index="01"
-        eyebrow="Define · Discover"
-        title="Challenges"
-        lede="Every challenge is published as an outcome, not a product specification: a stated baseline, a target, the measurement criteria it will be judged on, and the pilot scope it is bounded to. Prior turnover and prior-supply experience are not qualifying criteria at pilot stage."
-        aside={
-          <dl className="flex flex-wrap gap-x-10 gap-y-4">
-            <div>
-              <dt className="font-mono text-meta uppercase text-chalk/50">Published</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-chalk">
-                {CHALLENGES.length}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-mono text-meta uppercase text-chalk/50">Open now</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-signal">{open}</dd>
-            </div>
-          </dl>
-        }
+      <ConsoleHeader title="Challenges" subtitle="No challenges have been published." source={source} />
+
+      <AwaitingData
+        title="Challenges is empty"
+        holds="Each departmental challenge: its outcome, baseline, target, metrics, budget envelope and named decision owner."
+        blockedBy="The six challenges previously listed here — with budgets, baselines and application counts — were invented for the prototype."
+        next="A department writing a challenge, starting from the problem statement template."
       />
-      <ChallengeList challenges={CHALLENGES} />
     </>
   );
 }

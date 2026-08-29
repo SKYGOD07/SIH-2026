@@ -1,42 +1,33 @@
 import type { Metadata } from 'next';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { StartupList } from '@/components/sections/product/StartupList';
-import { STARTUPS } from '@/data/startups';
+import { ConsoleHeader } from '@/components/console/ConsoleHeader';
+import { AwaitingData } from '@/components/console/Figure';
+import { fetchDashboard } from '@/lib/api/mahainnovate';
 
 export const metadata: Metadata = {
   title: 'Startups',
-  description:
-    'Candidate startups with their technology readiness, government deployment record, prior pilot outcomes and compliance standing.',
+  description: 'Startups on the register, and the evidence behind each.',
 };
 
-export default function StartupsPage() {
-  const verified = STARTUPS.filter((s) => s.complianceStatus === 'VERIFIED').length;
+export const dynamic = 'force-dynamic';
+
+/**
+ * Startups.
+ *
+ * Empty, and stating why. The eight companies previously listed here, with match scores and funding raised, were invented. Real records need the MSInS winner directory and the SISFS portfolio, both of which are JavaScript applications that a plain fetch cannot read.
+ */
+export default async function Page() {
+  const { source } = await fetchDashboard();
 
   return (
     <>
-      <PageHeader
-        index="02"
-        eyebrow="Discover · Verify"
-        title="Startups"
-        lede="Candidates are ranked against a specific challenge and shown with the evidence behind the ranking: technology readiness, prior government deployments, previous pilot outcomes and current compliance standing. Match scores order a shortlist for human review; they do not select a supplier."
-        aside={
-          <dl className="flex flex-wrap gap-x-10 gap-y-4">
-            <div>
-              <dt className="font-mono text-meta uppercase text-chalk/50">On register</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-chalk">
-                {STARTUPS.length}
-              </dd>
-            </div>
-            <div>
-              <dt className="font-mono text-meta uppercase text-chalk/50">Compliance verified</dt>
-              <dd className="mt-2 font-display text-3xl leading-none text-validated">
-                {verified}
-              </dd>
-            </div>
-          </dl>
-        }
+      <ConsoleHeader title="Startups" subtitle="No startup records have been ingested." source={source} />
+
+      <AwaitingData
+        title="Startups is empty"
+        holds="Startups with their sector, state, recognition status, government programme participation and prior deployment evidence — each field carrying its source."
+        blockedBy="The eight companies previously listed here, with match scores and funding raised, were invented. Real records need the MSInS winner directory and the SISFS portfolio, both of which are JavaScript applications that a plain fetch cannot read."
+        next="Ingestion of the MSInS and SISFS listings. See docs/DATA-SOURCES.md for the three routes open to us."
       />
-      <StartupList startups={STARTUPS} />
     </>
   );
 }

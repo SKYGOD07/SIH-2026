@@ -2,7 +2,8 @@ import { Sidebar } from '@/components/console/Sidebar';
 import { RightRail } from '@/components/console/RightRail';
 import { MobileNav } from '@/components/console/MobileNav';
 import { fetchDashboard } from '@/lib/api/mahainnovate';
-import { buildRailContext, DEMO_SESSION } from '@/lib/console/rail';
+import { buildRailContext, SESSION } from '@/lib/console/rail';
+import { DEMO_NOTICE } from '@/data/challenges';
 
 /**
  * The console shell.
@@ -33,13 +34,24 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
       <Sidebar />
 
       <div className="flex min-w-0 flex-col gap-7 px-5 pb-24 pt-7 md:px-8 lg:pb-12">
+        {/*
+          The prototype notice, on every console route.
+          
+          It used to live only in the site footer, which `SiteChrome` renders on
+          the landing route alone — so six console pages full of figures carried
+          no disclosure at all. A reader who lands on /pilots directly must be
+          told there, not on a page they may never visit.
+        */}
+        <p className="rounded-[10px] border border-signal/25 bg-signal/[0.06] px-4 py-2.5 text-[0.71875rem] leading-relaxed text-signal">
+          {DEMO_NOTICE}
+        </p>
+
         {children}
       </div>
 
       <RightRail
-        officer={DEMO_SESSION.officer}
-        role={DEMO_SESSION.role}
-        department={DEMO_SESSION.department}
+        sessionNotice={SESSION.notice}
+        sessionRequires={SESSION.requires}
         today={rail.today}
         events={rail.events}
         upcoming={rail.upcoming}
