@@ -253,6 +253,83 @@
   }
 
   /**
+   * The full-screen menu.
+   *
+   * The overlay opens as a circle growing out of the hamburger button. The
+   * radius lives in `--nav-reveal` and the origin in `--nav-ox` / `--nav-oy`,
+   * rather than the whole `clip-path` being tweened as a string: the origin is
+   * measured from the button and must stay fixed while only the radius moves,
+   * and a registered length is something the browser can interpolate natively.
+   *
+   * The origin is measured rather than hard-coded to a corner. The reference
+   * recipe says `at top right`, which assumes the button is in the corner —
+   * ours sits at the right-hand end of a centred capsule, so the circle is
+   * anchored to wherever the button actually is. Growing from a corner the
+   * button is not in reads as a different, unrelated animation.
+   */
+  .nav-menu {
+    --nav-reveal: 0px;
+    --nav-ox: 100%;
+    --nav-oy: 0%;
+    clip-path: circle(var(--nav-reveal) at var(--nav-ox) var(--nav-oy));
+    will-change: clip-path;
+  }
+
+  /*
+   * The per-link background previews, stacked and cross-faded.
+   *
+   * Both states are named classes rather than one toggled class, because they
+   * need different timings: arriving is quick and eased out so the preview
+   * feels attached to the pointer, leaving is slower so a reader crossing the
+   * list does not trigger a strobe of half-finished transitions.
+   */
+  .nav-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.06);
+    pointer-events: none;
+    transition:
+      opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .nav-bg.is-bg-enter {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .nav-bg.is-bg-leave {
+    opacity: 0;
+    transform: scale(1.03);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /*
+   * Hover dimming. Applied to the list, so the rule is "everything except the
+   * one being pointed at" rather than a class toggled on every sibling — which
+   * would mean a state write per item on every pointer move across the menu.
+   */
+  .nav-list:hover .nav-item {
+    opacity: 0.4;
+  }
+  .nav-list .nav-item:hover {
+    opacity: 1;
+  }
+  .nav-item {
+    opacity: 1;
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-menu {
+      clip-path: none;
+    }
+  }
+
+  /**
    * The marquee band.
    *
    * A white ribbon on a grained red ground, tilted a few degrees, with heavy
@@ -630,6 +707,13 @@
  * tween on it steps rather than glides. Registered as a percentage it animates
  * natively — which matters here because a slide can carry a few hundred units.
  */
+/** The menu circle's radius. Registered so the browser interpolates it. */
+@property --nav-reveal {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 @property --wipe {
   syntax: '<percentage>';
   inherits: false;
