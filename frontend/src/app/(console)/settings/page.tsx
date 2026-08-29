@@ -3,7 +3,7 @@ import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead, Card, Pill } from '@/components/console/primitives';
 import { Icon, type IconName } from '@/components/console/Icon';
 import { fetchDashboard } from '@/lib/api/mahainnovate';
-import { buildRailContext, DEMO_SESSION } from '@/lib/console/rail';
+import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { STANDARD_TEMPLATES } from '@/data/templates';
 
 export const metadata: Metadata = {
@@ -63,7 +63,7 @@ export default async function SettingsPage() {
   const settings: Setting[] = [
     {
       label: 'Payment standard',
-      value: `${snapshot.paymentTiming.targetDays} days`,
+      value: '15 days',
       where: 'backend · ledger.service.ts · PAYMENT_TARGET_DAYS',
       note: 'Filed to paid. Our commitment, not a statutory figure — the problem statement asks for timely payment without naming a number, so the mechanism names one.',
       icon: 'clock',
@@ -113,35 +113,29 @@ export default async function SettingsPage() {
         notifications={rail.notifications}
       />
 
-      {/* --- who is signed in --- */}
+      {/* --- who is signed in, which is nobody --- */}
       <section aria-label="Session">
-        <SectionHead title="Session" meta="No authentication yet" />
+        <SectionHead title="Session" meta="Not implemented" />
         <Card>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-signal font-display text-[0.9375rem] font-extrabold text-void">
-                {DEMO_SESSION.officer
-                  .split(' ')
-                  .map((w) => w[0])
-                  .slice(0, 2)
-                  .join('')}
-              </span>
-              <div>
-                <p className="font-display text-[0.9375rem] font-bold uppercase tracking-[-0.01em] text-chalk">
-                  {DEMO_SESSION.officer}
-                </p>
-                <p className="mt-0.5 text-[0.78125rem] text-chalk/45">
-                  {DEMO_SESSION.role} · {DEMO_SESSION.department}
-                </p>
-              </div>
-            </div>
-            <Pill tone="chalk">Demonstration session</Pill>
-          </div>
+          <Pill tone="signal">No authenticated session</Pill>
 
-          <p className="mt-4 border-t border-chalk/[0.06] pt-4 text-[0.8125rem] leading-relaxed text-chalk/50">
-            The signed-in officer is a fixture, not a claim read from a token. Approval and scale
-            decisions are recorded against a named officer, so this is the one thing that must
-            become real before the console is used on an actual pilot.
+          <p className="mt-4 max-w-[68ch] text-[0.8125rem] leading-relaxed text-chalk/55">
+            {SESSION.notice}
+          </p>
+
+          <ul className="mt-5 border-t border-chalk/[0.08] pt-4">
+            {SESSION.requires.map((item) => (
+              <li key={item} className="py-1 text-[0.78125rem] leading-relaxed text-chalk/45">
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-5 border-t border-chalk/[0.06] pt-4 text-[0.78125rem] leading-relaxed text-chalk/40">
+            This card previously named an officer, their department and the approvals they were
+            authorised to make. All of it was invented. Approval and scale decisions are recorded
+            against a named officer, so authentication is the one thing that must become real
+            before this console is used on an actual pilot.
           </p>
         </Card>
       </section>

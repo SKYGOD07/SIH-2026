@@ -14,10 +14,10 @@ import { cn } from '@/lib/utils';
  * somebody sits down with one of them, not that seven exist. So the page shows
  * the set and the reader opens the one they need.
  *
- * Each field pairs its guidance with a worked example side by side. That layout
- * is doing real work: the guidance says what a good answer looks like and the
- * example shows one, and a field with only the first reliably comes back filled
- * in with a restatement of the heading.
+ * Each field shows the guidance that says what a good answer looks like. It used
+ * to sit beside a worked example, which was the better layout — but every one of
+ * those examples invented a departmental officer, a rupee figure or a document
+ * reference. The pairing returns when there is a real challenge to draw one from.
  */
 export function TemplateLibrary() {
   const [active, setActive] = useState(STANDARD_TEMPLATES[0].id);
@@ -107,12 +107,9 @@ export function TemplateLibrary() {
                 ) : null}
               </div>
 
-              <div className="mt-2.5 grid gap-x-8 gap-y-2.5 sm:pl-10 md:grid-cols-2">
-                <p className="text-[0.78125rem] leading-relaxed text-chalk/50">{field.guidance}</p>
-                <p className="rounded-[8px] border-l-2 border-signal/50 bg-chalk/[0.03] px-3 py-2 text-[0.78125rem] leading-relaxed text-chalk/80">
-                  {field.example}
-                </p>
-              </div>
+              <p className="mt-2.5 max-w-[70ch] text-[0.78125rem] leading-relaxed text-chalk/50 sm:pl-10">
+                {field.guidance}
+              </p>
             </li>
           ))}
         </ol>
