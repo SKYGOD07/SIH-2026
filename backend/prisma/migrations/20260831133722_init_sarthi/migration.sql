@@ -1,3 +1,6 @@
+-- pgvector must exist before document_chunks.embedding is created.
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- CreateEnum
 CREATE TYPE "DataOrigin" AS ENUM ('VERIFIED', 'DEMO', 'USER_ENTERED');
 
@@ -570,3 +573,55 @@ ALTER TABLE "documents" ADD CONSTRAINT "documents_sourceId_fkey" FOREIGN KEY ("s
 
 -- AddForeignKey
 ALTER TABLE "document_chunks" ADD CONSTRAINT "document_chunks_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "documents"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- ---------------------------------------------------------------------------
+-- Hand-added: guarantees Prisma's schema language cannot express.
+-- ---------------------------------------------------------------------------
+
+-- Approximate-nearest-neighbour index for retrieval. Cosine, matching how
+-- nomic-embed-text vectors are compared.
+CREATE INDEX "document_chunks_embedding_idx"
+  ON "document_chunks" USING hnsw ("embedding" vector_cosine_ops);
+
+-- Provenance. A row may only claim VERIFIED if it names the source it came
+-- from. Without this, "verified" is a string any bug can write.
+ALTER TABLE "startups"
+  ADD CONSTRAINT "startups_verified_needs_source"
+  CHECK ("origin" <> 'VERIFIED' OR "sourceId" IS NOT NULL);
+
+ALTER TABLE "funding_rounds"
+  ADD CONSTRAINT "funding_rounds_verified_needs_source"
+  CHECK ("origin" <> 'VERIFIED' OR "sourceId" IS NOT NULL);
+
+ALTER TABLE "government_programs"
+  ADD CONSTRAINT "government_programs_verified_needs_source"
+  CHECK ("origin" <> 'VERIFIED' OR "sourceId" IS NOT NULL);
+
+ALTER TABLE "startup_program_participations"
+  ADD CONSTRAINT "startup_program_participations_verified_needs_source"
+  CHECK ("origin" <> 'VERIFIED' OR "sourceId" IS NOT NULL);
+
+ALTER TABLE "documents"
+  ADD CONSTRAINT "documents_verified_needs_source"
+  CHECK ("origin" <> 'VERIFIED' OR "sourceId" IS NOT NULL);
+
+-- AI credentials. Shape is per-provider and strict in both directions: a local
+-- Ollama connection must carry no credential at all, and a hosted Anthropic
+-- connection must carry a complete one. A partially populated credential would
+-- otherwise save cleanly and fail only at call time.
+ALTER TABLE "ai_provider_connections"
+  ADD CONSTRAINT "ai_provider_connections_credential_shape"
+  CHECK (
+    ("provider" = 'OLLAMA'
+       AND "keyCipher" IS NULL AND "keyNonce" IS NULL AND "keyTag" IS NULL)
+    OR
+    ("provider" = 'ANTHROPIC'
+       AND "keyCipher" IS NOT NULL AND "keyNonce" IS NOT NULL AND "keyTag" IS NOT NULL)
+  );
+
+-- Evidence may point at a milestone or a metric, but never at both: a single
+-- artefact backing two different claims makes the trail ambiguous about which
+-- one it was filed against.
+ALTER TABLE "pilot_evidence"
+  ADD CONSTRAINT "pilot_evidence_single_attachment"
+  CHECK (NOT ("milestoneId" IS NOT NULL AND "metricId" IS NOT NULL));

@@ -169,9 +169,12 @@ They become real figures when the matching engine has records to run against.
 
 ## What is still unwired
 
-- **Prisma.** `backend/prisma/schema.prisma` models `Order`, `Driver`, `Vehicle`,
-  `Tracking` — a logistics schema from an unrelated project. `config/prisma.ts` is
-  imported by nothing. Nothing in Sarthi touches a database.
+- **Prisma.** `backend/prisma/schema.prisma` now holds the Sarthi schema — 18
+  models, migrated to Supabase, **all tables empty**. No startup, funding, pilot,
+  KPI, contract or procurement row has been seeded. The logistics schema this
+  section previously described has been removed entirely.
+- **Repositories.** Nothing in Sarthi reads or writes the database yet. The
+  schema exists; the persistence layer does not.
 - **Storage.** Both repositories are `Map`-backed and constructed at module load
   in `backend/src/sarthi/container.ts`. Every write is lost on restart.
 - **The policy corpus.** `rag.service.ts` holds 7 invented clauses. Retrieval is

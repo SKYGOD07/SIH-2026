@@ -1,6 +1,11 @@
-# Logistics Frontend Application
+# Sarthi frontend
 
-Modern Next.js 14+ (App Router) client application with TypeScript, Tailwind CSS, shadcn/ui components, and real-time Socket.IO subscriptions.
+Next.js 14 (App Router) client for the Sarthi innovation-procurement pathway,
+with TypeScript, Tailwind CSS and shadcn/ui components.
+
+Authentication uses the Supabase Auth client for sign-in and session only. All
+application data is read and written through the Express backend — the browser
+never queries Supabase tables directly.
 
 ---
 
@@ -11,7 +16,7 @@ Modern Next.js 14+ (App Router) client application with TypeScript, Tailwind CSS
 * **Styling**: Tailwind CSS + CSS Variables
 * **UI Primitives**: Radix / shadcn/ui patterns
 * **Icons**: Lucide React
-* **Realtime Client**: Socket.IO Client
+* **Auth**: Supabase Auth client (sign-in and session only)
 
 ---
 
@@ -22,7 +27,7 @@ src/
 ├── app/                  # Next.js App Router (pages, layout, globals.css)
 ├── components/           # UI components, dashboard widgets, layouts
 │   └── ui/               # shadcn/ui atomic primitives (Button, Card, Badge)
-├── hooks/                # Custom React hooks (e.g. useSocket)
+├── hooks/                # Custom React hooks
 ├── lib/                  # Utilities (cn helper, API client)
 ├── services/             # Frontend service calls to backend REST API
 ├── types/                # TypeScript interface declarations
