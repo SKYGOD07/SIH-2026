@@ -2,7 +2,7 @@ import { Sidebar } from '@/components/console/Sidebar';
 import { RightRail } from '@/components/console/RightRail';
 import { MobileNav } from '@/components/console/MobileNav';
 import { MaximizeReveal } from '@/components/console/MaximizeReveal';
-import { fetchDashboard } from '@/lib/api/mahainnovate';
+import { fetchDashboard } from '@/lib/api/sarthi';
 import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { DEMO_NOTICE } from '@/data/challenges';
 

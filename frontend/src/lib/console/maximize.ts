@@ -15,7 +15,7 @@
  * viewport, which is where the navigation that produced it usually lives.
  */
 
-const KEY = 'mahainnovate:maximize-origin';
+const KEY = 'sarthi:maximize-origin';
 
 /** Long enough for a route change, short enough that a stale one cannot apply. */
 const MAX_AGE = 2000;

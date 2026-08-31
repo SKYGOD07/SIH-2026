@@ -151,7 +151,7 @@ function Cap({ children, className }: { children: ReactNode; className?: string 
  */
 function WhatItIs() {
   return (
-    <Slide index="01" label="MahaInnovate" id="deck-what">
+    <Slide index="01" label="Sarthi" id="deck-what">
       <Head size="xl" reveal={false} className="max-w-[14ch]">
         Which startup should we test for this problem?
       </Head>
@@ -161,7 +161,7 @@ function WhatItIs() {
       </WipeReveal>
 
       <Line reveal={false} className="max-w-[54ch]">
-        MahaInnovate helps a government officer answer that for a specific departmental problem,
+        Sarthi helps a government officer answer that for a specific departmental problem,
         from real evidence, policy rules and the results of pilots already run.
       </Line>
     </Slide>
@@ -250,7 +250,7 @@ function WhoUsesIt() {
               &ldquo;We need a technology solution to reduce municipal water leakage.&rdquo;
             </p>
             <p className="mt-4 text-[0.8125rem] leading-relaxed text-chalk/45">
-              They open MahaInnovate with a problem, not a shortlist. Everything else on this page
+              They open Sarthi with a problem, not a shortlist. Everything else on this page
               exists to get them to a defensible pilot decision.
             </p>
           </div>

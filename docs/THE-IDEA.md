@@ -1,6 +1,6 @@
 # Your Idea, Implemented
 
-**MahaInnovate — an evidence-driven innovation procurement pathway for the
+**Sarthi — an evidence-driven innovation procurement pathway for the
 Government of Maharashtra.**
 
 This document explains what your idea becomes when it is built properly, why each

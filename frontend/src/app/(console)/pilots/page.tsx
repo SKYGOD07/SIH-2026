@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { AwaitingData } from '@/components/console/Figure';
 import { Card, SectionHead } from '@/components/console/primitives';
-import { fetchDashboard } from '@/lib/api/mahainnovate';
+import { fetchDashboard } from '@/lib/api/sarthi';
 import { PAYMENT_RULE } from '@/data/pilots';
 
 export const metadata: Metadata = {

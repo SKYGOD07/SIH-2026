@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { AwaitingData } from '@/components/console/Figure';
-import { fetchDashboard } from '@/lib/api/mahainnovate';
+import { fetchDashboard } from '@/lib/api/sarthi';
 
 export const metadata: Metadata = {
   title: 'Ledger',

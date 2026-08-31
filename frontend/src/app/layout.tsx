@@ -58,12 +58,12 @@ const mono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'MahaInnovate — Innovation Procurement Intelligence Platform',
-    template: '%s · MahaInnovate',
+    default: 'Sarthi — Innovation Procurement Intelligence Platform',
+    template: '%s · Sarthi',
   },
   description:
     'A transparent, competitive and legally compliant innovation-procurement pathway: define the challenge, discover startups, verify eligibility against sources, evaluate, pilot, measure, procure and scale.',
-  applicationName: 'MahaInnovate',
+  applicationName: 'Sarthi',
   keywords: [
     'innovation procurement',
     'government challenges',

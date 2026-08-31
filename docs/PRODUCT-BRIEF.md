@@ -1,4 +1,4 @@
-# MahaInnovate — Product Brief & Working Record
+# Sarthi — Product Brief & Working Record
 
 > Living document. Everything agreed about the problem statement, the product idea,
 > the design direction and the frontend/backend split lives here.

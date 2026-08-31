@@ -316,7 +316,7 @@ export function Nav() {
           <Link
             href="/"
             data-cursor="home"
-            aria-label="MahaInnovate home"
+            aria-label="Sarthi home"
             className="relative flex shrink-0 items-center gap-2.5 transition-opacity hover:opacity-80"
           >
             {/* Wrapped so the preloader can measure this exact box. */}
@@ -330,7 +330,7 @@ export function Nav() {
                 expanded ? 'max-w-[12rem] opacity-100' : 'max-w-0 overflow-hidden opacity-0',
               )}
             >
-              MahaInnovate
+              Sarthi
             </span>
           </Link>
 

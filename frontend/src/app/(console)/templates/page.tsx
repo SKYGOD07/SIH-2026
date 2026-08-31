@@ -3,7 +3,7 @@ import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead, Card, Pill } from '@/components/console/primitives';
 import { TemplateLibrary } from '@/components/console/TemplateLibrary';
 import { STANDARD_TEMPLATES, INTEGRATION_SURFACES } from '@/data/templates';
-import { fetchDashboard } from '@/lib/api/mahainnovate';
+import { fetchDashboard } from '@/lib/api/sarthi';
 import { buildRailContext } from '@/lib/console/rail';
 
 export const metadata: Metadata = {

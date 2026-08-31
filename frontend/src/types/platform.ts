@@ -1,5 +1,5 @@
 /**
- * MahaInnovate platform domain model.
+ * Sarthi platform domain model.
  *
  * Deliberately kept API-shaped: every section of the cinematic landing page and
  * every product route reads from these types, so swapping the demo fixtures in

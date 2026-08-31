@@ -37,7 +37,7 @@ export function SiteFooter() {
             data-cursor="home"
             className="font-display text-[clamp(1.5rem,3.4vw,2.25rem)] font-black uppercase leading-none tracking-[-0.04em] transition-opacity hover:opacity-80"
           >
-            MahaInnovate
+            Sarthi
           </Link>
 
           <nav aria-label="Footer">

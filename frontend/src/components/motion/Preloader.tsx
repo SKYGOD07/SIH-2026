@@ -286,7 +286,7 @@ export function Preloader() {
       className="fixed inset-0 z-[120] cursor-pointer overflow-hidden"
       role="status"
       aria-live="polite"
-      aria-label="Loading MahaInnovate. Click to skip."
+      aria-label="Loading Sarthi. Click to skip."
     >
       {/* The ground, split so it can part. */}
       <div data-curtain className="absolute inset-x-0 top-0 h-1/2 bg-void" />
@@ -326,7 +326,7 @@ export function Preloader() {
             data-preload-word
             className="font-mono text-[0.6875rem] uppercase tracking-[0.32em] text-chalk/55"
           >
-            MahaInnovate
+            Sarthi
           </span>
         </div>
       </div>

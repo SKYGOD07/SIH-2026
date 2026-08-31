@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead, Card, Pill } from '@/components/console/primitives';
 import { Icon, type IconName } from '@/components/console/Icon';
-import { fetchDashboard } from '@/lib/api/mahainnovate';
+import { fetchDashboard } from '@/lib/api/sarthi';
 import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { STANDARD_TEMPLATES } from '@/data/templates';
 

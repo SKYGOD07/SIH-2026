@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { Figure, ProvenanceLine, AwaitingData } from '@/components/console/Figure';
 import { Card, SectionHead } from '@/components/console/primitives';
-import { fetchDashboard } from '@/lib/api/mahainnovate';
+import { fetchDashboard } from '@/lib/api/sarthi';
 import { PROGRAMMES } from '@/data/programs';
 import { SISFS_PATHWAY, SISFS_PATHWAY_SOURCE } from '@/data/sisfsPathway';
 

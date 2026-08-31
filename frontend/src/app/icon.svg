@@ -1,27 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <rect width="100" height="100" rx="24" fill="#000000" />
   <g fill="#FFFFFF">
-    <!-- Row 0: cols 0, 4 -->
-    <rect x="16" y="16" width="12" height="12" rx="3.5" />
+    <!-- Row 0: cols 1, 2, 3, 4 -->
+    <rect x="30" y="16" width="12" height="12" rx="3.5" />
+    <rect x="44" y="16" width="12" height="12" rx="3.5" />
+    <rect x="58" y="16" width="12" height="12" rx="3.5" />
     <rect x="72" y="16" width="12" height="12" rx="3.5" />
 
-    <!-- Row 1: cols 0, 1, 3, 4 -->
+    <!-- Row 1: col 0 -->
     <rect x="16" y="30" width="12" height="12" rx="3.5" />
-    <rect x="30" y="30" width="12" height="12" rx="3.5" />
-    <rect x="58" y="30" width="12" height="12" rx="3.5" />
-    <rect x="72" y="30" width="12" height="12" rx="3.5" />
 
-    <!-- Row 2: cols 0, 2, 4 -->
-    <rect x="16" y="44" width="12" height="12" rx="3.5" />
+    <!-- Row 2: cols 1, 2, 3 -->
+    <rect x="30" y="44" width="12" height="12" rx="3.5" />
     <rect x="44" y="44" width="12" height="12" rx="3.5" fill="#FFC400" />
-    <rect x="72" y="44" width="12" height="12" rx="3.5" />
+    <rect x="58" y="44" width="12" height="12" rx="3.5" />
 
-    <!-- Row 3: cols 0, 4 -->
-    <rect x="16" y="58" width="12" height="12" rx="3.5" />
+    <!-- Row 3: col 4 -->
     <rect x="72" y="58" width="12" height="12" rx="3.5" />
 
-    <!-- Row 4: cols 0, 4 -->
+    <!-- Row 4: cols 0, 1, 2, 3 -->
     <rect x="16" y="72" width="12" height="12" rx="3.5" />
-    <rect x="72" y="72" width="12" height="12" rx="3.5" />
+    <rect x="30" y="72" width="12" height="12" rx="3.5" />
+    <rect x="44" y="72" width="12" height="12" rx="3.5" />
+    <rect x="58" y="72" width="12" height="12" rx="3.5" />
   </g>
 </svg>

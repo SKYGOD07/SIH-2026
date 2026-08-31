@@ -130,7 +130,7 @@ documented.
 | `data/simulation.ts` | 5 invented comparable pilots, risk register, confidence band | **Deleted** — no importer |
 | `data/maharashtra.ts` | An adoption run from 1 pilot to 3 districts to 8 departments | `SCALE_STEPS` empty; map geometry retained (stylised, and says so) |
 | `data/templates.ts` | 42 worked examples naming PMC officers, ₹15,00,000, report `VAL-3311-04` | Examples removed; fields, guidance and standing clauses retained |
-| `lib/api/mahainnovate.ts` | A complete fabricated snapshot on every fallback | Returns an empty snapshot |
+| `lib/api/sarthi.ts` | A complete fabricated snapshot on every fallback | Returns an empty snapshot |
 | `lib/console/rail.ts` | An invented officer with invented approval authority, on every console route | States that there is no session |
 
 **Deleted outright**, as dead code carrying fabricated claims:
@@ -171,8 +171,8 @@ They become real figures when the matching engine has records to run against.
 
 - **Prisma.** `backend/prisma/schema.prisma` models `Order`, `Driver`, `Vehicle`,
   `Tracking` — a logistics schema from an unrelated project. `config/prisma.ts` is
-  imported by nothing. Nothing in MahaInnovate touches a database.
+  imported by nothing. Nothing in Sarthi touches a database.
 - **Storage.** Both repositories are `Map`-backed and constructed at module load
-  in `backend/src/mahainnovate/container.ts`. Every write is lost on restart.
+  in `backend/src/sarthi/container.ts`. Every write is lost on restart.
 - **The policy corpus.** `rag.service.ts` holds 7 invented clauses. Retrieval is
   keyword scoring, not embeddings; there is no LLM anywhere in the backend.

@@ -1,4 +1,4 @@
-import type { DashboardSnapshot } from '@/lib/api/mahainnovate';
+import type { DashboardSnapshot } from '@/lib/api/sarthi';
 import type { CalendarEvent } from '@/components/console/MiniCalendar';
 import type { RailItem } from '@/components/console/RightRail';
 import type { Notification } from '@/components/console/ConsoleHeader';

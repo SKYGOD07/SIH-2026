@@ -4,9 +4,9 @@ import { forwardRef, type CSSProperties, type HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * The MahaInnovate mark.
+ * The Sarthi mark.
  *
- * A 5 x 5 pixel grid spelling M in rounded tiles. One component, used at both
+ * A 5 x 5 pixel grid spelling S in rounded tiles. One component, used at both
  * ends of the opening sequence: enormous in the preloader while it assembles,
  * and tiny in the navigation capsule it lands in. Sharing the geometry is what
  * lets the opener hand off to the navbar convincingly — the reader is watching
@@ -16,13 +16,21 @@ import { cn } from '@/lib/utils';
  * tile is positioned in percentages so it scales without recalculation.
  */
 
-/** 1 = tile. Reading the rows top-to-bottom spells M. */
+/**
+ * 1 = tile. Reading the rows top-to-bottom spells S.
+ *
+ * The tile COUNT is load-bearing, not just the shape: the preloader schedule in
+ * `Preloader.tsx` hard-codes `T.assembled` as assembleStart + travel + stagger,
+ * where the stagger total is (tiles - 1) x 0.075s. Thirteen tiles is what makes
+ * that 0.9s. Change the glyph and you must retune `T.assembled` to match, or the
+ * mark will still be arriving when it is due to fly to the navbar.
+ */
 export const MARK_GRID: number[][] = [
-  [1, 0, 0, 0, 1],
-  [1, 1, 0, 1, 1],
-  [1, 0, 1, 0, 1],
-  [1, 0, 0, 0, 1],
-  [1, 0, 0, 0, 1],
+  [0, 1, 1, 1, 1],
+  [1, 0, 0, 0, 0],
+  [0, 1, 1, 1, 0],
+  [0, 0, 0, 0, 1],
+  [1, 1, 1, 1, 0],
 ];
 
 export interface MarkTile {

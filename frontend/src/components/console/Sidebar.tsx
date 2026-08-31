@@ -112,7 +112,7 @@ export function Sidebar() {
       <Link
         href="/"
         data-cursor="home"
-        aria-label="MahaInnovate home"
+        aria-label="Sarthi home"
         className="mb-7 flex items-center gap-2.5 px-2 transition-opacity hover:opacity-80"
       >
         <span className="block w-[1.375rem] shrink-0">
@@ -120,7 +120,7 @@ export function Sidebar() {
         </span>
         <span className="min-w-0">
           <span className="block font-display text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-chalk">
-            MahaInnovate
+            Sarthi
           </span>
           <span className="mt-px block font-mono text-[0.5625rem] uppercase tracking-[0.28em] text-chalk/35">
             Procurement
