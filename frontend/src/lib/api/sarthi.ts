@@ -64,8 +64,11 @@ function empty(source: DataSource, backendNotice: string | null = null): Dashboa
   };
 }
 
-const BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:5000/api';
+let BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:5000';
+if (!BASE.endsWith('/api')) {
+  BASE = `${BASE}/api`;
+}
 
 export async function fetchDashboard(): Promise<DashboardSnapshot> {
   try {
