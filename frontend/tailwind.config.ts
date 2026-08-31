@@ -28,8 +28,8 @@ const config: Config = {
           DEFAULT: '#FFFFFF',
         },
         signal: {
-          DEFAULT: '#FFC400',
-          deep: '#E0AC00',
+          DEFAULT: '#D90000',
+          deep: '#A80000',
         },
         /**
          * The deck's accent. A hot, saturated red, taken from the reference the

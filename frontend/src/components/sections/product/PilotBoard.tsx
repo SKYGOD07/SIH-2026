@@ -87,7 +87,7 @@ export function PilotBoard({ pilots }: { pilots: Pilot[] }) {
                 data-cursor="open"
                 className={cn(
                   'group h-full w-full border-b border-chalk/15 py-7 pr-8 text-left transition-colors lg:pr-12',
-                  isActive ? 'border-t-2 border-t-saffron' : 'border-t-2 border-t-transparent',
+                  isActive ? 'border-t-2 border-t-signal' : 'border-t-2 border-t-transparent',
                 )}
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-3">

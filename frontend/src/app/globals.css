@@ -624,8 +624,8 @@
 
   /* Pastel tint roles, rebuilt as low-alpha washes of our own five hues. */
   .tint-signal {
-    background: rgba(255, 196, 0, 0.12);
-    color: #ffc400;
+    background: rgba(217, 0, 0, 0.12);
+    color: #D90000;
   }
   .tint-validated {
     background: rgba(111, 207, 151, 0.12);
