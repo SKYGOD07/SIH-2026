@@ -1,168 +1,184 @@
-# Logistics Platform
+# Sarthi — Innovation Procurement Pathway
 
-A production-ready, modular monorepo for real-time logistics, fleet management, shipment dispatching, and live GPS tracking.
+> **SIH 2026** · A full-stack monorepo that helps government procurement officers simulate, track, and audit outcome-based pilot contracts using RAG-powered retrieval and an immutable milestone ledger.
 
 ---
 
 ## 🛠 Tech Stack
 
-* **Frontend**: Next.js 14+ (App Router), TypeScript, Tailwind CSS, shadcn/ui, Lucide Icons
-* **Backend**: Node.js, Express.js, TypeScript
-* **Database**: PostgreSQL (Supabase PostgreSQL supported)
-* **ORM**: Prisma ORM
-* **Real-time**: Socket.IO
-* **Maps & Geo**: Modular integration for Mapbox / Google Maps API
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS, GSAP, Lenis |
+| **Backend** | Node.js, Express.js, TypeScript |
+| **Database** | PostgreSQL via Supabase |
+| **ORM** | Prisma ORM |
+| **DevOps** | Supabase CLI, npm workspaces, concurrently |
 
 ---
 
 ## 📁 Project Structure
 
 ```text
-logistics-platform/
+SIH-2026/                              # Monorepo root (npm workspaces)
 │
-├── frontend/                     # Next.js App Router frontend application
-│   ├── src/
-│   │   ├── app/                  # App Router pages and layout
-│   │   ├── components/           # Reusable UI & dashboard components (shadcn/ui ready)
-│   │   ├── hooks/                # Custom React hooks (e.g. useSocket, useGeolocation)
-│   │   ├── lib/                  # Library configurations and helpers (e.g. api client, utils)
-│   │   ├── services/             # Frontend API integration services
-│   │   ├── types/                # Shared frontend TypeScript declarations
-│   │   └── utils/                # Utility and formatting functions
-│   ├── public/                   # Static assets
-│   ├── .env.example              # Frontend environment variables template
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── README.md
+├── frontend/                          # Next.js 14 App Router application
+│   └── src/
+│       ├── app/                       # Pages and layouts (App Router)
+│       ├── components/
+│       │   ├── console/               # Dashboard shell (Sidebar, RightRail)
+│       │   ├── sections/product/      # PilotBoard and product sections
+│       │   └── ui/                    # Shared UI primitives (badge, etc.)
+│       ├── data/                      # Static/seed data files
+│       ├── hooks/                     # Custom React hooks
+│       ├── lib/
+│       │   ├── api/sarthi.ts          # Sarthi API client
+│       │   └── gsap/                  # Centralised GSAP registration & config
+│       ├── types/                     # Shared TypeScript declarations
+│       └── utils/                     # Utility and formatting helpers
 │
-├── backend/                      # Node.js + Express + TypeScript API server
-│   ├── src/
-│   │   ├── config/               # Environment & database configuration
-│   │   ├── controllers/          # Request handler controllers (thin layer)
-│   │   ├── middleware/           # Auth, error handling, validation middleware
-│   │   ├── routes/               # Modular API route definitions
-│   │   ├── services/             # Core business logic and database queries
-│   │   ├── socket/               # Real-time Socket.IO event handlers
-│   │   ├── types/                # Backend TypeScript types and schemas
-│   │   ├── utils/                # Logging, response formatting, math helpers
-│   │   ├── app.ts                # Express app setup and middleware configuration
-│   │   └── server.ts             # HTTP server & Socket.IO initialization
+├── backend/                           # Express + Prisma API server
 │   ├── prisma/
-│   │   └── schema.prisma         # Prisma data models & migrations
-│   ├── .env.example              # Backend environment variables template
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── README.md
+│   │   ├── schema.prisma              # Full domain schema (see below)
+│   │   └── migrations/               # Prisma migration history
+│   └── src/
+│       ├── controllers/
+│       │   └── health.controller.ts   # Health-check endpoint
+│       └── server.ts                  # Express app + Supabase bootstrap
 │
-├── docs/                         # System architecture, API, and database documentation
-│   ├── architecture/
-│   │   └── README.md
-│   ├── api/
-│   │   └── README.md
-│   └── database/
-│       └── README.md
-│
-├── .gitignore
-├── .env.example
-├── README.md
-└── package.json
+├── supabase/                          # Supabase project config & temp files
+├── docs/                              # Architecture, API & database docs
+├── .env.example                       # Root environment variable template
+└── package.json                       # Monorepo scripts (workspaces)
 ```
+
+---
+
+## 🗄 Database Schema (Prisma)
+
+The schema models **Sarthi's** core domain. All records are historical facts — nothing stored asserts a prediction.
+
+| Model | Purpose |
+|---|---|
+| `PilotRecord` | A completed pilot that has entered the corpus; the primary similarity source for the simulator |
+| `PilotLedger` | A live pilot's contract, as an ordered chain of milestones |
+| `Milestone` | One payment gate inside a ledger (`LOCKED → IN_PROGRESS → EVIDENCE_SUBMITTED → APPROVED/REJECTED → PAID`) |
+| `MilestoneEvidence` | An artefact filed to back a milestone claim |
+| `LedgerEvent` | Immutable, append-only audit trail — every milestone transition records a row |
+| `PolicyClause` | Quotable passages from the policy corpus used by the RAG retrieval service |
+
+**Key enums:** `PilotOutcome`, `BaselineQuality`, `FailureCause`, `MilestoneStatus`, `SourceKind`, `LedgerAction`
 
 ---
 
 ## 🚀 Local Development
 
 ### Prerequisites
-* **Node.js**: >= 18.0.0
-* **npm**: >= 9.0.0
-* **PostgreSQL** instance (e.g., local PostgreSQL or Supabase)
 
-### 1. Clone & Install Dependencies
+- **Node.js** >= 18.0.0
+- **npm** >= 9.0.0
+- **PostgreSQL** instance (local or Supabase)
+- **Supabase CLI** (optional, for `supabase` commands)
+
+### 1. Clone & Install
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/shubhamrajput34/SIH-2026.git
 cd SIH-2026
 
-# Install all monorepo dependencies
+# Install all workspace dependencies
 npm install
 ```
 
 ### 2. Environment Setup
 
-Copy example environment files to `.env` in frontend and backend:
-
 ```bash
-# Frontend
+# Copy root env template
+cp .env.example .env
+
+# Copy frontend env template
 cp frontend/.env.example frontend/.env
 
-# Backend
+# Copy backend env template
 cp backend/.env.example backend/.env
 ```
 
-Update `backend/.env` with your PostgreSQL / Supabase connection URL:
+Update `backend/.env` with your Supabase connection string:
+
 ```env
 DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
 ```
 
-### 3. Database Migration & Prisma Setup
+### 3. Database Setup
 
 ```bash
 # Generate Prisma Client
 npm run prisma:generate
 
-# Apply migrations (when database URL is set)
+# Run migrations against your database
 npm run prisma:migrate
+
+# (Optional) Open Prisma Studio
+npm run prisma:studio
 ```
 
-### 4. Run the Development Servers
-
-Run both frontend and backend concurrently from the root directory:
+### 4. Run Development Servers
 
 ```bash
+# Run frontend + backend concurrently (recommended)
 npm run dev
+
+# Run individually
+npm run dev:frontend    # → http://localhost:3000
+npm run dev:backend     # → http://localhost:5000
 ```
 
-Or run services individually:
+> **Windows users**: If `npm` is not recognised after a fresh Node.js install, run this in PowerShell first to refresh the PATH:
+> ```powershell
+> $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+> ```
+> Then open a **new terminal** — it will work automatically.
 
-```bash
-# Run only Backend (default: http://localhost:5000)
-npm run dev:backend
+---
 
-# Run only Frontend (default: http://localhost:3000)
-npm run dev:frontend
-```
+## 🌿 Recent Changes
+
+| Commit | Description |
+|---|---|
+| `523775f` | Initialize Sarthi backend service with Prisma schema, health check routes, and Supabase configuration |
+| `3095073` | Initialize Sarthi backend with Prisma schema, routes, and Supabase integration |
+| `12febc2` | Merge: dashboard changes (PR #3) |
+| `2f6f24b` | Fix: add `data-lenis-prevent` to Sidebar and RightRail to prevent Lenis scroll hijack |
+| `2271948` | Feat: make Sidebar and RightRail scrollable by constraining max height |
+| `446615a` | Feat: initialize project styling with custom Tailwind config and global CSS variables |
+| `0fc3a6f` | Feat: centralized GSAP registration and shared animation configuration constants |
+| `754d16f` | Feat: implement simulator services — confidence analysis, risk assessment, and design retrieval |
+| `c89258d` | Feat: foundational platform architecture — dashboard pages, RAG retrieval services, core ledger validation |
 
 ---
 
 ## 🌿 Git Workflow
 
-To maintain code quality and fast parallel development during the hackathon, follow this branch strategy:
-
 ```text
-main (Production / Stable Releases)
-  │
-  └── develop (Active Integration Branch)
-        │
-        ├── feature/frontend    (UI, dashboard, map components)
-        ├── feature/backend     (REST API, controller & services)
-        ├── feature/database    (Prisma schema & migrations)
-        └── feature/tracking    (Socket.IO real-time location stream)
+main           ← stable / tagged releases
+  └── develop  ← active integration branch
+        ├── feature/frontend    (UI, dashboard, GSAP animations)
+        ├── feature/backend     (API, Prisma services)
+        ├── feature/database    (schema & migrations)
+        └── feature/simulator   (confidence & risk engine)
 ```
 
-1. Always create a feature branch off `develop`:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/your-feature-name
-   ```
-2. Commit small, atomic changes with descriptive commit messages.
-3. Open a Pull Request (PR) against `develop` for review before merging.
-4. Merge `develop` into `main` only for tagged milestone releases.
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/your-feature-name
+# ...work...
+# Open a PR against develop
+```
 
 ---
 
 ## 📄 Documentation
 
-* [System Architecture & Data Flow](file:///docs/architecture/README.md)
-* [REST & Socket API Reference](file:///docs/api/README.md)
-* [Database Schema & ERD](file:///docs/database/README.md)
+- [System Architecture & Data Flow](docs/architecture/README.md)
+- [REST API Reference](docs/api/README.md)
+- [Database Schema & ERD](docs/database/README.md)
