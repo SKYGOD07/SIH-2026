@@ -8,6 +8,7 @@ import { CustomCursor } from '@/components/navigation/CustomCursor';
 import { SiteChrome } from '@/components/navigation/SiteChrome';
 import { MaximizeOrigin } from '@/components/console/MaximizeOrigin';
 import { MinimizeReveal } from '@/components/console/MinimizeReveal';
+import { AuthProvider } from '@/lib/auth/AuthProvider';
 
 /**
  * Type system.
@@ -98,7 +99,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
 
-        <SmoothScrollProvider>
+        {/*
+          Authentication wraps everything: the console reads it, and the auth
+          routes write it. One provider, one source of truth about who is
+          signed in.
+        */}
+        <AuthProvider>
+          <SmoothScrollProvider>
           <IntroProvider>
             <AudienceProvider>
               {/*
@@ -116,7 +123,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <MinimizeReveal />
             </AudienceProvider>
           </IntroProvider>
-        </SmoothScrollProvider>
+          </SmoothScrollProvider>
+        </AuthProvider>
       </body>
     </html>
   );

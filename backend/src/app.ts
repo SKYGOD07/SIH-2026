@@ -29,8 +29,13 @@ export function createApp(): Express {
   app.use(
     cors({
       origin(origin, callback) {
-        if (!origin || env.CLIENT_URLS.includes(origin)) return callback(null, true);
-        return callback(new Error(`Origin ${origin} is not permitted`));
+        // Reflect the origin only when it is on the list. An unlisted origin is
+        // answered *without* the header rather than with an error: the browser
+        // then blocks the response, which is the actual CORS mechanism, while
+        // raising an Error here would return a 500 that reads in the logs as a
+        // server fault. CORS is not an authorisation control — the bearer token
+        // is — so refusing to add a header is the whole of the job.
+        callback(null, !origin || env.CLIENT_URLS.includes(origin));
       },
       credentials: false,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

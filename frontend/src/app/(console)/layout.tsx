@@ -5,6 +5,7 @@ import { MaximizeReveal } from '@/components/console/MaximizeReveal';
 import { fetchDashboard } from '@/lib/api/sarthi';
 import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { DEMO_NOTICE } from '@/data/challenges';
+import { RequireAuth } from '@/components/auth/RequireAuth';
 
 /**
  * The console shell.
@@ -31,7 +32,8 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
   const rail = buildRailContext(snapshot, new Date());
 
   return (
-    <MaximizeReveal>
+    <RequireAuth>
+      <MaximizeReveal>
       <div className="console-shell mx-auto grid min-h-svh w-full max-w-[112rem] grid-cols-1 lg:grid-cols-[13.25rem_minmax(0,1fr)] xl:grid-cols-[13.25rem_minmax(0,1fr)_17rem]">
         <Sidebar />
 
@@ -62,6 +64,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
 
         <MobileNav />
       </div>
-    </MaximizeReveal>
+      </MaximizeReveal>
+    </RequireAuth>
   );
 }
