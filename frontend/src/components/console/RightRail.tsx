@@ -49,6 +49,7 @@ export function RightRail({
   return (
     <aside
       aria-label="Context"
+      data-lenis-prevent
       className="console-scroll sticky top-0 hidden h-svh max-h-svh flex-col gap-5 border-l border-chalk/[0.08] px-5 pb-7 pt-7 xl:flex"
     >
       {/*
