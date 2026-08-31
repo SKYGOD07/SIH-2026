@@ -133,11 +133,14 @@ model UserProfile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  aiConnections     AIProviderConnection[]
-  ownedChallenges   Challenge[]
-  evaluations       Evaluation[]
-  submittedEvidence PilotEvidence[]
-  scaleDecisions    ScaleDecision[]
+  aiConnections      AIProviderConnection[]
+  ownedChallenges    Challenge[]
+  evaluations        Evaluation[]
+  submittedEvidence  PilotEvidence[]        @relation("EvidenceSubmitter")
+  reviewedEvidence   PilotEvidence[]        @relation("EvidenceReviewer")
+  challengeResponses ChallengeResponse[]
+  scaleDecisions     ScaleDecision[]
+  createdScenarios   SimulationScenario[]
 
   @@index([role])
   @@index([startupId])
@@ -336,6 +339,106 @@ model StartupProgramParticipation {
 }
 
 // ------------------------------------------------------------------
+// Demonstration workspace
+// ------------------------------------------------------------------
+
+enum SimulationStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+/// A bounded workspace whose records are simulated.
+///
+/// This exists so demonstration data is separated *structurally* rather than by
+/// a string convention scattered through the codebase. Everything created
+/// inside a scenario hangs off this row, which makes two things true that a
+/// `demo` flag alone could not guarantee: a query can exclude an entire
+/// simulation with one join, and deleting the scenario removes every record it
+/// produced rather than leaving orphans behind.
+///
+/// The users, their authentication, and every write are real. The *business
+/// scenario* is simulated — a department problem nobody actually issued, and
+/// companies that do not exist. That distinction is what the interface must
+/// communicate, and why `disclaimer` is a required column rather than a string
+/// in a React component: the label travels with the data.
+model SimulationScenario {
+  id          String           @id @default(uuid())
+  name        String
+  description String
+  status      SimulationStatus @default(DRAFT)
+
+  /// Shown wherever records from this scenario appear.
+  disclaimer String @default("Simulated for demonstration. Not a government decision, procurement notice, contract, payment or departmental record.")
+
+  createdBy       UserProfile @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdByUserId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  challenges Challenge[]
+  startups   Startup[]
+  pilots     Pilot[]
+
+  @@index([status])
+  @@map("simulation_scenarios")
+}
+
+enum ResponseStatus {
+  DRAFT
+  SUBMITTED
+  WITHDRAWN
+}
+
+/// A startup's answer to a challenge.
+///
+/// Distinct from `StartupMatch` on purpose, and the distinction is the product:
+/// a response is what the *company says about itself*, a match is what the
+/// *system computed*. Storing a score without the claim it was derived from
+/// would leave a government officer unable to check the reasoning, which is
+/// exactly the review this platform exists to support.
+///
+/// Everything here is the startup's own assertion. Nothing in this model is
+/// verified, and none of it may be rendered as fact.
+model ChallengeResponse {
+  id          String    @id @default(uuid())
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challengeId String
+  startup     Startup   @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startupId   String
+
+  solutionSummary    String
+  capabilities       String[]
+  technologies       String[]
+  deploymentApproach String
+  expectedResult     String
+  pilotApproach      String
+  constraints        String?
+  /// Free-text pointers to supporting material the startup can produce.
+  evidenceReferences String[]
+
+  status ResponseStatus @default(DRAFT)
+
+  /// Who filed it, from the verified token — never from the request body.
+  submittedBy       UserProfile @relation(fields: [submittedByUserId], references: [id], onDelete: Restrict)
+  submittedByUserId String
+  submittedAt       DateTime?
+
+  origin DataOrigin
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One response per startup per challenge; editing replaces, never appends.
+  @@unique([challengeId, startupId])
+  @@index([challengeId])
+  @@index([startupId])
+  @@index([status])
+  @@map("challenge_responses")
+}
+
+// ------------------------------------------------------------------
 // Procurement pathway
 // ------------------------------------------------------------------
 
@@ -383,9 +486,15 @@ model Challenge {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  matches StartupMatch[]
-  pilots  Pilot[]
+  /// Set when the challenge belongs to a demonstration workspace.
+  scenario   SimulationScenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId String?
 
+  matches   StartupMatch[]
+  responses ChallengeResponse[]
+  pilots    Pilot[]
+
+  @@index([scenarioId])
   @@index([ownerUserId])
   @@index([domain])
   @@index([status])
@@ -580,11 +689,15 @@ model Pilot {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  scenario   SimulationScenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId String?
+
   milestones    PilotMilestone[]
   metrics       PilotMetric[]
   evidence      PilotEvidence[]
   scaleDecision ScaleDecision?
 
+  @@index([scenarioId])
   @@index([challengeId])
   @@index([startupId])
   @@index([status])
