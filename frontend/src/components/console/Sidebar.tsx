@@ -107,7 +107,7 @@ export function Sidebar() {
   return (
     <nav
       aria-label="Console"
-      className="console-scroll sticky top-0 hidden h-svh flex-col border-r border-chalk/[0.08] px-[1.125rem] pb-6 pt-7 lg:flex"
+      className="console-scroll sticky top-0 hidden h-svh max-h-svh flex-col border-r border-chalk/[0.08] px-[1.125rem] pb-6 pt-7 lg:flex"
     >
       <Link
         href="/"
