@@ -1,6 +1,10 @@
 import http from 'http';
 import { createApp } from './app';
-import { env } from './config/env';
+import { assertAuthConfig, env } from './config/env';
+
+// Fail at boot rather than turning every authenticated request into a 401
+// whose cause is not in the logs.
+assertAuthConfig();
 
 const app = createApp();
 const server = http.createServer(app);

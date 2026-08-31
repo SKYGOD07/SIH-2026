@@ -12,14 +12,30 @@ export function createApp(): Express {
   // Security Middleware
   app.use(helmet());
 
-  // CORS Configuration
+  /**
+   * CORS, as an explicit allowlist.
+   *
+   * The frontend is deployed separately from this service, so its origin has to
+   * be named rather than inferred. `credentials` is deliberately off: this API
+   * authenticates with `Authorization: Bearer`, never with cookies, so there is
+   * no credentialed cross-origin case to support — and a wildcard origin with
+   * credentials enabled is the classic way to make every user's session
+   * readable by any site they visit.
+   *
+   * A request with no Origin header (curl, a server-to-server call, a health
+   * probe) is allowed: CORS is a browser protection and such requests were
+   * never subject to it.
+   */
   app.use(
     cors({
-      origin: env.CLIENT_URL || '*',
-      credentials: true,
+      origin(origin, callback) {
+        if (!origin || env.CLIENT_URLS.includes(origin)) return callback(null, true);
+        return callback(new Error(`Origin ${origin} is not permitted`));
+      },
+      credentials: false,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
-    })
+    }),
   );
 
   // Logging Middleware
