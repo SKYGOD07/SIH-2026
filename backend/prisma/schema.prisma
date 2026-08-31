@@ -214,6 +214,14 @@ model Startup {
   /// DPIIT recognition status as published, verbatim. Not an inference.
   dpiitStatus String?
 
+  /// What the company can actually do, and with what. These are the axes the
+  /// matching engine scores against a challenge — without them `problemFit`
+  /// and `technicalFit` would have nothing to compare and the scores would be
+  /// decoration. Free-form tags rather than an enum: the vocabulary of a
+  /// municipal problem domain is not knowable in advance.
+  technologies String[]
+  capabilities String[]
+
   origin   DataOrigin
   source   EvidenceSource? @relation(fields: [sourceId], references: [id], onDelete: Restrict)
   sourceId String?
@@ -221,12 +229,18 @@ model Startup {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Set when this company exists only inside a demonstration workspace.
+  scenario   SimulationScenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId String?
+
   fundingRounds  FundingRound[]
   participations StartupProgramParticipation[]
   matches        StartupMatch[]
+  responses      ChallengeResponse[]
   pilots         Pilot[]
   members        UserProfile[]
 
+  @@index([scenarioId])
   @@index([sector])
   @@index([origin])
   @@index([state])
@@ -406,10 +420,10 @@ model StartupMatch {
   /// as "no government delivery history" rather than as a verdict.
   problemFitScore           Float
   technicalFitScore         Float
-  deploymentExperienceScore Float
+  deploymentReadinessScore  Float
   governmentExperienceScore Float
-  complianceEvidenceScore   Float
-  pilotEvidenceScore        Float
+  evidenceStrengthScore     Float
+  pilotReadinessScore       Float
   financialEvidenceScore    Float?
   scalabilityScore          Float?
   overallScore              Float
@@ -659,6 +673,14 @@ model PilotMetric {
   /// How the figure is obtained, in one line.
   method        String
 
+  /// The pilot's headline KPI — the one the outcome is judged on.
+  ///
+  /// Exactly one per pilot, enforced by a partial unique index added by hand in
+  /// the migration (Prisma cannot express a filtered unique). Without it a
+  /// pilot could carry two "primary" metrics and the reported outcome would
+  /// depend on row order.
+  isPrimary Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -689,16 +711,33 @@ model PilotEvidence {
   label     String
   reference String
 
-  submittedBy       UserProfile @relation(fields: [submittedByUserId], references: [id], onDelete: Restrict)
+  submittedBy       UserProfile @relation("EvidenceSubmitter", fields: [submittedByUserId], references: [id], onDelete: Restrict)
   submittedByUserId String
   submittedAt       DateTime
+
+  /// Evidence is filed, then judged. A submission is not an accepted fact, and
+  /// collapsing the two would let a startup's own upload count as validation.
+  status EvidenceStatus @default(SUBMITTED)
+
+  reviewedBy       UserProfile? @relation("EvidenceReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  /// Why it was accepted or rejected. Required in practice on a rejection.
+  reviewNote       String?
 
   createdAt DateTime @default(now())
 
   @@index([pilotId])
   @@index([milestoneId])
   @@index([metricId])
+  @@index([status])
   @@map("pilot_evidence")
+}
+
+enum EvidenceStatus {
+  SUBMITTED
+  ACCEPTED
+  REJECTED
 }
 
 enum ScaleDecisionType {
