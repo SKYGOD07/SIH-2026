@@ -7,7 +7,7 @@ import vehicleRoutes from './vehicle.routes';
 import orderRoutes from './order.routes';
 import trackingRoutes from './tracking.routes';
 import adminRoutes from './admin.routes';
-import mahainnovateRoutes from '../mahainnovate/http/mahainnovate.routes';
+import sarthiRoutes from '../sarthi/http/sarthi.routes';
 
 const router = Router();
 
@@ -20,7 +20,7 @@ router.use('/orders', orderRoutes);
 router.use('/tracking', trackingRoutes);
 router.use('/admin', adminRoutes);
 
-// MahaInnovate — the innovation procurement pathway.
-router.use('/mahainnovate', mahainnovateRoutes);
+// Sarthi — the innovation procurement pathway.
+router.use('/sarthi', sarthiRoutes);
 
 export default router;
