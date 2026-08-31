@@ -6,14 +6,14 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-if (typeof window !== 'undefined' && !(gsap.core as any).__mahaRegistered) {
+if (typeof window !== 'undefined' && !(gsap.core as any).__sarthiRegistered) {
   gsap.registerPlugin(ScrollTrigger);
   gsap.defaults({ ease: 'power3.out', duration: 0.9 });
   gsap.config({ nullTargetWarn: false });
   // ScrollTrigger recalculates on resize; debounce so mobile URL-bar
   // show/hide doesn't thrash pinned sections.
   ScrollTrigger.config({ ignoreMobileResize: true, autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load' });
-  (gsap.core as any).__mahaRegistered = true;
+  (gsap.core as any).__sarthiRegistered = true;
 }
 
 // Observer and Flip are deliberately not registered: Lenis owns input handling,
