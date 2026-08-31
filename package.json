@@ -1,7 +1,7 @@
 {
-  "name": "logistics-platform",
+  "name": "sarthi",
   "version": "1.0.0",
-  "description": "Production-ready monorepo for real-time logistics and fleet management platform.",
+  "description": "Sarthi - the innovation procurement pathway. Monorepo: Express/Prisma backend, Next.js frontend.",
   "private": true,
   "workspaces": [
     "frontend",
@@ -20,7 +20,8 @@
     "prisma:studio": "npm run prisma:studio --workspace=backend"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "supabase": "^2.116.0"
   },
   "engines": {
     "node": ">=18.0.0",

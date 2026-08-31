@@ -1,4 +1,14 @@
-// Prisma schema for Logistics Platform
+// Prisma schema for Sarthi — the innovation procurement pathway.
+//
+// The models here mirror `src/sarthi/domain/types.ts`, because those shapes are
+// the contract the frontend already reads against. Where this file deviates
+// from the TypeScript types it is for a reason recorded beside the deviation,
+// and the repository layer absorbs the difference so no service or route sees
+// it.
+//
+// The governing rule from the domain model carries over unchanged: nothing
+// stored here asserts a prediction. Every persisted value is a record of a
+// pilot that actually ran.
 
 generator client {
   provider = "prisma-client-js"
@@ -9,123 +19,239 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  DISPATCHER
-  DRIVER
-  CUSTOMER
+// ------------------------------------------------------------------
+// Controlled vocabularies                                            
+// ------------------------------------------------------------------
+
+enum PilotOutcome {
+  TARGET_MET
+  PARTIALLY_MET
+  TARGET_MISSED
 }
 
-enum VehicleType {
-  MOTORCYCLE
-  VAN
-  TRUCK
-  TRAILER
+enum BaselineQuality {
+  NONE
+  PARTIAL
+  GOOD
 }
 
-enum VehicleStatus {
-  AVAILABLE
-  IN_TRANSIT
-  MAINTENANCE
-  INACTIVE
+/// Kept as a database enum rather than free text for the reason given in
+/// `domain/types.ts`: free text would make the risk register unaggregatable.
+/// The database refusing an unknown cause is that same guarantee enforced one
+/// layer lower. Adding a value here means adding a `RISK_LIBRARY` entry too.
+enum FailureCause {
+  INSUFFICIENT_BASELINE
+  DELIVERY_CAPACITY
+  COVERAGE_SHORTFALL
+  DATA_QUALITY
+  SEASONAL_WINDOW
+  INTEGRATION_GAP
+  SCOPE_TOO_WIDE
+  TAXONOMY_MISMATCH
 }
 
-enum OrderStatus {
-  PENDING
-  ACCEPTED
-  PICKED_UP
-  IN_TRANSIT
-  DELIVERED
-  CANCELLED
+enum MilestoneStatus {
+  LOCKED
+  IN_PROGRESS
+  EVIDENCE_SUBMITTED
+  APPROVED
+  PAID
+  REJECTED
 }
 
-model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  passwordHash String
-  firstName    String
-  lastName     String
-  phone        String?
-  role         Role      @default(CUSTOMER)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  driver       Driver?
-  sentOrders   Order[]   @relation("CustomerOrders")
-
-  @@map("users")
+/// The TypeScript union uses hyphenated literals, which are not valid Prisma
+/// identifiers. `@map` keeps the stored value byte-identical to what the API
+/// already emits, so the wire format does not change.
+enum SourceKind {
+  POLICY        @map("policy")
+  ELIGIBILITY   @map("eligibility")
+  AGREEMENT     @map("agreement")
+  CYBERSECURITY @map("cybersecurity")
+  IP_DATA       @map("ip-data")
+  PILOT_REPORT  @map("pilot-report")
+  EVALUATION    @map("evaluation")
 }
 
-model Driver {
-  id            String   @id @default(uuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  licenseNumber String   @unique
-  isAvailable   Boolean  @default(true)
-  vehicleId     String?  @unique
-  vehicle       Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  orders        Order[]  @relation("DriverOrders")
-
-  @@map("drivers")
+enum LedgerAction {
+  EVIDENCE_SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
 }
 
-model Vehicle {
-  id           String        @id @default(uuid())
-  licensePlate String        @unique
-  make         String
-  model        String
-  type         VehicleType   @default(VAN)
-  capacityKg   Float         @default(1000)
-  status       VehicleStatus @default(AVAILABLE)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+// ------------------------------------------------------------------
+// The corpus                                                         
+// ------------------------------------------------------------------
 
-  driver       Driver?
+/// One completed pilot. The asset the whole simulator depends on.
+///
+/// The id is the department's own pilot reference (e.g. `PL-3311`) rather than
+/// a generated uuid — it is the key a procurement officer can look up in a
+/// file, and retrieval results are read by humans who need to trace them.
+model PilotRecord {
+  id         String @id
+  title      String
+  department String
 
-  @@map("vehicles")
+  /// Primary similarity axis, e.g. `water-distribution`.
+  domain       String
+  /// Technology classes, e.g. `["acoustic-sensing", "iot"]`.
+  technologies String[]
+  year         String
+
+  // --- how it was designed ---
+  durationDays Int
+  /// Days of baseline capture before any outcome claim was contractable.
+  baselineDays    Int
+  baselineQuality BaselineQuality
+  scopeUnits      Int
+  scopeUnitLabel  String
+  /// Rupees. Decimal, not Float: this figure is quoted in contracts and
+  /// reconciled against payments, and binary floating point cannot represent
+  /// it exactly. The repository converts to `number` at the boundary.
+  contractValue   Decimal         @db.Decimal(14, 2)
+  /// Fractions of the contract value; must sum to 1. Enforced in
+  /// `FeedbackService.close`, which the database cannot express.
+  milestoneSplit  Float[]
+
+  // --- what happened ---
+  outcome       PilotOutcome
+  targetValue   Float
+  achievedValue Float
+  failureCauses FailureCause[]
+  note          String
+
+  createdAt DateTime @default(now())
+
+  /// Retrieval pre-filters on domain before scoring, so this index sits on the
+  /// access path that runs for every simulation.
+  @@index([domain])
+  @@index([outcome])
+  @@map("pilot_records")
 }
 
-model Order {
-  id              String      @id @default(uuid())
-  trackingNumber  String      @unique
-  status          OrderStatus @default(PENDING)
-  pickupAddress   String
-  pickupLat       Float?
-  pickupLng       Float?
-  deliveryAddress String
-  deliveryLat     Float?
-  deliveryLng     Float?
-  itemDescription String?
-  weightKg        Float?
-  price           Float       @default(0.0)
-  
-  senderId        String
-  sender          User        @relation("CustomerOrders", fields: [senderId], references: [id], onDelete: Restrict)
+// ------------------------------------------------------------------
+// Milestone ledger                                                   
+// ------------------------------------------------------------------
 
-  driverId        String?
-  driver          Driver?     @relation("DriverOrders", fields: [driverId], references: [id], onDelete: SetNull)
+/// A pilot's contract, as a chain of milestones.
+///
+/// Separate from `PilotRecord` on purpose: a ledger tracks a pilot that is
+/// still running, a `PilotRecord` is one that has closed and entered the
+/// corpus. A pilot has a ledger first and a record later, and the two are
+/// deliberately not joined by a foreign key — closing a pilot must not be
+/// blocked on, or cascade into, its payment history.
+model PilotLedger {
+  pilotId       String      @id
+  contractValue Decimal     @db.Decimal(14, 2)
+  milestones    Milestone[]
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
 
-  trackingEvents  Tracking[]
-
-  @@map("orders")
+  @@map("pilot_ledgers")
 }
 
-model Tracking {
-  id         String   @id @default(uuid())
-  orderId    String
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  latitude   Float
-  longitude  Float
-  speed      Float?
-  heading    Float?
-  recordedAt DateTime @default(now())
+/// One milestone in a contract.
+///
+/// The domain type carries `id` and `code` holding the same value (`"M1"`),
+/// which is unique only within its ledger — two pilots both have an M1. The
+/// primary key here is therefore a surrogate, with `code` carrying the
+/// domain-facing identifier and uniqueness scoped to the ledger. The
+/// repository maps `code` onto the domain's `id`, so the API is unchanged.
+model Milestone {
+  id      String      @id @default(uuid())
+  code    String
+  ledger  PilotLedger @relation(fields: [pilotId], references: [pilotId], onDelete: Cascade)
+  pilotId String
 
-  @@index([orderId, recordedAt])
-  @@map("trackings")
+  title       String
+  description String
+  /// Rupees released on approval. Decimal for the same reason as
+  /// `PilotRecord.contractValue`.
+  payment     Decimal @db.Decimal(14, 2)
+
+  /// Evidence that must be filed before approval is possible. The required
+  /// list is data, not schema, because it varies per contract.
+  evidenceRequired String[]
+  evidence         MilestoneEvidence[]
+
+  status MilestoneStatus @default(LOCKED)
+  dueOn  DateTime        @db.Date
+
+  approvedBy String?
+  approvedAt DateTime?
+  paidAt     DateTime?
+  /// Recorded when a submission is rejected, so the trail survives the
+  /// milestone returning to EVIDENCE_SUBMITTED.
+  rejectionReason String?
+
+  @@unique([pilotId, code])
+  @@index([status])
+  @@map("milestones")
+}
+
+/// A filed artefact backing a milestone claim.
+///
+/// `reference` points at the artefact in whatever system of record holds it;
+/// storage is out of scope here, as the domain model states.
+model MilestoneEvidence {
+  id          String    @id @default(uuid())
+  /// Domain-facing identifier (e.g. `M1-E1`), unique within its milestone.
+  code        String
+  milestone   Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  milestoneId String
+
+  label       String
+  reference   String
+  submittedAt DateTime
+
+  @@unique([milestoneId, code])
+  @@map("milestone_evidence")
+}
+
+/// One immutable line in the audit trail.
+///
+/// Append-only by contract: `LedgerService` writes a row for every transition
+/// and there is no update or delete path to this table anywhere in the
+/// application. Nothing is mutated without a corresponding line, so the trail
+/// cannot silently disagree with the state.
+///
+/// `milestoneCode` is stored denormalised rather than as a foreign key so the
+/// trail survives independently of the rows it describes — an audit log that a
+/// cascade can erase is not an audit log.
+model LedgerEvent {
+  id            String       @id @default(uuid())
+  at            DateTime     @default(now())
+  pilotId       String
+  milestoneCode String
+  action        LedgerAction
+  actor         String
+  detail        String
+
+  @@index([pilotId, at])
+  @@map("ledger_events")
+}
+
+// ------------------------------------------------------------------
+// Policy retrieval                                                   
+// ------------------------------------------------------------------
+
+/// A quotable passage from the policy corpus.
+///
+/// `excerpt` is returned to callers unmodified and never paraphrased — that
+/// separation of quoted passage from generated analysis is the trust model the
+/// whole retrieval feature rests on.
+model PolicyClause {
+  id        String     @id
+  kind      SourceKind
+  title     String
+  /// Clause or section reference, cited verbatim in the answer.
+  reference String
+  excerpt   String
+  /// Retrieval keywords. Stands in for an embedding index; when a real one
+  /// arrives this column stays as the lexical fallback.
+  keywords  String[]
+
+  @@index([kind])
+  @@map("policy_clauses")
 }

@@ -5,17 +5,3 @@ export interface ApiResponse<T = any> {
   error?: string;
   details?: any;
 }
-
-export interface AuthenticatedUser {
-  id: string;
-  email: string;
-  role: 'ADMIN' | 'DISPATCHER' | 'DRIVER' | 'CUSTOMER';
-}
-
-export interface GeolocationPayload {
-  orderId: string;
-  latitude: number;
-  longitude: number;
-  speed?: number;
-  heading?: number;
-}
