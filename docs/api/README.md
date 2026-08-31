@@ -37,6 +37,12 @@ issue list in `details`.
 | Module | Route | Description |
 | :--- | :--- | :--- |
 | **System** | `GET /api/health` | Service health status |
+| **Identity** | `GET /api/auth/session` | The caller's user, profile and outstanding onboarding |
+| | `PATCH /api/auth/profile` | Edit one's own display name |
+| **Admin** | `GET /api/auth/admin/users` | Onboarding overview (ADMIN) |
+| | `POST /api/auth/admin/invitations` | Invite a government officer or evaluator (ADMIN) |
+| | `PATCH /api/auth/admin/users/:userId` | Change role, department, designation (ADMIN) |
+| | `PATCH /api/auth/admin/users/:userId/access` | Revoke or restore access (ADMIN) |
 | **Simulate** | `POST /api/sarthi/simulate` | Pilot design recommendations, risk register and confidence bands for a proposed pilot |
 | **Screen** | `POST /api/sarthi/ask` | Answer a policy question by quoting the clause |
 | **Ledger** | `GET /api/sarthi/pilots/:pilotId/ledger` | Milestone chain for a pilot |
@@ -65,11 +71,16 @@ unapproved milestone and no argument that makes one possible.
 
 ---
 
-## Not yet implemented
+## Authentication
 
-- **Authentication.** No route is currently behind auth. Supabase Auth is the
-  chosen mechanism; the backend will derive identity from the access token and
-  never trust a client-supplied user id.
+Protected routes require `Authorization: Bearer <Supabase access token>`.
+Missing or invalid token → `401`. Wrong role → `403`. Unverified email on a
+guarded route → `403` with `details.code = "EMAIL_NOT_VERIFIED"`.
+
+There is no login, signup or logout endpoint here — the browser talks to
+Supabase Auth for those. See [`AUTHENTICATION.md`](AUTHENTICATION.md).
+
+## Not yet implemented
 - **Persistence.** These endpoints read and write the in-memory stores in
   `backend/src/sarthi/container.ts`. Writes are lost on restart. The database
   schema exists and is empty; repositories are the next round.
