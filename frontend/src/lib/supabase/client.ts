@@ -24,8 +24,15 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
  * Authorisation happens in the backend against the verified token, every time.
  */
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-const SUPABASE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? '';
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
+const rawKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? '';
+
+/** True when the client has been configured with environment variables. */
+export const isSupabaseConfigured = Boolean(rawUrl && rawKey);
+
+const SUPABASE_URL = rawUrl || 'https://placeholder.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = rawKey || 'placeholder-key';
+
 
 /** Prefix for everything this client stores, so logout can clear exactly it. */
 export const AUTH_STORAGE_PREFIX = 'sarthi.auth';
@@ -107,6 +114,3 @@ export function clearAuthStorage(): void {
     /* storage unavailable — nothing was stored either */
   }
 }
-
-/** True when the client has been configured. Used to render a clear error. */
-export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY);
