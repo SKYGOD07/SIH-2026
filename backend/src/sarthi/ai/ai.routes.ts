@@ -12,6 +12,15 @@ import { env, ollamaReadiness } from '../../config/env';
  * The key is never accepted from or returned to the caller; it lives solely
  * in the backend environment.
  */
+import { sendSuccess } from '../../utils/response';
+import {
+  FIELD_TAXONOMY,
+  browsableFields,
+  discoverStartups,
+  filterOptions,
+  suggestFields,
+} from './discovery.service';
+
 const router = Router();
 
 /* ------------------------------------------------------------------ GET /ai/status */
@@ -155,6 +164,67 @@ router.post('/analyze-startup', async (req: Request, res: Response) => {
       success: false,
       error: `AI analysis request failed: ${message}`,
     });
+  }
+});
+
+
+/* ------------------------------------------------------------------ */
+/* Discovery: problem statement -> field -> companies                  */
+/* ------------------------------------------------------------------ */
+
+/** The taxonomy, and which fields the platform can actually serve. */
+router.get('/discover/fields', async (_req: Request, res: Response) => {
+  try {
+    return sendSuccess(res, {
+      taxonomy: FIELD_TAXONOMY.map((f) => ({ field: f.field, label: f.label })),
+      browsable: await browsableFields(),
+      note: 'A working taxonomy for this demonstration. Not derived from published funding statistics.',
+    });
+  } catch (e) {
+    return res.status(500).json({ success: false, error: (e as Error).message });
+  }
+});
+
+/** Read a stated problem and propose fields. The model classifies; it never picks companies. */
+router.post('/discover/fields', async (req: Request, res: Response) => {
+  try {
+    const problem = String(req.body?.problem ?? '').trim();
+    if (problem.length < 10) {
+      return res.status(422).json({
+        success: false,
+        error: 'Describe the problem in a sentence or two so it can be classified.',
+      });
+    }
+    return sendSuccess(res, await suggestFields(problem));
+  } catch (e) {
+    return res.status(500).json({ success: false, error: (e as Error).message });
+  }
+});
+
+/** Companies in a field, narrowed by filters. Deterministic; no model involved. */
+router.post('/discover/startups', async (req: Request, res: Response) => {
+  try {
+    return sendSuccess(res, await discoverStartups({
+      field: req.body?.field,
+      technologies: req.body?.technologies,
+      minReadiness: req.body?.minReadiness,
+      cybersecurityProvided: req.body?.cybersecurityProvided,
+      minDeployments: req.body?.minDeployments,
+      maxPilotDurationDays: req.body?.maxPilotDurationDays,
+      maxPilotBudget: req.body?.maxPilotBudget,
+      city: req.body?.city,
+    }));
+  } catch (e) {
+    return res.status(500).json({ success: false, error: (e as Error).message });
+  }
+});
+
+/** The filter vocabulary, built from the data rather than hardcoded. */
+router.get('/discover/filters', async (req: Request, res: Response) => {
+  try {
+    return sendSuccess(res, await filterOptions(req.query.field as string | undefined));
+  } catch (e) {
+    return res.status(500).json({ success: false, error: (e as Error).message });
   }
 });
 

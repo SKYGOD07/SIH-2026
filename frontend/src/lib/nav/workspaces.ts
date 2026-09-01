@@ -54,6 +54,7 @@ const GOVERNMENT: Workspace = {
   question: 'What needs you',
   primary: [
     { href: '/government', label: 'Dashboard', icon: 'console' },
+    { href: '/government/discover', label: 'Find solutions', icon: 'intelligence' },
     { href: '/challenges', label: 'Challenges', icon: 'target' },
     { href: '/startups', label: 'Startups', icon: 'users' },
     { href: '/pilots', label: 'Pilots', icon: 'flask' },
@@ -108,6 +109,7 @@ const ADMIN: Workspace = {
   question: 'What needs you',
   primary: [
     { href: '/government', label: 'Dashboard', icon: 'console' },
+    { href: '/government/discover', label: 'Find solutions', icon: 'intelligence' },
     { href: '/challenges', label: 'Challenges', icon: 'target' },
     { href: '/startups', label: 'Startups', icon: 'users' },
     { href: '/pilots', label: 'Pilots', icon: 'flask' },
