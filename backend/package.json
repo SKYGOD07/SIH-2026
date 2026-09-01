@@ -13,7 +13,8 @@
     "prisma:studio": "prisma studio",
     "demo:seed": "tsx scripts/demo.ts seed",
     "demo:import-packs": "tsx scripts/demo.ts seed",
-    "demo:reset": "tsx scripts/demo.ts reset"
+    "demo:reset": "tsx scripts/demo.ts reset",
+    "demo:fields": "tsx scripts/seed-fields.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
