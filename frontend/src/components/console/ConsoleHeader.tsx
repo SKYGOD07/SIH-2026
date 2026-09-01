@@ -80,10 +80,8 @@ export function ConsoleHeader({
       </div>
 
       <div className="flex items-center gap-3">
-        {source ? (
-          <Pill tone={source === 'unavailable' ? 'risk' : 'signal'}>
-            {source === 'unavailable' ? 'API unavailable' : 'Demo simulation'}
-          </Pill>
+        {source === 'unavailable' ? (
+          <Pill tone="risk">API unavailable</Pill>
         ) : null}
 
         <label className="hidden h-[2.375rem] w-[15.375rem] items-center gap-2.5 rounded-[10px] border border-chalk/[0.08] bg-void-soft px-3 text-chalk/40 transition-colors focus-within:border-chalk/25 md:flex">

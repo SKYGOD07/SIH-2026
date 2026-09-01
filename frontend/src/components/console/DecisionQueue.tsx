@@ -103,7 +103,6 @@ export function DecisionQueue() {
                 <Label tone={NEEDS_DECISION.has(c.status) ? 'signal' : 'muted'}>
                   {c.status.replace(/_/g, ' ')}
                 </Label>
-                {c.origin === 'DEMO' && <Label tone="muted">Demo scenario</Label>}
               </div>
               <p className="mt-2 font-display text-[1rem] font-bold leading-tight text-chalk">
                 {c.title}
