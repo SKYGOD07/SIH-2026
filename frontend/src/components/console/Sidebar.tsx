@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { Icon, type IconName } from './Icon';
 import { Mark } from '@/components/brand/Mark';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth/AuthProvider';
+import { workspaceFor } from '@/lib/nav/workspaces';
 
 /**
  * The console sidebar.
@@ -23,6 +25,12 @@ import { cn } from '@/lib/utils';
  * Two groups, deliberately. The first is the operational workspace, the second
  * is the reference material the workspace argues from. Flattening them into one
  * list of nine is how a sidebar stops being scannable.
+ *
+ * The items themselves come from the signed-in role. A startup and a government
+ * officer share this component, this shell and this visual language, and share
+ * none of the navigation: one is looking after a single company, the other is
+ * deciding between five. A universal list with rows hidden per role would still
+ * have been written as though there were one kind of user.
  */
 
 interface NavItem {
@@ -39,20 +47,7 @@ interface NavItem {
   badge?: number;
 }
 
-const WORKSPACE: NavItem[] = [
-  { href: '/dashboard', label: 'Console', icon: 'console' },
-  { href: '/ledger', label: 'Ledger', icon: 'ledger' },
-  { href: '/pilots', label: 'Pilots', icon: 'flask' },
-  { href: '/challenges', label: 'Challenges', icon: 'target' },
-  { href: '/startups', label: 'Startups', icon: 'users' },
-];
 
-const REFERENCE: NavItem[] = [
-  { href: '/templates', label: 'Templates', icon: 'templates' },
-  { href: '/corpus', label: 'Evidence base', icon: 'corpus' },
-  { href: '/intelligence', label: 'Intelligence', icon: 'intelligence' },
-  { href: '/settings', label: 'Settings', icon: 'settings' },
-];
 
 function NavList({ items, pathname }: { items: NavItem[]; pathname: string }) {
   return (
