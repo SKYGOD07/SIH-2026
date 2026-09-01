@@ -116,7 +116,9 @@ export default async function GovernmentAnalysisPage({ params }: PageProps) {
         </Card>
       </section>
 
-      {/* --- WHY THIS STARTUP? (DETERMINISTIC ANALYSIS) --- */}
+import { AIAnalyzeButton } from '@/components/console/AIAnalyzeButton';
+
+      {/* --- WHY THIS STARTUP? (DETERMINISTIC & AI ANALYSIS) --- */}
       <section aria-label="Why This Startup?">
         <SectionHead title="Sarthi Analysis — Why This Startup?" meta="Evidence-Grounded Summary" />
         <Card className="border-signal/30 bg-void-soft">
@@ -160,6 +162,9 @@ export default async function GovernmentAnalysisPage({ params }: PageProps) {
               </ul>
             </div>
           </div>
+
+          {/* Trigger Ollama AI Analysis */}
+          <AIAnalyzeButton startupId={company.id} />
         </Card>
       </section>
 
