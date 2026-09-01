@@ -647,6 +647,11 @@ export async function companyReport(u: UserProfile, startupId: string) {
     select: {
       ...GOVERNMENT_VISIBLE,
       documents: { select: { category: true } },
+      // `signals()` counts these; selecting only the columns would make it
+      // throw on a relation it expects to be present.
+      participations: { select: { id: true } },
+      fundingRounds: { select: { id: true } },
+      pilots: { select: { status: true, outcome: true } },
       _count: { select: { documents: true, participations: true, pilots: true, responses: true } },
     },
   });
@@ -700,7 +705,7 @@ export async function companyReport(u: UserProfile, startupId: string) {
   });
 
   return {
-    company: { ...company, documents: undefined },
+    company: { ...company, documents: undefined, pilots: undefined, participations: undefined, fundingRounds: undefined },
     field: {
       sector: company.sector,
       peerCount: peers.length,
