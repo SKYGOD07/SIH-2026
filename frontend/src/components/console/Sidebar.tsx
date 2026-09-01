@@ -98,10 +98,12 @@ function NavList({ items, pathname }: { items: NavItem[]; pathname: string }) {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { profile } = useAuth();
+  const workspace = workspaceFor(profile?.role);
 
   return (
     <nav
-      aria-label="Console"
+      aria-label={workspace.name}
       data-lenis-prevent
       className="console-scroll sticky top-0 hidden h-svh max-h-svh flex-col border-r border-chalk/[0.08] px-[1.125rem] pb-6 pt-7 lg:flex"
     >
@@ -118,17 +120,22 @@ export function Sidebar() {
           <span className="block font-display text-[0.75rem] font-extrabold uppercase tracking-[0.14em] text-chalk">
             Sarthi
           </span>
-          <span className="mt-px block font-mono text-[0.5625rem] uppercase tracking-[0.28em] text-chalk/35">
-            Procurement
+          {/*
+            The workspace names itself. Both roles see the same Sarthi mark —
+            it is one platform — but a startup should never be told it is
+            looking at a government console.
+          */}
+          <span className="mt-px block truncate font-mono text-[0.5625rem] uppercase tracking-[0.28em] text-chalk/35">
+            {workspace.name}
           </span>
         </span>
       </Link>
 
-      <NavList items={WORKSPACE} pathname={pathname} />
+      <NavList items={workspace.primary as NavItem[]} pathname={pathname} />
 
       <span className="my-4 block h-px bg-chalk/[0.08]" />
 
-      <NavList items={REFERENCE} pathname={pathname} />
+      <NavList items={workspace.secondary as NavItem[]} pathname={pathname} />
 
       {/*
         The reference ends its sidebar with a help card. Ours ends with the
