@@ -417,3 +417,117 @@ export async function filterOptions(field?: string) {
     readinessLevels: READINESS_ORDER,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Comparison                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Compare a handful of companies side by side.
+ *
+ * An important distinction, and the interface must carry it: these axes are
+ * **company-level**, computed from each company's own record against its field.
+ * They are *not* challenge-specific match scores. Suitability is a property of
+ * a (challenge, startup) pair and is scored by the matching engine — that
+ * comparison lives on the challenge review page and reads `StartupMatch`.
+ *
+ * This one answers a different, earlier question: before any challenge exists,
+ * how do these companies differ from each other? Presenting it as a match score
+ * would be the same category error as a permanent "startup quality" rating.
+ *
+ * Nothing is computed in the browser, and no model is involved.
+ */
+export const COMPARE_AXES = [
+  'Deployment record',
+  'Team capacity',
+  'Evidence on file',
+  'Government exposure',
+  'Pilot readiness',
+] as const;
+
+export async function compareStartups(ids: string[]) {
+  if (ids.length < 2 || ids.length > 5) {
+    throw new Error('Select between two and five companies to compare.');
+  }
+
+  const startups = await prisma.startup.findMany({
+    where: { id: { in: ids } },
+    select: {
+      id: true, legalName: true, displayName: true, oneLineDescription: true,
+      sector: true, city: true, teamSize: true, deploymentCount: true,
+      technologies: true, capabilities: true, problemSolved: true, solutionSummary: true,
+      procurementReadiness: true, complianceStatus: true, cybersecurityStatus: true,
+      dataPrivacyStatus: true, pilotDurationDays: true, estimatedPilotBudget: true,
+      origin: true,
+      _count: { select: { documents: true, participations: true, pilots: true } },
+    },
+  });
+  if (startups.length < 2) throw new Error('Could not find those companies.');
+
+  // Field context, so an axis means something rather than being a raw count.
+  const sectors = [...new Set(startups.map((s) => s.sector))];
+  const peers = await prisma.startup.findMany({
+    where: { sector: { in: sectors } },
+    select: { sector: true, deploymentCount: true, teamSize: true },
+  });
+  const capOf = (key: 'deploymentCount' | 'teamSize') =>
+    Math.max(1, ...peers.map((p) => p[key] ?? 0));
+  const deployCap = capOf('deploymentCount');
+  const teamCap = capOf('teamSize');
+
+  const READY: Record<string, number> = { NOT_ASSESSED: 0, LOW: 0.33, MODERATE: 0.66, HIGH: 1 };
+  const ASSURED: Record<string, number> = {
+    NOT_PROVIDED: 0, SELF_DECLARED: 0.4, PARTIALLY_VERIFIED: 0.7, VERIFIED: 1,
+  };
+
+  const rows = startups.map((s) => {
+    // Pilot readiness blends the stated posture with whether the company has
+    // actually said anything about compliance — a HIGH claim with nothing
+    // behind it should not read the same as one with a stated posture.
+    const assurance =
+      (ASSURED[s.complianceStatus] + ASSURED[s.cybersecurityStatus] + ASSURED[s.dataPrivacyStatus]) / 3;
+
+    const axes = {
+      'Deployment record': Math.min(1, (s.deploymentCount ?? 0) / deployCap),
+      'Team capacity': Math.min(1, (s.teamSize ?? 0) / teamCap),
+      // Capped at 20 documents: beyond that the difference stops being
+      // meaningful and a rich pack would flatten every other company to zero.
+      'Evidence on file': Math.min(1, s._count.documents / 20),
+      'Government exposure': Math.min(1, s._count.participations / 3),
+      'Pilot readiness': READY[s.procurementReadiness] * 0.6 + assurance * 0.4,
+    };
+
+    return {
+      ...s,
+      documentCount: s._count.documents,
+      dossier:
+        s._count.documents >= 20 ? 'FULL' : s._count.documents > 0 ? 'PARTIAL' : 'METADATA_ONLY',
+      axes,
+      /** Mean of the axes. A summary of the row, not a suitability verdict. */
+      composite: Object.values(axes).reduce((a, b) => a + b, 0) / COMPARE_AXES.length,
+    };
+  });
+
+  const ranked = [...rows].sort((a, b) => b.composite - a.composite);
+
+  return {
+    startups: rows,
+    axes: [...COMPARE_AXES],
+    /** The two strongest on these company-level axes. Not a selection. */
+    top2: ranked.slice(0, 2).map((r) => ({
+      id: r.id,
+      name: r.displayName ?? r.legalName,
+      composite: r.composite,
+      strengths: (Object.entries(r.axes) as [string, number][])
+        .filter(([, v]) => v >= 0.5)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2)
+        .map(([k]) => k),
+      limitations: (Object.entries(r.axes) as [string, number][])
+        .filter(([, v]) => v < 0.34)
+        .map(([k]) => k),
+    })),
+    disclaimer:
+      'Company-level comparison computed from stored records against each field. These are NOT challenge-specific match scores and not a government decision — suitability is scored against a challenge, and selection is made by a person.',
+  };
+}

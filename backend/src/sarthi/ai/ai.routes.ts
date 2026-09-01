@@ -19,6 +19,7 @@ import {
   discoverStartups,
   filterOptions,
   suggestFields,
+  compareStartups,
 } from './discovery.service';
 
 const router = Router();
@@ -229,6 +230,16 @@ router.get('/discover/filters', async (req: Request, res: Response) => {
     return sendSuccess(res, await filterOptions(req.query.field as string | undefined));
   } catch (e) {
     return res.status(500).json({ success: false, error: (e as Error).message });
+  }
+});
+
+/** Compare 2–5 companies on company-level axes. Not challenge-specific. */
+router.post('/discover/compare', async (req: Request, res: Response) => {
+  try {
+    const ids: string[] = Array.isArray(req.body?.ids) ? req.body.ids : [];
+    return sendSuccess(res, await compareStartups(ids));
+  } catch (e) {
+    return res.status(422).json({ success: false, error: (e as Error).message });
   }
 });
 
