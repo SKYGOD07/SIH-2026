@@ -9,6 +9,7 @@ import { SiteChrome } from '@/components/navigation/SiteChrome';
 import { MaximizeOrigin } from '@/components/console/MaximizeOrigin';
 import { MinimizeReveal } from '@/components/console/MinimizeReveal';
 import { AuthProvider } from '@/lib/auth/AuthProvider';
+import { ThemeProvider, THEME_INIT_SCRIPT } from '@/lib/theme/ThemeProvider';
 
 /**
  * Type system.
@@ -91,6 +92,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${display.variable} ${accent.variable} ${body.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        {/*
+          Applies the stored theme before first paint. Without it a reader who
+          chose the bright theme sees a black flash on every load, because the
+          document renders with the default and React corrects it afterwards.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-screen bg-void font-sans text-chalk antialiased">
         <a
           href="#main"
@@ -104,7 +113,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           routes write it. One provider, one source of truth about who is
           signed in.
         */}
-        <AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
           <SmoothScrollProvider>
           <IntroProvider>
             <AudienceProvider>
@@ -124,7 +134,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </AudienceProvider>
           </IntroProvider>
           </SmoothScrollProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

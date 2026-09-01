@@ -6,6 +6,7 @@ import { fetchDashboard } from '@/lib/api/sarthi';
 import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { DEMO_NOTICE } from '@/data/challenges';
 import { RequireAuth } from '@/components/auth/RequireAuth';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 /**
  * The console shell.
@@ -63,6 +64,7 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         />
 
         <MobileNav />
+        <ThemeToggle />
       </div>
       </MaximizeReveal>
     </RequireAuth>

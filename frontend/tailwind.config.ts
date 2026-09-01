@@ -19,13 +19,24 @@ const config: Config = {
          * which is what keeps the page reading as stark rather than as a
          * gradient of beiges. That starkness is the whole character.
          */
+        /*
+         * `void` and `chalk` are the two tokens the whole product is built
+         * from, so they are the two that carry the theme. They resolve through
+         * CSS variables holding space-separated RGB channels, which is what
+         * lets `<alpha-value>` keep working: every existing `text-chalk/50` and
+         * `border-chalk/15` in the codebase swaps with the theme untouched.
+         *
+         * Written as channels rather than hex for exactly that reason — a hex
+         * variable cannot take an alpha suffix, and the alpha variants are how
+         * this design expresses every intermediate tone.
+         */
         void: {
-          DEFAULT: '#000000',
-          soft: '#090909',
-          lift: '#141414',
+          DEFAULT: 'rgb(var(--c-void) / <alpha-value>)',
+          soft: 'rgb(var(--c-void-soft) / <alpha-value>)',
+          lift: 'rgb(var(--c-void-lift) / <alpha-value>)',
         },
         chalk: {
-          DEFAULT: '#FFFFFF',
+          DEFAULT: 'rgb(var(--c-chalk) / <alpha-value>)',
         },
         signal: {
           DEFAULT: '#D90000',
@@ -47,7 +58,7 @@ const config: Config = {
           bright: '#E01414',
         },
         /** The dim state every wipe-revealed word starts in. */
-        dim: { DEFAULT: '#252525' },
+        dim: { DEFAULT: 'rgb(var(--c-dim) / <alpha-value>)' },
         validated: { DEFAULT: '#6FCF97' },
         risk: { DEFAULT: '#FF6B5A' },
 

@@ -26,11 +26,53 @@
     --ring: 46 100% 50%;
     --radius: 0.125rem;
 
+    /*
+     * Theme channels.
+     *
+     * Space-separated RGB so Tailwind's `<alpha-value>` still applies — this is
+     * what makes `text-chalk/50` and `border-chalk/15` follow the theme without
+     * a single class name changing anywhere in the codebase.
+     *
+     * Dark is the default and stays the product's primary look. It is declared
+     * on bare `:root` rather than inside a media query so a page with no theme
+     * attribute renders correctly, which is what the pre-paint script relies on.
+     */
+    --c-void: 0 0 0;
+    --c-void-soft: 9 9 9;
+    --c-void-lift: 20 20 20;
+    --c-chalk: 255 255 255;
+    --c-dim: 37 37 37;
+
     /* experience tokens */
     --nav-h: 4.75rem;
     --edge: clamp(1.25rem, 4.5vw, 4.5rem);
     /* Vertical safe area under the fixed nav, used by every full-height section. */
     --nav-safe: calc(var(--nav-h) + clamp(0.75rem, 2vh, 1.75rem));
+  }
+
+
+  /*
+   * The bright theme.
+   *
+   * A warm bone ground rather than pure white, and near-black type rather than
+   * pure black — the pairing the product brief settled on, and the same colour
+   * already declared as the browser theme colour in the root layout.
+   *
+   * Pure #FFFFFF under a page this type-heavy glares; bone keeps the starkness
+   * without the flare. `signal` red is left alone: it carries sufficient
+   * contrast on both grounds, and an accent that changes with the theme stops
+   * reading as the same accent.
+   */
+  :root[data-theme='light'] {
+    --c-void: 237 231 221;
+    --c-void-soft: 228 221 209;
+    --c-void-lift: 218 210 196;
+    --c-chalk: 14 14 16;
+    --c-dim: 176 168 155;
+
+    --background: 40 26% 90%;
+    --foreground: 240 7% 6%;
+    --border: 40 12% 76%;
   }
 
   * {
@@ -59,8 +101,8 @@
   }
 
   body {
-    background-color: #000000;
-    color: #ffffff;
+    background-color: rgb(var(--c-void));
+    color: rgb(var(--c-chalk));
     font-family: var(--font-body), Inter, system-ui, sans-serif;
     overflow-x: hidden;
   }
@@ -807,5 +849,55 @@
   .split-child {
     transform: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme change, as a maximise                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The circle that opens when the theme is switched.
+ *
+ * The browser's default view transition cross-fades the old and new snapshots,
+ * which on a full-page inversion reads as a wash of grey passing over the page.
+ * Both default animations are therefore turned off and the new snapshot is
+ * clipped instead, so the new theme is *revealed* from the button rather than
+ * blended into place.
+ *
+ * Stacking matters: the incoming snapshot has to sit above the outgoing one or
+ * the clip reveals nothing. `mix-blend-mode: normal` is set for the same
+ * reason — the default is `plus-lighter`, which on two opaque full-page
+ * snapshots produces white where they overlap.
+ *
+ * This is the same gesture as `.console-maximize`, and deliberately so: one
+ * circular reveal from the point of the click, used for both the console
+ * opening and the theme changing.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+/**
+ * A reader who has asked for less motion gets the theme, not the journey.
+ *
+ * The swap still happens — reducing motion is not a reason to withhold a
+ * preference the reader just expressed — it simply happens at once.
+ */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
   }
 }
