@@ -91,6 +91,8 @@ export const FIELD_TAXONOMY: { field: string; label: string; keywords: string[] 
     keywords: ['security', 'breach', 'vulnerability', 'audit', 'cyber', 'ransomware', 'phishing'] },
   { field: 'ai-data-infrastructure', label: 'Data & AI infrastructure',
     keywords: ['data', 'dashboard', 'silo', 'reporting', 'integration', 'analytics platform'] },
+  { field: 'agri-fintech-health', label: 'Agri-finance & health infrastructure',
+    keywords: ['warehouse', 'receipt', 'collateral', 'agri finance', 'produce', 'mandi', 'lending', 'inventory'] },
   { field: 'municipal-operations', label: 'Municipal operations',
     keywords: ['ward', 'municipal', 'works', 'crew', 'inspection', 'operations'] },
 ];

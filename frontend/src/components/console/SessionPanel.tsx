@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/AuthProvider';
-import { WalletMasterCard3D } from '@/components/console/WalletMasterCard3D';
 import { UserSessionHistoryModal } from '@/components/console/UserSessionHistoryModal';
 import { Icon } from '@/components/console/Icon';
 
@@ -29,19 +28,11 @@ export function SessionPanel() {
           <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal font-bold">
             NO SESSION
           </span>
-          <span className="font-mono text-[0.5625rem] text-chalk/40 uppercase">DEMO PREVIEW</span>
+          <span className="font-mono text-[0.5625rem] text-chalk/40 uppercase">Demo simulation</span>
         </div>
 
-        {/* 3D Demo Wallet Preview */}
-        <WalletMasterCard3D
-          role="GOVERNMENT_OFFICER"
-          entityName="Guest Sarthi Officer"
-          departmentOrSector="Public Innovation Procurement"
-          balanceAmount="₹50.00 Cr"
-        />
-
         <p className="text-[0.75rem] leading-relaxed text-chalk/60">
-          Sign in to access departmental authorization, claim demo startups, or process milestone payouts.
+          Sign in to review challenges, compare startups and manage pilots.
         </p>
 
         {/* Login Controls */}
@@ -99,14 +90,15 @@ export function SessionPanel() {
         )}
       </div>
 
-      {/* 3D Flippable MasterCard Component */}
-      <WalletMasterCard3D
-        role={profile.role}
-        entityName={profile.displayName}
-        departmentOrSector={profile.departmentName || profile.designation || 'Sarthi Platform'}
-        balanceAmount={profile.role === 'STARTUP' ? '₹25.00 Lakhs' : '₹50.00 Cr'}
-        walletId={profile.role === 'STARTUP' ? 'IN-STU-4512-8901-2026' : 'IN-GOV-9874-3210-2026'}
-      />
+      {/*
+        A treasury card used to sit here, showing a government identifier
+        (IN-GOV-…), a security code and a ₹50 Cr balance. Every one of those was
+        fabricated. It has been removed rather than relabelled: an invented
+        statutory identifier on a government console is the single most
+        believable thing on the page, and this project's provenance rules
+        forbid it outright. Real budget functionality, when it exists, belongs
+        under Settings → Funding & Budget and must read from the database.
+      */}
 
       {/* Action Bar: Session History & Logout */}
       <div className="grid grid-cols-2 gap-2 pt-3 border-t border-chalk/[0.08]">
