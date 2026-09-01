@@ -403,21 +403,21 @@ const TEAM_COMPANIES = [
     problem: 'Pest and disease damage is identified after visible crop loss has occurred.',
     solution: 'Field imaging with early detection and treatment advisory to cultivators.',
     tech: ['ai', 'computer-vision', 'mobile'], caps: ['pest-detection', 'advisory-delivery', 'field-deployment'],
-    city: 'Nashik', teamSize: 13, pilotDays: 120, budget: 1800000 },
+    city: 'Nashik', stage: 'EARLY_REVENUE', teamSize: 13, pilotDays: 120, budget: 1800000 },
   { legalName: 'WaterManager Utilities Private Limited', displayName: 'WaterManager',
     sector: 'water-distribution', industry: 'Water & Utilities', contactEmail: 'sr5937424@gmail.com',
     oneLine: 'Distribution network management and consumption accountability.',
     problem: 'Utilities cannot reconcile water produced against water billed.',
     solution: 'District metering with consumption reconciliation and loss attribution.',
     tech: ['iot', 'scada', 'analytics'], caps: ['district-metering', 'leak-detection', 'billing-reconciliation'],
-    city: 'Pune', teamSize: 20, pilotDays: 90, budget: 2600000 },
+    city: 'Pune', stage: 'GROWTH', teamSize: 20, pilotDays: 90, budget: 2600000 },
   { legalName: 'EnviroPlus Environmental Systems Private Limited', displayName: 'EnviroPlus',
     sector: 'climate-environment', industry: 'Environment', contactEmail: 'Suhanigoyal856@gmail.com',
     oneLine: 'Ambient air quality monitoring with source attribution.',
     problem: 'Air quality is measured at too few points to attribute pollution to sources.',
     solution: 'Distributed low-cost sensing calibrated against reference stations.',
     tech: ['sensors', 'analytics', 'cloud'], caps: ['air-quality-monitoring', 'emissions-accounting'],
-    city: 'Mumbai', teamSize: 11, pilotDays: 90, budget: 1400000 },
+    city: 'Mumbai', stage: 'MVP', teamSize: 11, pilotDays: 90, budget: 1400000 },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -444,6 +444,7 @@ async function main() {
       data: {
         legalName: t.legalName, displayName: t.displayName, oneLineDescription: t.oneLine,
         sector: t.sector, industry: t.industry, state: 'Maharashtra', city: t.city,
+        stage: t.stage,
         teamSize: t.teamSize, problemSolved: t.problem, solutionSummary: t.solution,
         technologies: t.tech, capabilities: t.caps,
         pilotDurationDays: t.pilotDays, estimatedPilotBudget: t.budget,
