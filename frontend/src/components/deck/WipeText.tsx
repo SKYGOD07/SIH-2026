@@ -68,8 +68,11 @@ export function WipeText({
   as: Tag = 'p',
   split = 'words',
   className,
-  on = '#FFFFFF',
-  off = '#252525',
+  // Theme tokens rather than literals: these defaults render on the page
+  // ground, so they have to invert with it. The one slide that sits on the
+  // fixed red passes its own colours and is unaffected.
+  on = 'rgb(var(--c-chalk))',
+  off = 'rgb(var(--c-dim))',
   start = 0.85,
   end = 0.45,
   stagger = 0.06,

@@ -17,7 +17,8 @@ import { useTheme } from '@/lib/theme/ThemeProvider';
  * reads as an unrelated transition.
  *
  * `z-[150]` sits above the console shell and the landing chrome but below the
- * preloader, which must never be crossed by anything.
+ * preloader, which must never be crossed by anything. It lifts clear of the
+ * console's bottom bar on small screens, which occupies the same corner.
  */
 export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, toggle } = useTheme();
@@ -34,7 +35,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
       }}
       aria-label={`Switch to ${nextLabel} theme`}
       title={`Switch to ${nextLabel} theme`}
-      className={`fixed bottom-5 right-5 z-[150] flex h-11 w-11 items-center justify-center rounded-full border border-chalk/20 bg-void/70 text-chalk backdrop-blur-md transition-colors hover:border-signal/70 hover:text-signal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal ${className}`}
+      className={`fixed bottom-20 right-5 z-[150] lg:bottom-5 flex h-11 w-11 items-center justify-center rounded-full border border-chalk/20 bg-void/70 text-chalk backdrop-blur-md transition-colors hover:border-signal/70 hover:text-signal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal ${className}`}
     >
       {/*
         Sun and moon in one SVG, swapped on the theme. The icon shows the state

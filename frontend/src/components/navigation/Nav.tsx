@@ -286,15 +286,21 @@ export function Nav() {
           style={{
             // The reference recipe: hairline border, heavy blur with
             // saturation so whatever passes underneath tints the glass.
-            border: '0.8px solid rgba(255,255,255,0.18)',
+            //
+            // Expressed in theme tokens rather than literal black and white:
+            // frosted glass takes its tint from the ground it floats over, so a
+            // pill hardcoded to dark reads as a blot on the bright theme rather
+            // than as glass.
+            border: '0.8px solid rgb(var(--c-chalk) / 0.18)',
             backdropFilter: 'blur(22px) saturate(1.55)',
             WebkitBackdropFilter: 'blur(22px) saturate(1.55)',
             backgroundColor: open
-              ? 'rgba(0,0,0,0.4)'
+              ? 'rgb(var(--c-void) / 0.4)'
               : scrolled
-                ? 'rgba(0,0,0,0.62)'
-                : 'rgba(0,0,0,0.28)',
-            boxShadow: '0 1px 0 0 rgba(255,255,255,0.14) inset, 0 8px 30px -12px rgba(0,0,0,0.6)',
+                ? 'rgb(var(--c-void) / 0.62)'
+                : 'rgb(var(--c-void) / 0.28)',
+            boxShadow:
+              '0 1px 0 0 rgb(var(--c-chalk) / 0.14) inset, 0 8px 30px -12px rgb(var(--c-void) / 0.6)',
           }}
         >
           {/* Gloss sweep, clipped to the capsule. */}

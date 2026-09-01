@@ -150,7 +150,7 @@
     font-size: 0.6875rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgb(var(--c-chalk) / 0.5);
   }
 
   /**
@@ -198,9 +198,9 @@
   .nav-scrim {
     background-image: linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.55) 50%,
-      rgba(0, 0, 0, 0) 100%
+      rgb(var(--c-void) / 0.9) 0%,
+      rgb(var(--c-void) / 0.55) 50%,
+      rgb(var(--c-void) / 0) 100%
     );
   }
   .nav-scrim-dark {
@@ -219,6 +219,12 @@
     inset: 0;
     pointer-events: none;
     opacity: 0.28;
+    /*
+     * `screen` lightens, which is how grain reads on a dark ground. On the
+     * bright ground it does nothing at all — screening white noise over bone
+     * returns bone — so the blend inverts with the theme rather than the grain
+     * silently disappearing.
+     */
     mix-blend-mode: screen;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
   }
@@ -235,30 +241,30 @@
     top: 0;
     bottom: 0;
     width: 1px;
-    background: rgba(255, 255, 255, 0.16);
+    background: rgb(var(--c-chalk) / 0.16);
   }
   .rule-h {
     position: absolute;
     left: 0;
     right: 0;
     height: 1px;
-    background: rgba(255, 255, 255, 0.16);
+    background: rgb(var(--c-chalk) / 0.16);
   }
 
   .hairline-grid {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+      linear-gradient(to right, rgb(var(--c-chalk) / 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--c-chalk) / 0.07) 1px, transparent 1px);
     background-size: 7.5rem 7.5rem;
   }
 
   .panel {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgb(var(--c-chalk) / 0.12);
+    background-color: rgb(var(--c-chalk) / 0.03);
   }
   .panel-dark {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgb(var(--c-chalk) / 0.12);
+    background-color: rgb(var(--c-chalk) / 0.03);
   }
 }
 
@@ -525,8 +531,8 @@
   .wipe-unit {
     /* Defaults, so a unit renders correctly even with no tone set on it. */
     --wipe: 0%;
-    --wipe-on: #ffffff;
-    --wipe-off: #252525;
+    --wipe-on: rgb(var(--c-chalk));
+    --wipe-off: rgb(var(--c-dim));
     background-image: linear-gradient(
       90deg,
       var(--wipe-on) 0%,
@@ -638,9 +644,9 @@
     --nav-h: 0px;
     --card: #0a0a0a;
     --card-hover: #101010;
-    --hair: rgba(255, 255, 255, 0.08);
-    --hair-strong: rgba(255, 255, 255, 0.16);
-    --lift: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+    --hair: rgb(var(--c-chalk) / 0.08);
+    --hair-strong: rgb(var(--c-chalk) / 0.16);
+    --lift: inset 0 1px 0 rgb(var(--c-chalk) / 0.055);
   }
 
   .card {
@@ -678,8 +684,8 @@
     color: #ff6b5a;
   }
   .tint-chalk {
-    background: rgba(255, 255, 255, 0.07);
-    color: rgba(255, 255, 255, 0.7);
+    background: rgb(var(--c-chalk) / 0.07);
+    color: rgb(var(--c-chalk) / 0.7);
   }
 
   /*
@@ -704,13 +710,13 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+    scrollbar-color: rgb(var(--c-chalk) / 0.14) transparent;
   }
   .console-scroll::-webkit-scrollbar {
     width: 8px;
   }
   .console-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.14);
+    background: rgb(var(--c-chalk) / 0.14);
     border-radius: 99px;
   }
   .console-scroll::-webkit-scrollbar-track {
@@ -763,16 +769,16 @@
      * no progress indicator at all.
      */
     display: none;
-    --rail-ink: rgba(255, 255, 255, 0.38);
-    --rail-line: rgba(255, 255, 255, 0.12);
+    --rail-ink: rgb(var(--c-chalk) / 0.38);
+    --rail-line: rgb(var(--c-chalk) / 0.12);
     --rail-fill: #bd0a0a;
     color: var(--rail-ink);
     transition: color 0.4s ease;
   }
 
   .deck-rail[data-tone='invert'] {
-    --rail-ink: rgba(255, 255, 255, 0.6);
-    --rail-line: rgba(255, 255, 255, 0.24);
+    --rail-ink: rgb(var(--c-chalk) / 0.6);
+    --rail-line: rgb(var(--c-chalk) / 0.24);
     --rail-fill: #ffffff;
   }
 
@@ -900,4 +906,28 @@
   ::view-transition-new(root) {
     animation: none !important;
   }
+}
+
+/**
+ * Surface corrections for the bright theme.
+ *
+ * Two blend modes assume a dark ground and become no-ops on a light one:
+ * `screen` lightens, `overlay` against white noise washes out. Both invert.
+ */
+:root[data-theme='light'] .grain::after {
+  mix-blend-mode: multiply;
+  opacity: 0.16;
+}
+
+:root[data-theme='light'] .marquee-grain {
+  mix-blend-mode: multiply;
+}
+
+/**
+ * The console card's top highlight reads as a light source from above. On a
+ * bright ground a white inner line is invisible, so it becomes a faint dark
+ * hairline instead — same job, opposite direction.
+ */
+:root[data-theme='light'] .console-shell {
+  --lift: inset 0 1px 0 rgb(var(--c-chalk) / 0.06);
 }

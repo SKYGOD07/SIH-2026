@@ -1,6 +1,5 @@
 import { LandingDeck } from '@/components/deck';
 import { MarqueeBand } from '@/components/marquee';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 /**
  * The band between the deck and the footer.
@@ -37,7 +36,6 @@ const TICKER = [
 export default function LandingPage() {
   return (
     <>
-      <ThemeToggle />
       <LandingDeck />
       <MarqueeBand items={TICKER} label="Identify, pilot, procure, scale. Evidence first, paid on proof." />
     </>

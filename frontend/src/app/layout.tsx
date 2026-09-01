@@ -10,6 +10,7 @@ import { MaximizeOrigin } from '@/components/console/MaximizeOrigin';
 import { MinimizeReveal } from '@/components/console/MinimizeReveal';
 import { AuthProvider } from '@/lib/auth/AuthProvider';
 import { ThemeProvider, THEME_INIT_SCRIPT } from '@/lib/theme/ThemeProvider';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 /**
  * Type system.
@@ -128,6 +129,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   navigation. Renders nothing. */}
               <MaximizeOrigin />
               <SiteChrome>{children}</SiteChrome>
+              {/*
+                Mounted once, here, rather than per surface. The console's
+                sign-in and error states return before their shell renders, so a
+                toggle inside the shell leaves a reader stranded in a theme they
+                cannot change on exactly the screens where they are already
+                stuck.
+              */}
+              <ThemeToggle />
               {/* The cover that contracts on the way back out of the console.
                   Lives here so it survives the route change it animates. */}
               <MinimizeReveal />
