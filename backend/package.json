@@ -15,7 +15,8 @@
     "demo:import-packs": "tsx scripts/demo.ts seed",
     "demo:reset": "tsx scripts/demo.ts reset",
     "demo:fields": "tsx scripts/seed-fields.ts",
-    "demo:responses": "tsx scripts/seed-responses.ts"
+    "demo:responses": "tsx scripts/seed-responses.ts",
+    "demo:generate-companies": "tsx scripts/generate-companies.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
