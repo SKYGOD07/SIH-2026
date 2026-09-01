@@ -123,12 +123,18 @@ export function Preloader() {
    *
    * `data-loading` drives `overflow: hidden`, so if this component were ever
    * torn down between phases the page would be frozen with no way back.
+   *
+   * Lenis is released here too. It is the other half of the same lock — a
+   * stopped Lenis sets `overflow: hidden` on the root element through
+   * `.lenis-stopped` — and clearing only the attribute left the page just as
+   * frozen, by the other mechanism.
    */
   useEffect(
     () => () => {
       document.body.dataset.loading = 'false';
+      lenis?.start();
     },
-    [],
+    [lenis],
   );
 
   /* ------------------------------------------------------------------ */

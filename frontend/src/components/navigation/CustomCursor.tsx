@@ -26,9 +26,16 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
  * sections without needing a second colour.
  */
 
-/** Matches the reference exactly. */
+/** Dot count matches the reference; the head is smaller than it. */
 const DOTS = 20;
-const HEAD_SIZE = 26;
+/**
+ * Head diameter.
+ *
+ * Reduced from the reference's 26px. At that size the goo blob sat over the
+ * word being pointed at rather than beside it, which on a type-led page means
+ * the cursor obscures the thing it is there to indicate.
+ */
+const HEAD_SIZE = 15;
 /** How hard each dot chases its leader. Lower = longer, looser tail. */
 const CHASE = 0.32;
 
