@@ -73,6 +73,64 @@ export default function ConsolePage() {
         source="demonstration"
       />
 
+      {/* --- DEMO SIMULATION WORKSPACE & STARTUPS --- */}
+      <section aria-label="Demo Simulation Workspace">
+        <SectionHead title="SIH 2026 Simulation Workspace" action="All Startups" href="/startups" />
+        <Card className="border-signal/30 bg-void-soft">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-signal/20 px-2.5 py-0.5 font-mono text-[0.625rem] font-bold uppercase text-signal">
+                  DEMO WORKSPACE
+                </span>
+                <span className="font-mono text-[0.6875rem] text-chalk/50">SIH 2026 — Innovation Procurement Demo</span>
+              </div>
+              <h3 className="font-display text-[1rem] font-bold text-chalk">
+                5 Simulated Startups Ingested with 66 Evidence Documents
+              </h3>
+            </div>
+            <Link
+              href="/startups"
+              className="inline-flex items-center gap-1.5 rounded-[8px] bg-signal px-3.5 py-2 font-mono text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-void hover:bg-signal/90 transition-colors"
+            >
+              Explore Startups Register <Icon name="upRight" className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 pt-3 border-t border-chalk/[0.08]">
+            <Link
+              href="/startups/d057fc6f-1e9a-4809-91ae-fab46a1b6305"
+              className="group rounded-[10px] border border-chalk/10 bg-void/50 p-3 transition-colors hover:border-signal/40"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-display text-[0.875rem] font-bold text-chalk group-hover:text-signal">CIVORA</span>
+                <span className="font-mono text-[0.5625rem] text-signal font-bold uppercase">33 Files</span>
+              </div>
+              <p className="text-[0.71875rem] text-chalk/50 line-clamp-1">AI & IoT CleanCity OS</p>
+            </Link>
+
+            <Link
+              href="/startups/3c8f2756-3208-47b6-8a29-1e7b42471bbb"
+              className="group rounded-[10px] border border-chalk/10 bg-void/50 p-3 transition-colors hover:border-signal/40"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-display text-[0.875rem] font-bold text-chalk group-hover:text-signal">HIX</span>
+                <span className="font-mono text-[0.5625rem] text-signal font-bold uppercase">33 Files</span>
+              </div>
+              <p className="text-[0.71875rem] text-chalk/50 line-clamp-1">AgriVault Receipt Financing</p>
+            </Link>
+
+            <div className="rounded-[10px] border border-chalk/10 bg-void/50 p-3">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-display text-[0.875rem] font-bold text-chalk/70">+3 Light Startups</span>
+                <span className="font-mono text-[0.5625rem] text-chalk/40 uppercase">DEMO</span>
+              </div>
+              <p className="text-[0.71875rem] text-chalk/40">AquaSense, TransitPulse, SolarFlux</p>
+            </div>
+          </div>
+        </Card>
+      </section>
+
       {/* --- 1. the queue --------------------------------------------- */}
       <section aria-label="Decision queue">
         <SectionHead title="Decision queue" />
