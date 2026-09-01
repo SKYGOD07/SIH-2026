@@ -27,7 +27,13 @@ export interface NavItem {
 export interface Workspace {
   /** Where this role lands after signing in. */
   home: string;
-  /** Shown under the logo, so the workspace names itself. */
+  /**
+   * Shown under the mark, so the workspace names itself.
+   *
+   * Kept to one short word: the sidebar rail is 13.25rem and anything longer
+   * truncates to an ellipsis under the logo, which reads as a bug rather than
+   * as a label.
+   */
   name: string;
   /** The question the dashboard answers, used as its heading. */
   question: string;
@@ -44,7 +50,7 @@ export interface Workspace {
  */
 const GOVERNMENT: Workspace = {
   home: '/government',
-  name: 'Government console',
+  name: 'Government',
   question: 'What needs you',
   primary: [
     { href: '/government', label: 'Dashboard', icon: 'console' },
@@ -70,7 +76,7 @@ const GOVERNMENT: Workspace = {
  */
 const STARTUP: Workspace = {
   home: '/startup',
-  name: 'Startup portal',
+  name: 'Startup',
   question: 'Your next step',
   primary: [
     { href: '/startup', label: 'Dashboard', icon: 'console' },
@@ -87,7 +93,7 @@ const STARTUP: Workspace = {
 
 const EVALUATOR: Workspace = {
   home: '/evaluator',
-  name: 'Evaluator workspace',
+  name: 'Evaluator',
   question: 'Awaiting your review',
   primary: [
     { href: '/evaluator', label: 'Dashboard', icon: 'console' },
@@ -98,7 +104,7 @@ const EVALUATOR: Workspace = {
 
 const ADMIN: Workspace = {
   home: '/government',
-  name: 'Administration',
+  name: 'Admin',
   question: 'What needs you',
   primary: [
     { href: '/government', label: 'Dashboard', icon: 'console' },
