@@ -52,11 +52,14 @@ function judgeFilter(
   label: string,
   buckets: [string, number][],
   total: number,
-  opts: { minDistinct?: number; maxShare?: number; minCoverage?: number } = {},
+  opts: { minDistinct?: number; maxShare?: number; minCoverage?: number; covered?: number } = {},
 ) {
   const { minDistinct = 2, maxShare = 0.9, minCoverage = 0.9 } = opts;
   const named = buckets.filter(([k]) => k !== '(none)');
-  const covered = named.reduce((n, [, v]) => n + v, 0);
+  // Summing the buckets is the coverage only for single-valued columns. A
+  // company holds several technologies, so `covered` is passed in for those —
+  // otherwise the report claims 288% coverage and stops being readable.
+  const covered = opts.covered ?? named.reduce((n, [, v]) => n + v, 0);
   const largest = named.length ? Math.max(...named.map(([, v]) => v)) : 0;
   const top = named.sort((a, b) => b[1] - a[1])[0];
 
@@ -216,7 +219,11 @@ async function main() {
   judgeFilter('filter 05 · stage', tally(startups, (s) => s.stage), total, { minDistinct: 4, maxShare: 0.5 });
   //  6 technology
   const techTally = tally(startups.flatMap((s) => s.technologies.map((t) => ({ t }))), (x) => x.t);
-  judgeFilter('filter 06 · technology', techTally, total, { minDistinct: 8, maxShare: 0.9 });
+  judgeFilter('filter 06 · technology', techTally, total, {
+    minDistinct: 8,
+    maxShare: 0.9,
+    covered: startups.filter((s) => s.technologies.length > 0).length,
+  });
   //  7 pilot readiness
   judgeFilter('filter 07 · pilot readiness', tally(startups, (s) => s.procurementReadiness), total, { minDistinct: 3, maxShare: 0.6 });
   //  8 government experience
