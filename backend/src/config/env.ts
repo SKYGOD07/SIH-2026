@@ -33,7 +33,63 @@ export const env = {
    * client, never logged, never prefixed NEXT_PUBLIC_.
    */
   SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY || '',
+
+  /**
+   * Ollama.
+   *
+   * Two deployments of the same API. Local (`http://localhost:11434`) needs no
+   * credential; cloud (`https://ollama.com`) authenticates with a bearer token.
+   * The distinction is derived from the URL rather than configured separately,
+   * because two settings that must agree are two settings that will disagree.
+   *
+   * The key lives only in this process. It is never returned by an endpoint,
+   * never logged, and must never be given a NEXT_PUBLIC_ prefix — the browser
+   * calls this API, and this API calls Ollama.
+   */
+  OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+  OLLAMA_MODEL: process.env.OLLAMA_MODEL || 'llama3.1',
+  /** Must match the vector(768) column; changing it means re-embedding. */
+  OLLAMA_EMBED_MODEL: process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text',
+  OLLAMA_API_KEY: process.env.OLLAMA_API_KEY || '',
+
+  /** 32 bytes, base64. Absent means per-user credentials cannot be stored. */
+  AI_CREDENTIAL_ENCRYPTION_KEY: process.env.AI_CREDENTIAL_ENCRYPTION_KEY || '',
 };
+
+/** True when Ollama is pointed at anything other than a loopback address. */
+export const isOllamaCloud = (): boolean =>
+  !/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i.test(env.OLLAMA_BASE_URL);
+
+/**
+ * Whether an AI call can be attempted at all.
+ *
+ * Cloud without a key is misconfiguration, not a runtime failure to discover on
+ * the first request — a caller gets a clear reason instead of a 401 from a
+ * third party. Nothing here reads the key's value.
+ */
+export function ollamaReadiness(): { ready: boolean; mode: 'local' | 'cloud'; reason?: string } {
+  const mode = isOllamaCloud() ? 'cloud' : 'local';
+  if (mode === 'cloud' && !env.OLLAMA_API_KEY) {
+    return { ready: false, mode, reason: 'OLLAMA_BASE_URL is a cloud host but OLLAMA_API_KEY is not set' };
+  }
+  return { ready: true, mode };
+}
+
+/** Per-user credential storage needs a key of exactly 32 bytes. */
+export function aiEncryptionReadiness(): { ready: boolean; reason?: string } {
+  if (!env.AI_CREDENTIAL_ENCRYPTION_KEY) {
+    return { ready: false, reason: 'AI_CREDENTIAL_ENCRYPTION_KEY is not set' };
+  }
+  try {
+    const bytes = Buffer.from(env.AI_CREDENTIAL_ENCRYPTION_KEY, 'base64');
+    if (bytes.length !== 32) {
+      return { ready: false, reason: `AI_CREDENTIAL_ENCRYPTION_KEY must decode to 32 bytes, got ${bytes.length}` };
+    }
+  } catch {
+    return { ready: false, reason: 'AI_CREDENTIAL_ENCRYPTION_KEY is not valid base64' };
+  }
+  return { ready: true };
+}
 
 /**
  * Fail loudly at boot rather than at the first request.
