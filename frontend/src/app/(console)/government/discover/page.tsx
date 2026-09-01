@@ -314,7 +314,11 @@ function Discover() {
       {stage === 'results' && field && (
         <>
           <section aria-label="Filters">
-            <SectionHead title={field.label} meta={`${companies.length} shown`} />
+            {/* The count is the server's total, not the loaded array's length. */}
+            <SectionHead
+              title={field.label}
+              meta={`${total} matched · showing 1–${companies.length}`}
+            />
             <div className="card mb-4 flex flex-wrap items-center gap-x-5 gap-y-3 p-4">
               <Toggle label="States a security posture" on={cyberOnly} onChange={setCyberOnly} />
               <Numeric
@@ -372,17 +376,36 @@ function Discover() {
                       animation: `cardIn 520ms cubic-bezier(0.16,1,0.3,1) ${(i * 70).toString()}ms both`,
                     }}
                   >
-                    <div className="flex flex-wrap items-center gap-2">
-                      {c.origin === 'DEMO' && (
-                        <span className="font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-chalk/40">
-                          Demo company
-                        </span>
-                      )}
-                      {c.city && (
-                        <span className="font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-chalk/35">
-                          {c.city}
-                        </span>
-                      )}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {c.city && (
+                          <span className="font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-chalk/35">
+                            {c.city}
+                          </span>
+                        )}
+                        {/*
+                          Dossier state, from the database. Without it a reader
+                          assumes every company has documents behind it; almost
+                          none of them do.
+                        */}
+                        <DossierBadge state={c.dossier} count={c.documentCount} />
+                      </div>
+                      <label className="flex shrink-0 cursor-pointer items-center gap-1.5 text-[0.6875rem] text-chalk/55">
+                        <input
+                          type="checkbox"
+                          className="accent-signal"
+                          checked={selected.includes(c.id)}
+                          disabled={!selected.includes(c.id) && selected.length >= 5}
+                          onChange={(e) =>
+                            setSelected((prev) =>
+                              e.target.checked
+                                ? [...prev, c.id].slice(0, 5)
+                                : prev.filter((x) => x !== c.id),
+                            )
+                          }
+                        />
+                        Compare
+                      </label>
                     </div>
 
                     <h3 className="mt-2 font-display text-[1.125rem] font-bold leading-tight text-chalk">
@@ -431,12 +454,50 @@ function Discover() {
               </div>
             )}
 
+            {hasMore && (
+              <div className="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="rounded-[8px] border border-chalk/20 px-5 py-2.5 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-chalk transition-colors hover:border-signal/60 hover:text-signal disabled:opacity-40"
+                >
+                  {loadingMore ? 'Loading…' : `Load more · ${total - companies.length} remaining`}
+                </button>
+              </div>
+            )}
+
             <p className="mt-4 max-w-[74ch] text-[0.75rem] leading-relaxed text-chalk/40">
               Ordered by recorded deployments, not by suitability. Suitability is specific to a
               challenge and is scored only once one exists — these are the companies working in the
               field, not a ranking of who should win.
             </p>
           </section>
+
+          {selected.length > 0 && (
+            <div className="sticky bottom-5 z-30 flex flex-wrap items-center gap-3 rounded-[12px] border border-signal/30 bg-void-lift/95 p-3.5 backdrop-blur-md">
+              <span className="font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-chalk/65">
+                {selected.length} selected
+              </span>
+              {selected.length < 2 ? (
+                <span className="text-[0.75rem] text-chalk/45">Select at least two to compare.</span>
+              ) : (
+                <Link
+                  href={`/government/compare?ids=${selected.join(',')}`}
+                  className="rounded-[8px] bg-signal px-4 py-2 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-void hover:opacity-90"
+                >
+                  Compare {selected.length} companies →
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => setSelected([])}
+                className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.12em] text-chalk/45 hover:text-signal"
+              >
+                Clear
+              </button>
+            </div>
+          )}
 
           <button
             type="button"
@@ -478,6 +539,38 @@ function Discover() {
 }
 
 /* --- small controls ------------------------------------------------- */
+
+/**
+ * Dossier state.
+ *
+ * `METADATA_ONLY` is the common case in this dataset and says so plainly:
+ * a profile exists, documents do not. Reading it as "no documents yet" is
+ * correct; reading a blank as "documents exist" would not be.
+ */
+function DossierBadge({
+  state,
+  count,
+}: {
+  state: 'FULL' | 'PARTIAL' | 'METADATA_ONLY';
+  count: number;
+}) {
+  const label =
+    state === 'FULL' ? `Full dossier · ${count}` : state === 'PARTIAL' ? `${count} documents` : 'Profile only';
+  return (
+    <span
+      title={state === 'METADATA_ONLY' ? 'No uploaded document dossier in this simulation' : undefined}
+      className={`rounded-full border px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.1em] ${
+        state === 'FULL'
+          ? 'border-validated/40 text-validated'
+          : state === 'PARTIAL'
+            ? 'border-chalk/25 text-chalk/60'
+            : 'border-chalk/15 text-chalk/40'
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
