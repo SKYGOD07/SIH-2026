@@ -360,8 +360,28 @@ export async function discoverStartups(
     },
   });
 
+  /*
+   * Dossier state, counted rather than assumed.
+   *
+   * Two companies with the same profile fields are not equally evidenced: the
+   * five team companies carry imported document packs, the synthetic
+   * population carries none. A reader who cannot see that difference will
+   * assume every company has thirty supporting documents behind it, which is
+   * the sort of quiet overstatement this project exists to avoid.
+   */
+  const withDossier = startups.map((s) => ({
+    ...s,
+    dossier:
+      s._count.documents >= 20
+        ? ('FULL' as const)
+        : s._count.documents > 0
+          ? ('PARTIAL' as const)
+          : ('METADATA_ONLY' as const),
+    documentCount: s._count.documents,
+  }));
+
   return {
-    startups,
+    startups: withDossier,
     total,
     shown: startups.length,
     offset: skip,
