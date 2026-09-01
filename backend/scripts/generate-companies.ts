@@ -433,8 +433,23 @@ async function main() {
   }
 
   const existing = await prisma.startup.findMany({ select: { legalName: true, displayName: true } });
-  const usedNames = new Set(existing.map((e) => e.displayName ?? e.legalName));
   const existingLegal = new Set(existing.map((e) => e.legalName));
+
+  /*
+   * Deliberately empty.
+   *
+   * This set exists to stop two companies in the same run being given the same
+   * name. It used to be seeded from the names already in the database, which
+   * quietly broke idempotency in the worst way available: on a second run every
+   * intended name was already taken, the rotation moved each company to its next
+   * free suffix, and five hundred *new* companies were inserted beside the five
+   * hundred that were already there. One run produced 515 rows; two produced 897.
+   *
+   * Seeded empty, a company's name is a pure function of the field table and the
+   * iteration order, so run two generates exactly the names run one generated and
+   * reconciles them instead of duplicating them.
+   */
+  const usedNames = new Set<string>();
 
   // --- the three missing team companies -----------------------------------
   let teamCreated = 0;
@@ -523,6 +538,63 @@ async function main() {
   if (reconcile.length) process.stdout.write('\n');
 
   /*
+   * Prune companies this generator produced and no longer produces.
+   *
+   * A generator that renames its output leaves the old rows behind, and they are
+   * indistinguishable on screen from the intended population — the field counts
+   * an officer reads become wrong, and the funnel starts from a number nothing
+   * can justify. So the run cleans up after itself.
+   *
+   * Every guard below has to hold before a row is removed:
+   *
+   *   1. `origin = DEMO`                     never touches a real record
+   *   2. the name fits this script's grammar  `<field word> <suffix> Private Limited`
+   *   3. not a team-owned company            an explicit second check, not an inference
+   *   4. not in the intended set             it is genuinely surplus
+   *   5. zero dependent rows                 no document, response, match, pilot,
+   *                                          participation or funding round
+   *
+   * Guard 5 is the one that matters. A company that has acquired *any* history is
+   * left in place and reported rather than deleted, because a cascade from here
+   * would take responses and matches with it — this is the blanket-delete failure
+   * the project's standing rules exist to prevent, and the fix is to refuse.
+   */
+  const GRAMMAR_WORDS = new Set(FIELDS.flatMap((f) => f.words));
+  const intendedLegal = new Set([...rows, ...reconcile].map((c) => c.legalName));
+  const teamLegal = new Set(TEAM_COMPANIES.map((t) => t.legalName));
+
+  const generatedGrammar = (legalName: string) => {
+    const m = /^(\S+) (\S+) Private Limited$/.exec(legalName);
+    return m !== null && GRAMMAR_WORDS.has(m[1]) && SUFFIX.includes(m[2]);
+  };
+
+  const surplus = (
+    await prisma.startup.findMany({
+      where: { origin: DataOrigin.DEMO },
+      select: {
+        id: true, legalName: true, displayName: true,
+        _count: { select: { documents: true, responses: true, matches: true, pilots: true, participations: true, fundingRounds: true } },
+      },
+    })
+  ).filter(
+    (s) =>
+      !intendedLegal.has(s.legalName) &&
+      !teamLegal.has(s.legalName) &&
+      generatedGrammar(s.legalName),
+  );
+
+  const removable = surplus.filter((s) => Object.values(s._count).every((n) => n === 0));
+  const keptWithHistory = surplus.filter((s) => !removable.includes(s));
+
+  let pruned = 0;
+  for (let i = 0; i < removable.length; i += 100) {
+    const res = await prisma.startup.deleteMany({
+      where: { id: { in: removable.slice(i, i + 100).map((s) => s.id) } },
+    });
+    pruned += res.count;
+  }
+
+  /*
    * Legacy demonstration rows.
    *
    * A handful of companies predate this generator (they came from `demo.ts`)
@@ -576,7 +648,15 @@ async function main() {
   console.log(`\nteam companies created : ${teamCreated}`);
   console.log(`synthetic created      : ${created}`);
   console.log(`synthetic reconciled   : ${reconciled}`);
+  console.log(`surplus pruned         : ${pruned}`);
+  console.log(`surplus kept (history) : ${keptWithHistory.length}`);
   console.log(`stage relabelled       : ${relabelled.length}`);
+  if (keptWithHistory.length) {
+    console.log('\nsurplus companies left in place because they hold dependent records:');
+    keptWithHistory.slice(0, 20).forEach((s) =>
+      console.log(`  ${s.displayName ?? s.legalName} — ${Object.entries(s._count).filter(([, n]) => n > 0).map(([k, n]) => `${k}:${n}`).join(', ')}`),
+    );
+  }
   console.log(`total companies        : ${total}`);
   console.log(`fields                 : ${bySector.length}`);
   console.log(`marked VERIFIED        : ${verified}  (must be 0)`);
