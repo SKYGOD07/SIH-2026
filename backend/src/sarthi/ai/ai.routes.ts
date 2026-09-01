@@ -20,6 +20,7 @@ import {
   filterOptions,
   suggestFields,
   compareStartups,
+  portfolioOverview,
 } from './discovery.service';
 
 const router = Router();
@@ -240,6 +241,15 @@ router.post('/discover/compare', async (req: Request, res: Response) => {
     return sendSuccess(res, await compareStartups(ids));
   } catch (e) {
     return res.status(422).json({ success: false, error: (e as Error).message });
+  }
+});
+
+/** Aggregate counts for the government dashboard. Deterministic, no model. */
+router.get('/discover/overview', async (_req: Request, res: Response) => {
+  try {
+    return sendSuccess(res, await portfolioOverview());
+  } catch (e) {
+    return res.status(500).json({ success: false, error: (e as Error).message });
   }
 });
 

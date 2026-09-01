@@ -420,6 +420,42 @@ const TEAM_COMPANIES = [
     city: 'Mumbai', stage: 'MVP', teamSize: 11, pilotDays: 90, budget: 1400000 },
 ];
 
+/**
+ * Companies this script must never create, rename, reconcile or remove.
+ *
+ * Enumerated rather than inferred. An earlier version of the prune step tried to
+ * recognise its own output by name shape, which fails in both directions: a
+ * surplus row that took the fallback naming branch is not recognised and
+ * survives, and any hand-seeded company that happens to fit the shape becomes
+ * deletable. Neither error is acceptable when the second one loses a document
+ * pack, so the protected set is written down.
+ *
+ * Sources: the five rich companies in `demo.ts`, the ten field companies in
+ * `seed-fields.ts`, and the three team companies defined above. Add a company
+ * here the moment it is seeded anywhere other than by this generator.
+ */
+const PROTECTED = new Set<string>([
+  // demo.ts — rich profiles with imported document packs
+  'CIVORA Technologies Private Limited',
+  'HIX Health & FinTech Solutions Private Limited',
+  'AquaSense Systems Private Limited',
+  'TransitPulse Analytics Private Limited',
+  'SolarFlux Dynamics Private Limited',
+  // seed-fields.ts — one company per field, some carrying challenge responses
+  'Nirmal Flow Technologies Private Limited',
+  'Sanchay Wastewater Systems Private Limited',
+  'GatiMarg Mobility Analytics Private Limited',
+  'Suryodaya Grid Solutions Private Limited',
+  'Krishi Setu Agritech Private Limited',
+  'Arogya Reach Health Systems Private Limited',
+  'Suraksha Grid Public Safety Private Limited',
+  'Seva Setu Digital Governance Private Limited',
+  'Vidya Bridge Learning Private Limited',
+  'Chakra Circular Waste Private Limited',
+  // the team companies this script creates once and then leaves alone
+  ...TEAM_COMPANIES.map((t) => t.legalName),
+]);
+
 /* ------------------------------------------------------------------ */
 
 async function main() {
@@ -547,14 +583,13 @@ async function main() {
    *
    * Every guard below has to hold before a row is removed:
    *
-   *   1. `origin = DEMO`                     never touches a real record
-   *   2. the name fits this script's grammar  `<field word> <suffix> Private Limited`
-   *   3. not a team-owned company            an explicit second check, not an inference
-   *   4. not in the intended set             it is genuinely surplus
-   *   5. zero dependent rows                 no document, response, match, pilot,
-   *                                          participation or funding round
+   *   1. `origin = DEMO`          never touches a real record
+   *   2. not in PROTECTED         every hand-seeded company is listed by name
+   *   3. not in the intended set  it is genuinely surplus
+   *   4. zero dependent rows      no document, response, match, pilot,
+   *                               participation or funding round
    *
-   * Guard 5 is the one that matters. A company that has acquired *any* history is
+   * Guard 4 is the one that matters. A company that has acquired *any* history is
    * left in place and reported rather than deleted, because a cascade from here
    * would take responses and matches with it — this is the blanket-delete failure
    * the project's standing rules exist to prevent, and the fix is to refuse.

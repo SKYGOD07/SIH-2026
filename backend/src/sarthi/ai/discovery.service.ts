@@ -531,3 +531,66 @@ export async function compareStartups(ids: string[]) {
       'Company-level comparison computed from stored records against each field. These are NOT challenge-specific match scores and not a government decision — suitability is scored against a challenge, and selection is made by a person.',
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Portfolio overview                                                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * What the platform holds, in aggregate.
+ *
+ * The government dashboard led with a decision queue and nothing else, which
+ * answers "what needs me today" but not "what can this platform actually reach
+ * for". These are counts over the whole population, computed in SQL — an
+ * officer reading "34 companies in water distribution" is reading a `count`,
+ * not an estimate.
+ *
+ * Deliberately small: six fields by size, a readiness spread, and an evidence
+ * split. A dashboard that answers three questions well is more use than one
+ * that shows twelve charts nobody reads.
+ */
+export async function portfolioOverview() {
+  const [bySector, byReadiness, total, withDocs] = await Promise.all([
+    prisma.startup.groupBy({ by: ['sector'], _count: true }),
+    prisma.startup.groupBy({ by: ['procurementReadiness'], _count: true }),
+    prisma.startup.count(),
+    prisma.startup.count({ where: { documents: { some: {} } } }),
+  ]);
+
+  const labelFor = (sector: string) =>
+    FIELD_TAXONOMY.find((f) => f.field === sector)?.label ?? sector.replace(/-/g, ' ');
+
+  const fields = bySector
+    .map((r) => ({ field: r.sector, label: labelFor(r.sector), count: r._count }))
+    .sort((a, b) => b.count - a.count);
+
+  const ORDER = ['NOT_ASSESSED', 'LOW', 'MODERATE', 'HIGH'];
+  const readiness = ORDER.map((level) => ({
+    level,
+    count: byReadiness.find((r) => r.procurementReadiness === level)?._count ?? 0,
+  }));
+
+  return {
+    total,
+    fieldCount: fields.length,
+    /** Top six by size; the rest folded into one row rather than truncated. */
+    fields: [
+      ...fields.slice(0, 6),
+      ...(fields.length > 6
+        ? [
+            {
+              field: '__other',
+              label: `Other (${fields.length - 6} fields)`,
+              count: fields.slice(6).reduce((s, f) => s + f.count, 0),
+            },
+          ]
+        : []),
+    ],
+    readiness,
+    evidence: {
+      withDocuments: withDocs,
+      metadataOnly: total - withDocs,
+    },
+    note: 'Counts over every company the platform holds. Synthetic demonstration records — not Maharashtra funding data.',
+  };
+}

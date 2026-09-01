@@ -1,133 +1,240 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
-import { Card, Pill, SectionHead, Tile } from '@/components/console/primitives';
-import { Icon } from '@/components/console/Icon';
-import { fetchDashboard } from '@/lib/api/sarthi';
+import { SectionHead } from '@/components/console/primitives';
+import { RoleGate } from '@/components/auth/RoleGate';
+import { fetchApi } from '@/lib/api';
 
-export const metadata: Metadata = {
-  title: 'Startups Register',
-  description: 'Simulated startup companies, evidence dossiers, and claimable demonstration accounts.',
-};
+/**
+ * The company registry.
+ *
+ * This page previously read `/workflow/company/claimable/{scenario}` — an
+ * endpoint written for a *startup user claiming a company*. It returns only
+ * unclaimed companies inside one scenario, which meant a government officer
+ * browsing the registry saw a handful of records and had no route to the rest.
+ * Every company has a working dossier; almost none of them were reachable.
+ *
+ * It now reads the same discovery endpoint the rest of the government surface
+ * uses: server-side filtering, server-side sorting, server-side paging, and a
+ * total that comes from a count query rather than the length of the page.
+ */
 
-export const dynamic = 'force-dynamic';
-
-interface StartupItem {
+interface Company {
   id: string;
   legalName: string;
   displayName: string | null;
-  sector: string;
   oneLineDescription: string | null;
-  origin: string;
-  hasDocuments: boolean;
+  sector: string;
+  city: string | null;
+  deploymentCount: number | null;
+  procurementReadiness: string;
   documentCount: number;
+  dossier: 'FULL' | 'PARTIAL' | 'METADATA_ONLY';
+  origin: string;
 }
 
-let BASE =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:5000';
-if (!BASE.endsWith('/api')) {
-  BASE = `${BASE}/api`;
+interface FieldRow {
+  field: string;
+  label: string;
+  companyCount: number;
 }
 
-async function fetchStartups(): Promise<StartupItem[]> {
-  try {
-    const res = await fetch(`${BASE}/workflow/scenarios`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const body = await res.json();
-    const scenarios = body?.data ?? [];
-    const demoScenario = scenarios.find((s: { name: string }) =>
-      s.name.includes('SIH 2026'),
-    ) || scenarios[0];
+const PAGE = 24;
 
-    if (!demoScenario?.id) return [];
-
-    const resClaim = await fetch(`${BASE}/workflow/company/claimable/${demoScenario.id}`, {
-      cache: 'no-store',
-    });
-    if (!resClaim.ok) return [];
-    const claimBody = await resClaim.json();
-    const items = claimBody?.data ?? [];
-
-    return items.map((item: { id: string; legalName: string; sector: string; oneLineDescription: string | null }) => ({
-      id: item.id,
-      legalName: item.legalName,
-      displayName: item.legalName.includes('CIVORA') ? 'CIVORA' : item.legalName.includes('HIX') ? 'HIX' : item.legalName.split(' ')[0],
-      sector: item.sector,
-      oneLineDescription: item.oneLineDescription,
-      origin: 'DEMO',
-      hasDocuments: item.legalName.includes('CIVORA') || item.legalName.includes('HIX'),
-      documentCount: item.legalName.includes('CIVORA') ? 33 : item.legalName.includes('HIX') ? 33 : 0,
-    }));
-  } catch {
-    return [];
-  }
+export default function StartupsPage() {
+  return (
+    <RoleGate roles={['GOVERNMENT_OFFICER', 'EVALUATOR', 'ADMIN']}>
+      <Registry />
+    </RoleGate>
+  );
 }
 
-export default async function StartupsPage() {
-  const { source } = await fetchDashboard();
-  const startups = await fetchStartups();
+function Registry() {
+  const [fields, setFields] = useState<FieldRow[]>([]);
+  const [field, setField] = useState<string>('');
+  const [sort, setSort] = useState<'deployments' | 'readiness' | 'name'>('deployments');
+  const [rows, setRows] = useState<Company[]>([]);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [busy, setBusy] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchApi<{ browsable: FieldRow[] }>('/api/ai/discover/fields')
+      .then((r) => setFields(r.browsable))
+      .catch(() => setFields([]));
+  }, []);
+
+  const load = useCallback(
+    async (offset: number, replace: boolean) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await fetchApi<{ startups: Company[]; total: number; hasMore: boolean }>(
+          '/api/ai/discover/startups',
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              field: field || undefined,
+              sort,
+              limit: PAGE,
+              offset,
+            }),
+          },
+        );
+        setRows((prev) => (replace ? res.startups : [...prev, ...res.startups]));
+        setTotal(res.total);
+        setHasMore(res.hasMore);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not load companies.');
+      } finally {
+        setBusy(false);
+      }
+    },
+    [field, sort],
+  );
+
+  useEffect(() => {
+    void load(0, true);
+  }, [load]);
 
   return (
     <>
       <ConsoleHeader
-        title="Startups Register"
-        subtitle="Registered Startups"
-        source={source}
+        title="Companies"
+        subtitle="Every company on the platform. Open one for its report card."
+        source="demonstration"
       />
 
-      <section aria-label="Registered Companies">
+      {error && <p className="card border-risk/30 p-4 text-[0.8125rem] text-risk">{error}</p>}
+
+      <section aria-label="Registry">
+        {/* The total is the server's count for the current filter, not the
+            number of rows that happen to be loaded. */}
         <SectionHead
-          title="Registered Startups"
-          meta={`${startups.length} Registered Companies`}
+          title={field ? fields.find((f) => f.field === field)?.label ?? field : 'All fields'}
+          meta={total ? `${total} companies · showing ${rows.length}` : undefined}
         />
 
-        {startups.length === 0 ? (
-          <Card className="py-12 text-center">
-            <Icon name="alert" className="mx-auto h-8 w-8 text-risk mb-2" />
-            <p className="font-display text-[0.875rem] font-bold text-chalk">
-              No startups discovered
-            </p>
-            <p className="mt-1 text-[0.78125rem] text-chalk/50">
-              Run <code className="font-mono text-signal">npm run demo:seed</code> in backend to ingest registered startups.
-            </p>
-          </Card>
+        <div className="card mb-4 flex flex-wrap items-center gap-x-5 gap-y-3 p-4">
+          <label className="flex items-center gap-2 text-[0.75rem] text-chalk/65">
+            Field
+            <select
+              value={field}
+              onChange={(e) => setField(e.target.value)}
+              className="rounded-[6px] border border-chalk/15 bg-chalk/[0.03] px-2 py-1 text-chalk outline-none focus:border-signal/60"
+            >
+              <option value="">All ({fields.reduce((s, f) => s + f.companyCount, 0)})</option>
+              {fields.map((f) => (
+                <option key={f.field} value={f.field}>
+                  {f.label} ({f.companyCount})
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 text-[0.75rem] text-chalk/65">
+            Sort
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as typeof sort)}
+              className="rounded-[6px] border border-chalk/15 bg-chalk/[0.03] px-2 py-1 text-chalk outline-none focus:border-signal/60"
+            >
+              <option value="deployments">Deployments</option>
+              <option value="readiness">Stated readiness</option>
+              <option value="name">Name</option>
+            </select>
+          </label>
+
+          <Link
+            href="/government/discover"
+            className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.12em] text-signal hover:underline"
+          >
+            Search by problem ↗
+          </Link>
+        </div>
+
+        {rows.length === 0 && !busy ? (
+          <div className="card p-5">
+            <p className="text-[0.8125rem] text-chalk/55">No company matches this filter.</p>
+          </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {startups.map((s) => (
-              <Card key={s.id} interactive className="flex flex-col justify-between p-5">
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-chalk/40">
-                      {s.sector}
-                    </span>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {rows.map((c) => (
+              <Link
+                key={c.id}
+                href={`/startups/${c.id}/report`}
+                className="card flex flex-col p-4 transition-colors hover:border-signal/40"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-display text-[0.9375rem] font-bold text-chalk">
+                      {c.displayName ?? c.legalName}
+                    </p>
+                    <p className="mt-0.5 text-[0.6875rem] text-chalk/45">
+                      {c.sector.replace(/-/g, ' ')}
+                      {c.city ? ` · ${c.city}` : ''}
+                    </p>
                   </div>
+                  <DossierBadge state={c.dossier} count={c.documentCount} />
+                </div>
 
-                  <h3 className="font-display text-[1.0625rem] font-extrabold text-chalk">
-                    {s.displayName || s.legalName}
-                  </h3>
-
-                  <p className="mt-2 text-[0.78125rem] leading-relaxed text-chalk/60 line-clamp-2">
-                    {s.oneLineDescription || s.legalName}
+                {c.oneLineDescription && (
+                  <p className="mt-2 line-clamp-2 text-[0.75rem] leading-relaxed text-chalk/55">
+                    {c.oneLineDescription}
                   </p>
-                </div>
+                )}
 
-                <div className="mt-5 pt-3 border-t border-chalk/[0.08] flex items-center justify-between">
-                  <span className="font-mono text-[0.6875rem] text-chalk/50">
-                    {s.hasDocuments ? `${s.documentCount} Evidenced Files` : 'Light Profile'}
-                  </span>
-
-                  <Link
-                    href={`/startups/${s.id}`}
-                    className="inline-flex items-center gap-1 font-mono text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-signal hover:text-signal/80 transition-colors"
-                  >
-                    View Dossier <Icon name="upRight" className="h-3 w-3" />
-                  </Link>
+                <div className="mt-3 flex items-center gap-4 border-t border-chalk/[0.08] pt-2.5 font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-chalk/40">
+                  <span>{c.deploymentCount ?? 0} deployments</span>
+                  <span>readiness {c.procurementReadiness.replace(/_/g, ' ').toLowerCase()}</span>
+                  <span className="ml-auto text-signal">Report ↗</span>
                 </div>
-              </Card>
+              </Link>
             ))}
+          </div>
+        )}
+
+        {hasMore && (
+          <div className="mt-5 flex justify-center">
+            <button
+              type="button"
+              onClick={() => load(rows.length, false)}
+              disabled={busy}
+              className="rounded-[8px] border border-chalk/20 px-5 py-2.5 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-chalk transition-colors hover:border-signal/60 hover:text-signal disabled:opacity-40"
+            >
+              {busy ? 'Loading…' : `Load more · ${total - rows.length} remaining`}
+            </button>
           </div>
         )}
       </section>
     </>
+  );
+}
+
+function DossierBadge({
+  state,
+  count,
+}: {
+  state: 'FULL' | 'PARTIAL' | 'METADATA_ONLY';
+  count: number;
+}) {
+  const label =
+    state === 'FULL' ? `Full dossier · ${count}` : state === 'PARTIAL' ? `${count} documents` : 'Profile only';
+  return (
+    <span
+      title={state === 'METADATA_ONLY' ? 'No uploaded document dossier in this simulation' : undefined}
+      className={`shrink-0 rounded-full border px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.1em] ${
+        state === 'FULL'
+          ? 'border-validated/40 text-validated'
+          : state === 'PARTIAL'
+            ? 'border-chalk/25 text-chalk/60'
+            : 'border-chalk/15 text-chalk/40'
+      }`}
+    >
+      {label}
+    </span>
   );
 }
