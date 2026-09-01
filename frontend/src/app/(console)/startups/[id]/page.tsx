@@ -5,6 +5,7 @@ import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { Card, Pill, SectionHead, Tile } from '@/components/console/primitives';
 import { Icon } from '@/components/console/Icon';
 import { fetchCompanyDossier } from '@/lib/api/workflow';
+import { AIAnalyzeButton } from '@/components/console/AIAnalyzeButton';
 
 export const metadata: Metadata = {
   title: 'Government Company Analysis',
@@ -115,8 +116,6 @@ export default async function GovernmentAnalysisPage({ params }: PageProps) {
           </div>
         </Card>
       </section>
-
-import { AIAnalyzeButton } from '@/components/console/AIAnalyzeButton';
 
       {/* --- WHY THIS STARTUP? (DETERMINISTIC & AI ANALYSIS) --- */}
       <section aria-label="Why This Startup?">
