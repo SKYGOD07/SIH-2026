@@ -42,6 +42,9 @@
     --c-void-lift: 20 20 20;
     --c-chalk: 255 255 255;
     --c-dim: 37 37 37;
+    /* Console card ground, one step off the page ground in either direction. */
+    --c-card: 10 10 10;
+    --c-card-hover: 16 16 16;
 
     /* experience tokens */
     --nav-h: 4.75rem;
@@ -69,6 +72,14 @@
     --c-void-lift: 218 210 196;
     --c-chalk: 14 14 16;
     --c-dim: 176 168 155;
+    /*
+     * On the bright ground the card goes *lighter* than the page, not darker.
+     * That inverts the dark theme's logic on purpose: lift comes from a card
+     * catching more light than its surroundings, which on black means a step
+     * up from pure black and on bone means a step towards white.
+     */
+    --c-card: 252 250 247;
+    --c-card-hover: 255 255 255;
 
     --background: 40 26% 90%;
     --foreground: 240 7% 6%;
@@ -598,7 +609,9 @@
     inset: 0;
     z-index: 130;
     pointer-events: none;
-    background: #000000;
+    /* The ground, not black: on the bright theme a black cover contracting
+       across the page is a flash of the wrong colour. */
+    background: rgb(var(--c-void));
     clip-path: circle(var(--route-reveal) at var(--route-ox) var(--route-oy));
     will-change: clip-path;
   }
@@ -642,8 +655,8 @@
    */
   .console-shell {
     --nav-h: 0px;
-    --card: #0a0a0a;
-    --card-hover: #101010;
+    --card: rgb(var(--c-card));
+    --card-hover: rgb(var(--c-card-hover));
     --hair: rgb(var(--c-chalk) / 0.08);
     --hair-strong: rgb(var(--c-chalk) / 0.16);
     --lift: inset 0 1px 0 rgb(var(--c-chalk) / 0.055);
@@ -924,10 +937,29 @@
 }
 
 /**
- * The console card's top highlight reads as a light source from above. On a
- * bright ground a white inner line is invisible, so it becomes a faint dark
- * hairline instead — same job, opposite direction.
+ * Lift, done the way the reference actually does it.
+ *
+ * The dark theme fakes a light source with a one-pixel inner highlight, because
+ * a drop shadow is invisible on black — the original comment says as much. On
+ * the bright ground that constraint disappears, so the card gets a genuine soft
+ * shadow and a lighter ground, which is what lifts a white card off a warm page.
  */
 :root[data-theme='light'] .console-shell {
-  --lift: inset 0 1px 0 rgb(var(--c-chalk) / 0.06);
+  --lift:
+    0 1px 2px rgb(var(--c-chalk) / 0.05),
+    0 6px 18px -8px rgb(var(--c-chalk) / 0.12);
+  --hair: rgb(var(--c-chalk) / 0.10);
+  --hair-strong: rgb(var(--c-chalk) / 0.20);
+}
+
+/*
+ * Status tints. The washes are alpha over the card so they carry across both
+ * themes, but the *text* hues were picked against black and go weak on bone —
+ * green especially. Darkened here to hold their contrast.
+ */
+:root[data-theme='light'] .tint-validated {
+  color: #1c7a4b;
+}
+:root[data-theme='light'] .tint-risk {
+  color: #b4331f;
 }
