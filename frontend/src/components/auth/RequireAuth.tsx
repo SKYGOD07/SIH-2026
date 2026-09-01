@@ -27,6 +27,8 @@ export function RequireAuth({
   const { loading, user, profile, onboarding, error } = useAuth();
 
   useEffect(() => {
+    // A background refresh is not a sign-out. Redirecting while one is in
+    // flight would bounce a signed-in reader to /login on every tab switch.
     if (loading) return;
 
     if (!user) {
@@ -44,7 +46,17 @@ export function RequireAuth({
     }
   }, [loading, user, profile, onboarding, router]);
 
-  if (loading) {
+  /*
+   * Only the *first* resolution blanks the page.
+   *
+   * Once a profile is in hand, a later load is a background refresh and the
+   * console keeps rendering through it. Gating on `loading` alone tore the
+   * whole shell down and rebuilt it — replaying the maximise animation — every
+   * time the auth client revalidated, which it does whenever the tab regains
+   * focus. The reader experienced that as the application reloading on every
+   * tab switch.
+   */
+  if (loading && !profile) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-void">
         <p className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-chalk/40">

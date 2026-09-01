@@ -85,13 +85,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const loadTag = useRef(0);
 
+  /**
+   * Who the loaded state belongs to.
+   *
+   * Kept in a ref rather than read from state inside the auth listener, because
+   * the listener closes over the state it was created with and would compare
+   * against a stale value on every event after the first.
+   */
+  const currentUserId = useRef<string | null>(null);
+
   const loadProfile = useCallback(async (session: Session | null) => {
     const tag = (loadTag.current += 1);
 
     if (!session) {
+      currentUserId.current = null;
       setState({ ...EMPTY, loading: false });
       return;
     }
+
+    currentUserId.current = session.user.id;
 
     // Clear the previous user's identity *before* awaiting, so no interval
     // exists where a new session is paired with an old profile.
@@ -147,14 +159,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (event === 'SIGNED_OUT') {
         loadTag.current += 1; // invalidate anything in flight
+        currentUserId.current = null;
         setState({ ...EMPTY, loading: false });
         return;
       }
 
-      // TOKEN_REFRESHED carries the same user; re-fetching the profile on every
-      // refresh would put a network call on a timer for no new information.
-      if (event === 'TOKEN_REFRESHED') {
-        setState((s) => (s.user ? { ...s, session } : s));
+      /*
+       * Same person as before: take the new token and change nothing else.
+       *
+       * This is the case that matters most in practice, and it is not rare.
+       * gotrue-js revalidates whenever the tab regains visibility and re-emits
+       * SIGNED_IN — not only TOKEN_REFRESHED — so treating every event as a new
+       * sign-in blanked the profile and refetched it each time the reader came
+       * back to the tab. With the console gated on `loading`, that read as the
+       * whole application reloading on every tab switch.
+       *
+       * The identity is unchanged, so there is nothing to re-fetch: the profile
+       * in hand is still correct, and only the access token has moved on.
+       */
+      const incomingId = session?.user?.id ?? null;
+      if (incomingId && incomingId === currentUserId.current) {
+        setState((s) => (s.profile ? { ...s, session, user: session!.user } : s));
         return;
       }
 
