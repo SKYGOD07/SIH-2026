@@ -963,3 +963,115 @@
 :root[data-theme='light'] .tint-risk {
   color: #b4331f;
 }
+
+/* ------------------------------------------------------------------ */
+/* Liquid glass                                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Glass that behaves like a lens rather than a frosted sheet.
+ *
+ * A blur alone reads as translucent plastic. What makes glass read as glass is
+ * what happens at its *edges*, so three things are layered here, in the order
+ * light actually meets them:
+ *
+ *   1. The body — a heavier blur with saturation and a slight brightness lift,
+ *      so whatever passes underneath both tints the pill and appears to bend
+ *      through it.
+ *
+ *   2. Edge lensing — a rim whose brightness varies around the perimeter, drawn
+ *      as a gradient masked down to the border alone. Real glass gathers light
+ *      at the curve where it turns away from the viewer, brightest where the
+ *      light source is and again on the opposite edge as it wraps. A uniform
+ *      1px hairline is the flat, lifeless version of this.
+ *
+ *   3. A specular bloom in the upper third — the soft reflection of the light
+ *      source in the surface itself.
+ *
+ * The rim uses `--c-chalk`, so it inverts with the theme: a light rim catching
+ * light on the dark ground, a dark rim defining the edge on the bright one.
+ * The specular stays white in both, because a highlight is the colour of the
+ * light, not of the ink.
+ *
+ * The tint is a variable so a caller can vary opacity by state without
+ * restating the whole recipe.
+ */
+.liquid-glass {
+  position: relative;
+  isolation: isolate;
+  background-color: rgb(var(--c-void) / var(--glass-tint, 0.28));
+  backdrop-filter: blur(26px) saturate(1.8) brightness(1.06);
+  -webkit-backdrop-filter: blur(26px) saturate(1.8) brightness(1.06);
+  box-shadow:
+    /* light caught along the top surface */
+    inset 0 1px 0 0 rgb(var(--c-chalk) / 0.22),
+    /* light bounced up off whatever is beneath */
+    inset 0 -1px 0 0 rgb(var(--c-chalk) / 0.07),
+    /* internal glow — what gives the pane apparent thickness */
+    inset 0 0 24px -10px rgb(var(--c-chalk) / 0.22),
+    /* the shadow it casts on the page */
+    0 10px 34px -14px rgb(var(--c-void) / 0.65);
+}
+
+/**
+ * The lens rim.
+ *
+ * `padding` plus an xor mask leaves only the border ring painted, which is how
+ * a gradient border is drawn without a wrapper element. Sits above the content
+ * because it occupies the very edge, where the capsule's own padding guarantees
+ * nothing else is.
+ */
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    145deg,
+    rgb(var(--c-chalk) / 0.55) 0%,
+    rgb(var(--c-chalk) / 0.10) 30%,
+    rgb(var(--c-chalk) / 0.05) 58%,
+    rgb(var(--c-chalk) / 0.40) 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/**
+ * The specular bloom.
+ *
+ * `z-index: -1` keeps it above the element's own tint but beneath the content —
+ * a highlight lies in the glass, not over the words. It needs the stacking
+ * context `isolation` establishes above, or it would sink behind the pill.
+ */
+.liquid-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(115% 75% at 26% -18%, rgba(255, 255, 255, 0.22) 0%, transparent 62%),
+    radial-gradient(80% 60% at 88% 120%, rgba(255, 255, 255, 0.10) 0%, transparent 60%);
+}
+
+/**
+ * Without `backdrop-filter` there is nothing to bend, so the pill would be a
+ * near-transparent outline over live content and its text would sit on
+ * whatever happened to pass beneath. It becomes an opaque capsule instead.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .liquid-glass {
+    background-color: rgb(var(--c-void) / 0.92);
+  }
+}

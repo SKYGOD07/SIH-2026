@@ -297,28 +297,20 @@ export function Nav() {
         <nav
           aria-label="Primary"
           className={cn(
-            'pointer-events-auto relative flex h-[3.125rem] max-w-full items-center overflow-hidden rounded-full transition-[gap,padding,background-color] duration-500',
+            'liquid-glass pointer-events-auto relative flex h-[3.125rem] max-w-full items-center overflow-hidden rounded-full transition-[gap,padding,background-color] duration-500',
             expanded ? 'gap-3 pl-3 pr-2 sm:gap-4 sm:pl-4 sm:pr-2.5' : 'gap-2 px-3 sm:px-3.5',
           )}
-          style={{
-            // The reference recipe: hairline border, heavy blur with
-            // saturation so whatever passes underneath tints the glass.
-            //
-            // Expressed in theme tokens rather than literal black and white:
-            // frosted glass takes its tint from the ground it floats over, so a
-            // pill hardcoded to dark reads as a blot on the bright theme rather
-            // than as glass.
-            border: '0.8px solid rgb(var(--c-chalk) / 0.18)',
-            backdropFilter: 'blur(22px) saturate(1.55)',
-            WebkitBackdropFilter: 'blur(22px) saturate(1.55)',
-            backgroundColor: open
-              ? 'rgb(var(--c-void) / 0.4)'
-              : scrolled
-                ? 'rgb(var(--c-void) / 0.62)'
-                : 'rgb(var(--c-void) / 0.28)',
-            boxShadow:
-              '0 1px 0 0 rgb(var(--c-chalk) / 0.14) inset, 0 8px 30px -12px rgb(var(--c-void) / 0.6)',
-          }}
+          style={
+            {
+              /*
+               * Only the tint varies by state; the blur, the lens rim and the
+               * specular live in `.liquid-glass`. Denser once the page has
+               * scrolled, because the pill then has type running underneath it
+               * and glass that thin stops separating the two.
+               */
+              '--glass-tint': open ? 0.4 : scrolled ? 0.62 : 0.28,
+            } as React.CSSProperties
+          }
         >
           {/* Gloss sweep, clipped to the capsule. */}
           <span
