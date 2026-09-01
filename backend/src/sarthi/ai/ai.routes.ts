@@ -213,6 +213,10 @@ router.post('/discover/startups', async (req: Request, res: Response) => {
       maxPilotDurationDays: req.body?.maxPilotDurationDays,
       maxPilotBudget: req.body?.maxPilotBudget,
       city: req.body?.city,
+      stage: req.body?.stage,
+      limit: req.body?.limit,
+      offset: req.body?.offset,
+      sort: req.body?.sort,
     }));
   } catch (e) {
     return res.status(500).json({ success: false, error: (e as Error).message });

@@ -63,6 +63,36 @@ export const FIELD_TAXONOMY: { field: string; label: string; keywords: string[] 
     keywords: ['grievance', 'citizen', 'service', 'certificate', 'application', 'portal', 'record', 'delay'] },
   { field: 'education-technology', label: 'Education',
     keywords: ['school', 'student', 'learning', 'teacher', 'literacy', 'attendance', 'education'] },
+  { field: 'road-infrastructure', label: 'Roads & infrastructure',
+    keywords: ['road', 'pothole', 'bridge', 'pavement', 'highway', 'footpath', 'asset'] },
+  { field: 'energy-efficiency', label: 'Energy efficiency',
+    keywords: ['street light', 'consumption', 'efficiency', 'load', 'billing', 'meter reading'] },
+  { field: 'rural-development', label: 'Rural development',
+    keywords: ['village', 'panchayat', 'rural', 'scheme', 'beneficiary', 'gram'] },
+  { field: 'public-health', label: 'Public health & surveillance',
+    keywords: ['outbreak', 'surveillance', 'epidemic', 'vector', 'immunisation', 'screening'] },
+  { field: 'skill-development', label: 'Skills & employment',
+    keywords: ['training', 'skill', 'employment', 'placement', 'apprentice', 'livelihood'] },
+  { field: 'citizen-services', label: 'Citizen services',
+    keywords: ['grievance', 'complaint', 'helpline', 'call centre', 'ticket', 'redressal'] },
+  { field: 'disaster-management', label: 'Disaster management',
+    keywords: ['flood', 'cyclone', 'earthquake', 'warning', 'evacuation', 'relief', 'hazard'] },
+  { field: 'climate-environment', label: 'Climate & environment',
+    keywords: ['air quality', 'pollution', 'emission', 'climate', 'noise', 'tree', 'environment'] },
+  { field: 'smart-buildings', label: 'Smart buildings & estates',
+    keywords: ['building', 'facility', 'maintenance', 'occupancy', 'estate', 'hvac'] },
+  { field: 'financial-inclusion', label: 'Financial inclusion',
+    keywords: ['subsidy', 'transfer', 'payment', 'benefit', 'credit', 'disbursement', 'pension'] },
+  { field: 'supply-chain', label: 'Supply chain & logistics',
+    keywords: ['stock', 'inventory', 'ration', 'cold chain', 'warehouse', 'distribution', 'logistics'] },
+  { field: 'urban-planning', label: 'Urban planning',
+    keywords: ['land use', 'encroachment', 'construction', 'zoning', 'planning', 'permit', 'unauthorised'] },
+  { field: 'cybersecurity', label: 'Cybersecurity',
+    keywords: ['security', 'breach', 'vulnerability', 'audit', 'cyber', 'ransomware', 'phishing'] },
+  { field: 'ai-data-infrastructure', label: 'Data & AI infrastructure',
+    keywords: ['data', 'dashboard', 'silo', 'reporting', 'integration', 'analytics platform'] },
+  { field: 'municipal-operations', label: 'Municipal operations',
+    keywords: ['ward', 'municipal', 'works', 'crew', 'inspection', 'operations'] },
 ];
 
 const VALID_FIELDS = new Set(FIELD_TAXONOMY.map((f) => f.field));
@@ -237,6 +267,11 @@ export interface DiscoveryFilters {
   maxPilotDurationDays?: number;
   maxPilotBudget?: number;
   city?: string;
+  stage?: string;
+  /** Page size. Capped server-side; a client cannot ask for everything. */
+  limit?: number;
+  offset?: number;
+  sort?: 'deployments' | 'readiness' | 'name' | 'updated';
 }
 
 const READINESS_ORDER: ReadinessLevel[] = [
@@ -276,14 +311,39 @@ export async function discoverStartups(
   if (filters.cybersecurityProvided) {
     where.cybersecurityStatus = { not: AssuranceStatus.NOT_PROVIDED };
   }
+  if (filters.stage) where.stage = filters.stage;
   if (filters.minReadiness) {
     const allowed = READINESS_ORDER.slice(READINESS_ORDER.indexOf(filters.minReadiness));
     where.procurementReadiness = { in: allowed };
   }
 
+  /*
+   * The count is a separate query against the same predicate, so "342 results"
+   * is the number of rows that actually match rather than the length of the
+   * page being shown. Deriving it from the page would understate every result
+   * set larger than one page.
+   */
+  const total = await prisma.startup.count({ where });
+
+  // Capped regardless of what the client asks for: at 500+ companies an
+  // unbounded query is one request away from sending the whole table.
+  const take = Math.min(Math.max(filters.limit ?? 24, 1), 60);
+  const skip = Math.max(filters.offset ?? 0, 0);
+
+  const orderBy: Prisma.StartupOrderByWithRelationInput[] =
+    filters.sort === 'name'
+      ? [{ legalName: 'asc' }]
+      : filters.sort === 'readiness'
+        ? [{ procurementReadiness: 'desc' }, { deploymentCount: 'desc' }]
+        : filters.sort === 'updated'
+          ? [{ updatedAt: 'desc' }]
+          : [{ deploymentCount: 'desc' }, { legalName: 'asc' }];
+
   const startups = await prisma.startup.findMany({
     where,
-    orderBy: [{ deploymentCount: 'desc' }, { legalName: 'asc' }],
+    take,
+    skip,
+    orderBy,
     select: {
       id: true, legalName: true, displayName: true, oneLineDescription: true,
       sector: true, city: true, state: true, teamSize: true,
@@ -300,7 +360,11 @@ export async function discoverStartups(
 
   return {
     startups,
-    total: startups.length,
+    total,
+    shown: startups.length,
+    offset: skip,
+    limit: take,
+    hasMore: skip + startups.length < total,
     /** Travels with the results so the caveat cannot be separated from them. */
     disclaimer:
       'Companies on this platform matching your filters. Ordering is by recorded deployments, not by suitability — suitability is challenge-specific and is scored only once a challenge exists.',
