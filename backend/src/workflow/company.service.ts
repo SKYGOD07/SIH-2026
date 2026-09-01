@@ -620,3 +620,112 @@ export async function getStartupDocuments(u: UserProfile | null, startupId: stri
 export async function comparisonRow(startupId: string) {
   return prisma.startup.findUnique({ where: { id: startupId }, select: GOVERNMENT_VISIBLE });
 }
+
+/* ------------------------------------------------------------------ */
+/* The report card                                                     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One company, positioned against its own field.
+ *
+ * A dossier answers "what is this company?". A report card answers the question
+ * an officer actually has next: **"is that good?"** — which a lone number cannot.
+ * Eleven deployments means nothing until you know the field's median is three.
+ *
+ * Every aggregate is computed in SQL over the whole field, not over a page of
+ * results, so a percentile is a percentile rather than a rank within whatever
+ * the browser happened to load. `origin` is explicit, as on every query that
+ * feeds a decision.
+ */
+export async function companyReport(u: UserProfile, startupId: string) {
+  if (u.role !== UserRole.GOVERNMENT_OFFICER && u.role !== UserRole.EVALUATOR && u.role !== UserRole.ADMIN) {
+    throw new AppError('This view is limited to government and evaluator accounts', 403);
+  }
+
+  const company = await prisma.startup.findUnique({
+    where: { id: startupId },
+    select: {
+      ...GOVERNMENT_VISIBLE,
+      documents: { select: { category: true } },
+      _count: { select: { documents: true, participations: true, pilots: true, responses: true } },
+    },
+  });
+  if (!company) throw new AppError('No such company', 404);
+
+  const peers = await prisma.startup.findMany({
+    where: { sector: company.sector },
+    select: {
+      id: true,
+      deploymentCount: true,
+      teamSize: true,
+      estimatedPilotBudget: true,
+      procurementReadiness: true,
+      pilotDurationDays: true,
+    },
+  });
+
+  /** Percentile by rank. Stated as "n of N", never as a bare percentile. */
+  const positionOf = (value: number | null, key: 'deploymentCount' | 'teamSize') => {
+    if (value === null) return null;
+    const vals = peers.map((p) => p[key]).filter((v): v is number => v !== null);
+    if (vals.length === 0) return null;
+    const below = vals.filter((v) => v < value).length;
+    return { rank: vals.length - below, of: vals.length, percentile: Math.round((below / vals.length) * 100) };
+  };
+
+  const median = (xs: number[]) => {
+    if (!xs.length) return null;
+    const s = [...xs].sort((a, b) => a - b);
+    const m = Math.floor(s.length / 2);
+    return s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2);
+  };
+
+  /** Deployment histogram for the field, with the company's own bucket marked. */
+  const BUCKETS: [string, number, number][] = [
+    ['0', 0, 0], ['1–2', 1, 2], ['3–6', 3, 6],
+    ['7–14', 7, 14], ['15–29', 15, 29], ['30+', 30, Number.MAX_SAFE_INTEGER],
+  ];
+  const own = company.deploymentCount ?? 0;
+  const histogram = BUCKETS.map(([label, lo, hi]) => ({
+    label,
+    count: peers.filter((p) => (p.deploymentCount ?? 0) >= lo && (p.deploymentCount ?? 0) <= hi).length,
+    isOwn: own >= lo && own <= hi,
+  }));
+
+  // Documents by category, counted rather than asserted from a checklist.
+  const byCategory = new Map<string, number>();
+  company.documents.forEach((d) => {
+    const k = d.category ?? 'OTHER';
+    byCategory.set(k, (byCategory.get(k) ?? 0) + 1);
+  });
+
+  return {
+    company: { ...company, documents: undefined },
+    field: {
+      sector: company.sector,
+      peerCount: peers.length,
+      medianDeployments: median(peers.map((p) => p.deploymentCount ?? 0)),
+      medianTeamSize: median(peers.map((p) => p.teamSize).filter((v): v is number => v !== null)),
+      medianPilotDays: median(peers.map((p) => p.pilotDurationDays).filter((v): v is number => v !== null)),
+      readinessSpread: (['NOT_ASSESSED', 'LOW', 'MODERATE', 'HIGH'] as const).map((level) => ({
+        level,
+        count: peers.filter((p) => p.procurementReadiness === level).length,
+        isOwn: company.procurementReadiness === level,
+      })),
+    },
+    position: {
+      deployments: positionOf(company.deploymentCount, 'deploymentCount'),
+      teamSize: positionOf(company.teamSize, 'teamSize'),
+    },
+    histogram,
+    documentsByCategory: [...byCategory.entries()]
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => b.count - a.count),
+    signals: signals(company as never),
+    gaps: completeness(company as never).requiredMissing,
+    disclaimer:
+      company.origin === 'DEMO'
+        ? 'Synthetic demonstration record. Not a real company, and no figure here is a government record.'
+        : 'Company-stated information. Not independently verified except where a source is cited.',
+  };
+}

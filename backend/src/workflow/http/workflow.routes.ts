@@ -82,6 +82,7 @@ router.post(
 
 /* --- the government's dossier and document vault on a company --- */
 
+router.get('/startups/:startupId/report', h((req, u) => company.companyReport(u, req.params.startupId)));
 router.get('/startups/:startupId/dossier', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const data = await company.governmentDossier(req.profile || null, req.params.startupId);
