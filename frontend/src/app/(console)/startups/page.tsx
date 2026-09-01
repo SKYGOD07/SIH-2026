@@ -71,13 +71,13 @@ export default async function StartupsPage() {
     <>
       <ConsoleHeader
         title="Startups Register"
-        subtitle="5 Simulated Startups · DEMO Scenario Ingested"
+        subtitle="Registered Startups"
         source={source}
       />
 
-      <section aria-label="Demo Companies">
+      <section aria-label="Registered Companies">
         <SectionHead
-          title="Ingested Startups — SIH 2026 Simulation"
+          title="Registered Startups"
           meta={`${startups.length} Registered Companies`}
         />
 
@@ -85,10 +85,10 @@ export default async function StartupsPage() {
           <Card className="py-12 text-center">
             <Icon name="alert" className="mx-auto h-8 w-8 text-risk mb-2" />
             <p className="font-display text-[0.875rem] font-bold text-chalk">
-              No demo startups discovered
+              No startups discovered
             </p>
             <p className="mt-1 text-[0.78125rem] text-chalk/50">
-              Run <code className="font-mono text-signal">npm run demo:seed</code> in backend to ingest the 5 simulated startups.
+              Run <code className="font-mono text-signal">npm run demo:seed</code> in backend to ingest registered startups.
             </p>
           </Card>
         ) : (
@@ -100,7 +100,6 @@ export default async function StartupsPage() {
                     <span className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-chalk/40">
                       {s.sector}
                     </span>
-                    <Pill tone="signal">DEMO</Pill>
                   </div>
 
                   <h3 className="font-display text-[1.0625rem] font-extrabold text-chalk">

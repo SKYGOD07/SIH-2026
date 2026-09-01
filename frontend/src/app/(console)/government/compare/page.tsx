@@ -33,6 +33,21 @@ const AXES = [
   'Pilot readiness',
 ] as const;
 
+/**
+ * Short forms for the radar rim.
+ *
+ * The full names overflowed the viewBox and rendered clipped ("…RNMENT
+ * EXPOSURE"). Widening the box would shrink the polygon instead; the table
+ * below carries the unabbreviated names, so the rim can be terse.
+ */
+const AXIS_SHORT: Record<string, string> = {
+  'Deployment record': 'Deployments',
+  'Team capacity': 'Team',
+  'Evidence on file': 'Evidence',
+  'Government exposure': 'Govt exposure',
+  'Pilot readiness': 'Pilot ready',
+};
+
 interface Row {
   id: string;
   legalName: string;
@@ -310,9 +325,9 @@ function RadarChart({
   allRows: Row[];
   nameOf: (r: Row) => string;
 }) {
-  const size = 360;
+  const size = 380;
   const c = size / 2;
-  const r = c - 62;
+  const r = c - 74;
   const n = AXES.length;
   const pt = (axis: number, value: number) => {
     const a = (Math.PI * 2 * axis) / n - Math.PI / 2;
@@ -355,7 +370,7 @@ function RadarChart({
       })}
 
       {AXES.map((a, i) => {
-        const [x, y] = pt(i, 1.2);
+        const [x, y] = pt(i, 1.17);
         return (
           <text
             key={a}
@@ -366,7 +381,7 @@ function RadarChart({
             className="fill-chalk/50"
             style={{ fontSize: 9.5, fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}
           >
-            {a}
+            {AXIS_SHORT[a] ?? a}
           </text>
         );
       })}

@@ -28,7 +28,6 @@ export function SessionPanel() {
           <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal font-bold">
             NO SESSION
           </span>
-          <span className="font-mono text-[0.5625rem] text-chalk/40 uppercase">Demo simulation</span>
         </div>
 
         <p className="text-[0.75rem] leading-relaxed text-chalk/60">

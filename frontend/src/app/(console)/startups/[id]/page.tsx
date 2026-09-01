@@ -49,15 +49,6 @@ export default async function GovernmentAnalysisPage({ params }: PageProps) {
         subtitle={`${company.sector} · ${company.city || ''} ${company.state || ''}`}
       />
 
-      {/* --- DEMO SIMULATION NOTICE --- */}
-      <div className="rounded-[12px] border border-signal/30 bg-signal/[0.08] px-4 py-3 text-chalk">
-        <div className="flex items-center gap-2 font-mono text-[0.75rem] font-bold uppercase tracking-[0.1em] text-signal">
-          <Pill tone="signal">DEMO SIMULATION</Pill>
-          <span>Internal Hackathon Scenario</span>
-        </div>
-        <p className="mt-1.5 text-[0.78125rem] leading-relaxed text-chalk/80">{disclaimer}</p>
-      </div>
-
       {/* --- COMPANY SNAPSHOT --- */}
       <section aria-label="Company Snapshot">
         <SectionHead title="Company Snapshot" meta={company.legalName} />

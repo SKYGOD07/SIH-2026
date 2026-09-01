@@ -167,11 +167,6 @@ function ChallengeReview() {
       <section aria-label="The problem">
         <SectionHead title="The problem" />
         <div className="card p-5">
-          {data.origin === 'DEMO' && (
-            <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-chalk/40">
-              Demo scenario — not a government procurement notice
-            </span>
-          )}
           <p className="mt-2.5 max-w-[70ch] text-[0.9375rem] leading-relaxed text-chalk/75">
             {data.problemStatement}
           </p>

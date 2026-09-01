@@ -189,7 +189,6 @@ function StartupHome() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <Eyebrow>Open</Eyebrow>
-                    {c.origin === 'DEMO' && <Eyebrow muted>Demo scenario</Eyebrow>}
                   </div>
                   <p className="mt-2 font-display text-[1rem] font-bold leading-tight text-chalk">
                     {c.title}

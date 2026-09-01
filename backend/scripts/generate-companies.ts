@@ -252,10 +252,34 @@ const FIELDS: Field[] = [
 ];
 
 const SUFFIX = ['Technologies', 'Systems', 'Solutions', 'Labs', 'Networks', 'Innovations', 'Analytics', 'Ventures'];
-const CITIES: [string, number][] = [
-  ['Pune', 22], ['Mumbai', 20], ['Nagpur', 10], ['Nashik', 9], ['Thane', 8],
-  ['Aurangabad', 6], ['Solapur', 5], ['Kolhapur', 5], ['Amravati', 4],
-  ['Pimpri-Chinchwad', 5], ['Nanded', 3], ['Sangli', 3],
+/**
+ * Where the companies are.
+ *
+ * Maharashtra dominates because the demonstration is a Maharashtra one, but it
+ * does not hold everything: a state procurement platform receives responses from
+ * companies headquartered elsewhere, and a population that is 99% one state
+ * makes the state filter a control that cannot change a result. A filter that
+ * cannot change a result should not be on the screen.
+ *
+ * The shares below are a demonstration shape, not a measured distribution of
+ * Indian startups. Nothing here is sourced from a registry.
+ */
+const LOCATIONS: [string, number, string[]][] = [
+  ['Maharashtra', 55, ['Pune', 'Mumbai', 'Nagpur', 'Nashik', 'Thane', 'Aurangabad',
+    'Solapur', 'Kolhapur', 'Amravati', 'Pimpri-Chinchwad', 'Nanded', 'Sangli']],
+  ['Karnataka', 8, ['Bengaluru', 'Mysuru', 'Hubballi']],
+  ['Gujarat', 6, ['Ahmedabad', 'Surat', 'Gandhinagar', 'Vadodara']],
+  ['Delhi', 6, ['New Delhi']],
+  ['Tamil Nadu', 5, ['Chennai', 'Coimbatore', 'Madurai']],
+  ['Telangana', 5, ['Hyderabad', 'Warangal']],
+  ['Uttar Pradesh', 4, ['Lucknow', 'Noida', 'Kanpur', 'Varanasi']],
+  ['Rajasthan', 3, ['Jaipur', 'Jodhpur', 'Udaipur']],
+  ['Madhya Pradesh', 3, ['Indore', 'Bhopal', 'Jabalpur']],
+  ['West Bengal', 3, ['Kolkata', 'Siliguri']],
+  ['Kerala', 2, ['Kochi', 'Thiruvananthapuram']],
+  ['Haryana', 2, ['Gurugram', 'Faridabad']],
+  ['Punjab', 2, ['Ludhiana', 'Mohali']],
+  ['Odisha', 2, ['Bhubaneswar']],
 ];
 const STAGES: [string, number][] = [
   ['IDEA', 8], ['MVP', 22], ['EARLY_REVENUE', 30], ['GROWTH', 27], ['SCALE', 13],
@@ -300,13 +324,23 @@ function buildCompany(i: number, field: Field, used: Set<string>) {
       [AssuranceStatus.PARTIALLY_VERIFIED, 10],
     ]);
 
-  const city = weighted(r, CITIES);
-  const govtExperience = weighted(r, [
-    ['No government engagement is recorded.', 40],
-    ['Has responded to departmental requirements previously.', 30],
-    ['Has delivered against a municipal work order.', 20],
-    ['Has delivered across more than one department.', 10],
-  ] as [string, number][]);
+  const location = weighted<[string, number, string[]]>(
+    r,
+    LOCATIONS.map((l) => [l, l[1]] as [[string, number, string[]], number]),
+  );
+  const state = location[0];
+  const city = pick(r, location[2]);
+
+  /*
+   * Left null on purpose.
+   *
+   * Government experience is a *counted* property — participations, work orders
+   * and pilots — and `generate-evidence.ts` writes this sentence afterwards from
+   * the rows it actually created. A sentence rolled here would be independent
+   * prose that drifts from the records the filter reads, and the dossier would
+   * end up asserting delivery history the participation table does not hold.
+   */
+  const govtExperience: string | null = null;
 
   return {
     legalName: `${name} Private Limited`,
@@ -318,7 +352,7 @@ function buildCompany(i: number, field: Field, used: Set<string>) {
     sector: field.sector,
     industry: field.industry,
     stage,
-    state: 'Maharashtra',
+    state,
     city,
     foundedYear: 2016 + Math.floor(r() * 9),
     teamSize,
@@ -434,11 +468,14 @@ async function main() {
   const rows: ReturnType<typeof buildCompany>[] = [];
   let index = 0;
 
+  const reconcile: ReturnType<typeof buildCompany>[] = [];
+
   for (const field of FIELDS) {
     const want = Math.round((field.weight / totalWeight) * TARGET);
     for (let k = 0; k < want; k += 1) {
       const c = buildCompany(index++, field, usedNames);
-      if (!existingLegal.has(c.legalName)) rows.push(c);
+      if (existingLegal.has(c.legalName)) reconcile.push(c);
+      else rows.push(c);
     }
   }
 
@@ -453,22 +490,114 @@ async function main() {
   }
   process.stdout.write('\n');
 
+  /*
+   * Reconciliation.
+   *
+   * The first version of this script only ever inserted, which made it
+   * idempotent in the weak sense — it did not duplicate — but not in the useful
+   * one: a change to the generator (a wider spread of states, a corrected field
+   * weighting) reached only companies that did not exist yet, and the dataset
+   * drifted permanently away from what the script says it produces. Re-running
+   * now brings existing synthetic rows back to their generated values.
+   *
+   * Restricted to rows this script owns, keyed on legal name. A team-owned
+   * company is never in `reconcile`, because its name is never generated, so
+   * nothing here can reach CIVORA, HIX, Crop Saver, WaterManager or EnviroPlus
+   * — and nothing here touches a document, response, match or pilot in any case.
+   */
+  let reconciled = 0;
+  for (let i = 0; i < reconcile.length; i += 50) {
+    const slice = reconcile.slice(i, i + 50);
+    // `updateMany` rather than `update`: `legalName` is not a unique column, and
+    // adding a constraint to make it one would reject two genuinely distinct
+    // companies that happen to share a registered name.
+    const res = await prisma.$transaction(
+      slice.map(({ legalName, displayName, origin, ...fields }) =>
+        prisma.startup.updateMany({ where: { legalName }, data: fields }),
+      ),
+    );
+    reconciled += res.reduce((n, r) => n + r.count, 0);
+    process.stdout.write(`\r  reconciled ${reconciled}/${reconcile.length}`);
+  }
+  if (reconcile.length) process.stdout.write('\n');
+
+  /*
+   * Legacy demonstration rows.
+   *
+   * A handful of companies predate this generator (they came from `demo.ts`)
+   * and carry a free-text stage — "Growth / Seed", "Early Stage" — or none at
+   * all. The stage filter reads an enum vocabulary, so those rows are invisible
+   * to it however the officer sets the control, which is the worst kind of
+   * filter bug: it silently removes candidates rather than failing.
+   *
+   * This maps the wording onto the vocabulary and changes nothing else. It is
+   * the one normalisation that reaches the team-owned companies, and it is a
+   * relabelling, not a rewrite — no document, response, match or pilot is
+   * touched, and the mapping is printed so it can be checked.
+   */
+  const STAGE_ALIASES: [RegExp, string][] = [
+    [/scale|series b|series c/i, 'SCALE'],
+    [/growth/i, 'GROWTH'],
+    [/early revenue|revenue|series a/i, 'EARLY_REVENUE'],
+    [/seed|early stage/i, 'EARLY_REVENUE'],
+    [/mvp|pilot|prototype/i, 'MVP'],
+    [/idea|concept|pre-seed/i, 'IDEA'],
+  ];
+  const CANON = new Set(['IDEA', 'MVP', 'EARLY_REVENUE', 'GROWTH', 'SCALE']);
+
+  const offVocabulary = await prisma.startup.findMany({
+    where: { OR: [{ stage: null }, { stage: { notIn: [...CANON] } }] },
+    select: { id: true, legalName: true, displayName: true, stage: true, industry: true, sector: true },
+  });
+
+  const relabelled: string[] = [];
+  for (const row of offVocabulary) {
+    const alias = row.stage ? STAGE_ALIASES.find(([re]) => re.test(row.stage as string)) : undefined;
+    // With nothing to read, MVP is the honest floor: it claims a working
+    // product and no revenue, which is the least the record can support.
+    const stage = alias ? alias[1] : 'MVP';
+    await prisma.startup.update({
+      where: { id: row.id },
+      data: {
+        stage,
+        // Backfilled only where absent, from the field the company is already
+        // filed under. Never overwritten.
+        ...(row.industry ? {} : { industry: FIELDS.find((f) => f.sector === row.sector)?.industry ?? 'Other' }),
+      },
+    });
+    relabelled.push(`${row.displayName ?? row.legalName}: ${row.stage ?? '(none)'} -> ${stage}`);
+  }
+
   const total = await prisma.startup.count();
   const bySector = await prisma.startup.groupBy({ by: ['sector'], _count: true });
   const verified = await prisma.startup.count({ where: { origin: 'VERIFIED' } });
 
   console.log(`\nteam companies created : ${teamCreated}`);
   console.log(`synthetic created      : ${created}`);
+  console.log(`synthetic reconciled   : ${reconciled}`);
+  console.log(`stage relabelled       : ${relabelled.length}`);
   console.log(`total companies        : ${total}`);
   console.log(`fields                 : ${bySector.length}`);
   console.log(`marked VERIFIED        : ${verified}  (must be 0)`);
+  if (relabelled.length) {
+    console.log('\nstage relabelling (free text -> vocabulary):');
+    relabelled.slice(0, 25).forEach((l) => console.log(`  ${l}`));
+    if (relabelled.length > 25) console.log(`  ... and ${relabelled.length - 25} more`);
+  }
   console.log('\nlargest fields:');
   bySector
     .sort((a, b) => b._count - a._count)
     .slice(0, 8)
     .forEach((s) => console.log(`  ${String(s._count).padStart(3)}  ${s.sector}`));
+  const byState = await prisma.startup.groupBy({ by: ['state'], _count: true });
+  console.log('\nstates:');
+  byState
+    .sort((a, b) => b._count - a._count)
+    .forEach((s) => console.log(`  ${String(s._count).padStart(3)}  ${s.state ?? '(none)'}`));
+
   console.log('\nSynthetic demonstration dataset inspired by common public-sector innovation');
   console.log('domains. Not Maharashtra funding history, and no company in it exists.');
+  console.log('Next: `npm run demo:generate-evidence`, then `npm run demo:verify`.');
 }
 
 main()
