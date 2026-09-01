@@ -220,6 +220,23 @@ export function Nav() {
     if (!lenis) return;
     if (open) lenis.stop();
     else lenis.start();
+
+    /*
+     * Released on unmount, unconditionally.
+     *
+     * This nav renders on the landing route only, so opening the menu and
+     * clicking through to the console unmounts it while `open` is still true —
+     * leaving `stop()` as the last call anyone made. Scrolling then stays dead
+     * for the rest of the session, on a route where this component no longer
+     * exists to release it and with no control on screen that would.
+     *
+     * Running on every dependency change is harmless: the cleanup fires before
+     * the next effect body, so opening the menu is start-then-stop and ends
+     * stopped, which is what it should be.
+     */
+    return () => {
+      lenis.start();
+    };
   }, [open, lenis]);
 
   /* Escape closes, and focus goes back to the control that opened it. */
