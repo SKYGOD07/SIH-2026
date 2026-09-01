@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead, Card } from '@/components/console/primitives';
+import { DecisionQueue } from '@/components/console/DecisionQueue';
 import { Figure } from '@/components/console/Figure';
 import { Icon } from '@/components/console/Icon';
 import { PROGRAMME_INTELLIGENCE } from '@/data/programs';
@@ -64,55 +65,24 @@ function QueueSkeleton() {
 }
 
 export default function ConsolePage() {
-  /*
-   * Counted, not asserted. There are no challenges on the platform, so this is
-   * zero — and zero here is a real measurement, unlike the em-dash used for the
-   * programme figures we simply have not ingested.
-   */
-  const decisions = 0;
-
   return (
     <>
       <ConsoleHeader
         title="What needs you"
-        subtitle={
-          decisions === 0
-            ? 'Nothing is waiting on a decision.'
-            : `${decisions} item${decisions === 1 ? '' : 's'} need your attention.`
-        }
+        subtitle="Challenges you own, and where each one sits."
         source="demonstration"
       />
 
       {/* --- 1. the queue --------------------------------------------- */}
       <section aria-label="Decision queue">
-        <SectionHead title="Decision queue" meta={`${decisions} open`} />
-
-        <Card className="p-0">
-          <div className="border-b border-chalk/[0.08] px-[1.125rem] py-5">
-            <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal">
-              Awaiting data
-            </span>
-            <p className="mt-2.5 max-w-[62ch] text-[0.8125rem] leading-relaxed text-chalk/55">
-              This queue fills when a department creates a challenge on the platform and the
-              matching engine has startup records to run against. Neither exists yet, so it is
-              empty — rather than populated with an illustrative pilot that would look exactly
-              like a real one.
-            </p>
-            <Link
-              href="/templates"
-              data-cursor="open"
-              className="mt-3.5 inline-flex items-center gap-1.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-chalk transition-colors hover:text-signal"
-            >
-              Start from the problem statement template
-              <Icon name="upRight" className="h-2.5 w-2.5" strokeWidth={2.2} />
-            </Link>
-          </div>
-
-          <ul>
-            <QueueSkeleton />
-            <QueueSkeleton />
-          </ul>
-        </Card>
+        <SectionHead title="Decision queue" />
+        {/*
+          Read from the workflow API rather than stated here. A hardcoded
+          empty state was correct while the platform held nothing and became
+          a lie the moment a challenge existed — and worse, it is
+          indistinguishable from a query that has broken.
+        */}
+        <DecisionQueue />
       </section>
 
       {/* --- 2. what the platform knows -------------------------------- */}

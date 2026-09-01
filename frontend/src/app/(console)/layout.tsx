@@ -3,7 +3,7 @@ import { RightRail } from '@/components/console/RightRail';
 import { MobileNav } from '@/components/console/MobileNav';
 import { MaximizeReveal } from '@/components/console/MaximizeReveal';
 import { fetchDashboard } from '@/lib/api/sarthi';
-import { buildRailContext, SESSION } from '@/lib/console/rail';
+import { buildRailContext } from '@/lib/console/rail';
 import { DEMO_NOTICE } from '@/data/challenges';
 import { RequireAuth } from '@/components/auth/RequireAuth';
 
@@ -54,8 +54,6 @@ export default async function ConsoleLayout({ children }: { children: React.Reac
         </div>
 
         <RightRail
-          sessionNotice={SESSION.notice}
-          sessionRequires={SESSION.requires}
           today={rail.today}
           events={rail.events}
           upcoming={rail.upcoming}
