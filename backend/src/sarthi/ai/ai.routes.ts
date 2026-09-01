@@ -124,4 +124,38 @@ router.post('/test', async (_req: Request, res: Response) => {
   }
 });
 
+/* ------------------------------------------------------------------ POST /ai/analyze-startup */
+
+/**
+ * Trigger AI-assisted analysis for a startup profile using Ollama.
+ *
+ * Authenticated or demo endpoint. Uses database facts as truth, ground prompt strictly.
+ * Returns structured analysis or fallback explanation if Ollama is unreachable.
+ */
+router.post('/analyze-startup', async (req: Request, res: Response) => {
+  const { startupId, challengeId } = req.body as { startupId?: string; challengeId?: string };
+
+  if (!startupId) {
+    return res.status(400).json({ success: false, error: 'startupId is required' });
+  }
+
+  try {
+    const { analyzeStartupWithAI } = await import('./ai.service');
+    const dummyUser = req.profile ?? { id: '00000000-0000-0000-0000-000000000000' } as any;
+
+    const analysis = await analyzeStartupWithAI(dummyUser, startupId, challengeId);
+
+    return res.json({
+      success: true,
+      data: analysis,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({
+      success: false,
+      error: `AI analysis request failed: ${message}`,
+    });
+  }
+});
+
 export default router;
