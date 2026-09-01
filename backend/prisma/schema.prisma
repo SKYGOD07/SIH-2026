@@ -128,7 +128,7 @@ model UserProfile {
   /// Set only for startup users. Government and evaluator users have no
   /// Startup, which is why this is nullable rather than a required relation.
   startup   Startup? @relation(fields: [startupId], references: [id], onDelete: SetNull)
-  startupId String?
+  startupId String?  @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -196,6 +196,32 @@ model AIProviderConnection {
 // Startup intelligence
 // ------------------------------------------------------------------
 
+/// How far a claim has been stood up.
+///
+/// `NOT_PROVIDED` is the default on every field that uses this, and it is the
+/// important value: a company that has told us nothing about its security
+/// posture must read as *silent*, never as compliant. The interface says
+/// "cybersecurity evidence not provided", which is a fact, rather than leaving
+/// a blank a reader fills in optimistically.
+///
+/// `VERIFIED` is reserved for a claim backed by an `EvidenceSource`. Nothing in
+/// the onboarding form can set it — a company cannot verify itself.
+enum AssuranceStatus {
+  NOT_PROVIDED
+  SELF_DECLARED
+  PARTIALLY_VERIFIED
+  VERIFIED
+}
+
+/// A graded reading, used where the honest answer is a band rather than a
+/// boolean. `NOT_ASSESSED` is again the default and again the point.
+enum ReadinessLevel {
+  NOT_ASSESSED
+  LOW
+  MODERATE
+  HIGH
+}
+
 /// A company. Facts about the company only.
 ///
 /// There is deliberately no score on this model. Suitability is a property of a
@@ -216,6 +242,68 @@ model Startup {
   website     String?
   /// DPIIT recognition status as published, verbatim. Not an inference.
   dpiitStatus String?
+
+  // --- identity ---
+  /// One sentence, used wherever the company is listed rather than opened.
+  oneLineDescription String?
+  foundedYear        Int?
+  teamSize           Int?
+  /// Who the founders are and what they have done, in prose. Deliberately not
+  /// a structured people table: named individuals with roles and experience are
+  /// personal data, and the government side needs the capability signal, not a
+  /// staff directory.
+  founderSummary     String?
+  /// Roles and their relevant experience, without contact details. Json because
+  /// the shape varies by company and nothing here is queried or scored.
+  keyTeamMembers     Json?
+
+  // --- what they build ---
+  /// The problem the company exists to solve, in its own words.
+  problemSolved      String?
+  solutionSummary    String?
+  productSummary     String?
+  /// Who uses it. Feeds nothing automatically; a reader needs it to judge fit.
+  targetUsers        String?
+  deploymentModel    String?
+  geographicCoverage String?
+
+  // --- traction ---
+  //
+  // All optional. A company must not have to disclose commercial figures
+  // simply to hold an account, and none of these is weighted as quality:
+  // capital raised measures investor conviction about a company's future, not
+  // whether its solution works in a specific ward.
+  revenueBand            String?
+  customerCount          Int?
+  deploymentCount        Int?
+  commercializationStage String?
+
+  // --- government exposure ---
+  /// Prose only. The *countable* signal is `participations`, which cites a
+  /// programme and a source; this field cannot manufacture one.
+  governmentExperienceSummary String?
+
+  // --- assurance ---
+  //
+  // Every one of these defaults to the absent state. A profile that has said
+  // nothing reads as silent rather than as satisfied.
+  complianceStatus       AssuranceStatus @default(NOT_PROVIDED)
+  cybersecurityStatus    AssuranceStatus @default(NOT_PROVIDED)
+  dataPrivacyStatus      AssuranceStatus @default(NOT_PROVIDED)
+  procurementReadiness   ReadinessLevel  @default(NOT_ASSESSED)
+  requiredCertifications String[]
+
+  // --- pilot readiness ---
+  //
+  // What the company says it *can* do. Actual pilot values live on `Pilot`,
+  // and a pilot that departs from these numbers must never edit them back.
+  pilotDurationDays          Int?
+  pilotTeamSummary           String?
+  infrastructureRequirements String?
+  implementationDependencies String?
+  deploymentRequirements     String?
+  estimatedPilotBudget       Decimal? @db.Decimal(14, 2)
+  scalingRequirements        String?
 
   /// What the company can actually do, and with what. These are the axes the
   /// matching engine scores against a challenge — without them `problemFit`
@@ -241,7 +329,10 @@ model Startup {
   matches        StartupMatch[]
   responses      ChallengeResponse[]
   pilots         Pilot[]
-  members        UserProfile[]
+  /// The one startup user who has claimed this company. Enforced 1:1 by a
+  /// unique constraint on `UserProfile.startupId`, so two people cannot claim
+  /// the same demonstration slot.
+  owner          UserProfile?
 
   @@index([scenarioId])
   @@index([sector])
