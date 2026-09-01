@@ -98,7 +98,7 @@ export default function StartupSignupPage() {
       <AuthShell
         eyebrow="Startup · Step 2 of 3"
         title="Verify your email"
-        lede="Enter the 6-digit code we sent you. Verification is required once; ordinary sign-in afterwards is email and password only."
+        lede="Check your inbox! Enter the 6-digit code sent to your email, or click the 'Confirm email address' button inside the email. Verification is required once."
         back={{ href: '/login/startup', label: 'Back to sign in' }}
       >
         <form onSubmit={verify} noValidate>
