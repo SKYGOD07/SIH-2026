@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead } from '@/components/console/primitives';
 import { DecisionQueue } from '@/components/console/DecisionQueue';
+import { PortfolioOverview } from '@/components/console/PortfolioOverview';
 import { RoleGate } from '@/components/auth/RoleGate';
 
 export const metadata: Metadata = {
@@ -35,6 +36,16 @@ export default function GovernmentDashboard() {
       <section aria-label="Decision queue">
         <SectionHead title="Decision queue" />
         <DecisionQueue />
+      </section>
+
+      {/*
+        What the platform can reach for. The queue answers "what needs me
+        today"; without this the console reads as empty even while holding
+        several hundred companies across two dozen fields.
+      */}
+      <section aria-label="Platform overview">
+        <SectionHead title="What the platform holds" />
+        <PortfolioOverview />
       </section>
     </RoleGate>
   );
