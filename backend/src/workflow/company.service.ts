@@ -496,6 +496,28 @@ export async function governmentDossier(u: UserProfile, startupId: string) {
         },
         orderBy: { createdAt: 'desc' },
       },
+      documents: {
+        select: {
+          id: true,
+          category: true,
+          label: true,
+          createdAt: true,
+          document: {
+            select: {
+              id: true,
+              kind: true,
+              title: true,
+              publisher: true,
+              url: true,
+              retrievedAt: true,
+              origin: true,
+              fileHash: true,
+              originalPath: true,
+              extractedText: true,
+            },
+          },
+        },
+      },
       source: { select: { publisher: true, title: true, url: true, retrievedAt: true } },
     },
   });
@@ -506,22 +528,92 @@ export async function governmentDossier(u: UserProfile, startupId: string) {
     participations: unknown[];
     fundingRounds: unknown[];
     pilots: { status: string; outcome: string | null }[];
+    documents: { category: string; document: { title: string; kind: string; origin: string } }[];
+  };
+
+  // Calculate Document Readiness counts by category
+  const categoriesList = [
+    'CORPORATE_LEGAL',
+    'GOVERNMENT_FUNDING',
+    'FINANCIAL',
+    'COMPLIANCE',
+    'TECHNOLOGY',
+    'PILOT',
+    'AI_GOVERNANCE',
+    'OWNERSHIP',
+    'KYC',
+    'CHECKLIST',
+    'OTHER',
+  ];
+
+  const documentReadiness: Record<string, number> = {};
+  categoriesList.forEach((c) => (documentReadiness[c] = 0));
+  s.documents.forEach((d) => {
+    documentReadiness[d.category] = (documentReadiness[d.category] || 0) + 1;
+  });
+
+  const totalDocs = s.documents.length;
+
+  // Deterministic WHY THIS STARTUP explanation
+  const whyThisStartup = {
+    summary: `${startup.displayName || startup.legalName} addresses ${startup.problemSolved || 'the challenge domain'} via ${startup.solutionSummary || 'its proprietary solution'}.`,
+    strengths: [
+      `Structured dossier backed by ${totalDocs} ${startup.origin} evidence documents across ${Object.values(documentReadiness).filter(v => v > 0).length} categories.`,
+      `Technologies & capabilities aligned: ${(startup.technologies || []).join(', ') || 'N/A'}.`,
+      `Pilot readiness: ${startup.pilotDurationDays ? `${startup.pilotDurationDays} days deployment plan` : 'Self-declared readiness'}.`,
+    ],
+    limitations: [
+      startup.origin === DataOrigin.DEMO
+        ? 'Records belong to an internal DEMO simulation workspace and require formal verification before real procurement.'
+        : 'Self-declared assertions require verification against official sources.',
+    ],
   };
 
   return {
     company: startup,
     signals: signals(s),
-    /**
-     * What the company has *not* evidenced. Surfaced as its own list rather
-     * than left for a reader to notice by absence — a gap nobody sees is a gap
-     * that gets treated as a pass.
-     */
+    documentReadiness,
+    totalDocuments: totalDocs,
+    whyThisStartup,
     gaps: completeness(s).requiredMissing,
     disclaimer:
       startup.origin === DataOrigin.DEMO
         ? 'Simulated company record, created for demonstration. Not a real company and not a government supplier.'
         : 'Company-stated information. Not independently verified except where a source is cited.',
   };
+}
+
+/**
+ * Get documents for a startup's document vault.
+ */
+export async function getStartupDocuments(u: UserProfile, startupId: string, categoryFilter?: string) {
+  if (u.role === UserRole.STARTUP && u.startupId !== startupId) {
+    throw new AppError('Startups can only access their own document vault', 403);
+  }
+
+  const docs = await prisma.startupDocument.findMany({
+    where: {
+      startupId,
+      ...(categoryFilter && categoryFilter !== 'ALL' ? { category: categoryFilter } : {}),
+    },
+    include: {
+      document: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return docs.map((d) => ({
+    id: d.id,
+    documentId: d.documentId,
+    title: d.label || d.document.title,
+    category: d.category,
+    kind: d.document.kind,
+    origin: d.document.origin,
+    fileHash: d.document.fileHash,
+    originalPath: d.document.originalPath,
+    extractedText: d.document.extractedText,
+    createdAt: d.createdAt,
+  }));
 }
 
 /** The candidate list for a challenge, as the comparison table needs it. */

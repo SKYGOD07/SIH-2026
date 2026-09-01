@@ -329,6 +329,7 @@ model Startup {
   matches        StartupMatch[]
   responses      ChallengeResponse[]
   pilots         Pilot[]
+  documents      StartupDocument[]
   /// The one startup user who has claimed this company. Enforced 1:1 by a
   /// unique constraint on `UserProfile.startupId`, so two people cannot claim
   /// the same demonstration slot.
@@ -911,6 +912,8 @@ model PilotEvidence {
   milestoneId String?
   metric      PilotMetric?    @relation(fields: [metricId], references: [id], onDelete: Cascade)
   metricId    String?
+  document    Document?       @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  documentId  String?
 
   label     String
   reference String
@@ -934,6 +937,7 @@ model PilotEvidence {
   @@index([pilotId])
   @@index([milestoneId])
   @@index([metricId])
+  @@index([documentId])
   @@index([status])
   @@map("pilot_evidence")
 }
@@ -1008,14 +1012,38 @@ model Document {
   source   EvidenceSource? @relation(fields: [sourceId], references: [id], onDelete: Restrict)
   sourceId String?
 
+  fileHash      String?
+  originalPath  String?
+  extractedText String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  chunks DocumentChunk[]
+  chunks           DocumentChunk[]
+  startupDocuments StartupDocument[]
+  pilotEvidences   PilotEvidence[]
 
   @@index([kind])
   @@index([origin])
   @@map("documents")
+}
+
+/// Association between a Startup and a Document dossier entry.
+model StartupDocument {
+  id         String   @id @default(uuid())
+  startup    Startup  @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startupId  String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  category   String
+  label      String?
+  createdAt  DateTime @default(now())
+
+  @@unique([startupId, documentId])
+  @@index([startupId])
+  @@index([documentId])
+  @@index([category])
+  @@map("startup_documents")
 }
 
 /// One retrievable passage.

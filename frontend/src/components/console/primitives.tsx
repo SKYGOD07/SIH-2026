@@ -22,13 +22,18 @@ export function Card({
   children,
   className,
   interactive = false,
+  onClick,
 }: {
   children: ReactNode;
   className?: string;
   interactive?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div className={cn('card p-[1.125rem]', interactive && 'card-interactive', className)}>
+    <div
+      onClick={onClick}
+      className={cn('card p-[1.125rem]', interactive && 'card-interactive', className)}
+    >
       {children}
     </div>
   );

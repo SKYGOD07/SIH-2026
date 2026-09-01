@@ -1,358 +1,575 @@
 /**
- * Demonstration workspace initialisation.
+ * Demonstration workspace initialisation & ZIP pack importer.
  *
- *   npm run demo:seed     create or update the workspace
- *   npm run demo:reset    delete it and everything it produced
+ * Commands:
+ *   npm run demo:seed          create or update the demo workspace and import ZIP packs
+ *   npm run demo:import-packs  import CIVORA & HIX ZIP packs into structured dossiers
+ *   npm run demo:reset         delete demo scenario records without touching real data
  *
- * Idempotent: every write is keyed on a stable natural key, so running it twice
- * updates rather than duplicates. That matters more than it sounds — a seed you
- * are afraid to re-run is a seed nobody re-runs, and the demonstration drifts.
- *
- * Three rules this script will not break:
- *
- *   1. **It creates no authentication accounts.** Real teammates sign up
- *      themselves and *claim* a company; a seeded auth user would be a fake
- *      person with a password nobody knows.
- *
- *   2. **Every record it writes is `DEMO`.** Nothing here is VERIFIED, nothing
- *      cites an invented source, and no company is described as real.
- *
- *   3. **It records no outcomes.** No `achievedValue`, no closed pilot, no
- *      scale decision. Those are produced by running the workflow, which is the
- *      thing being demonstrated — pre-baking them would demonstrate nothing.
+ * Rules:
+ *   1. Creates NO authentication accounts (real users sign up & claim companies).
+ *   2. Every imported record is origin = DEMO (never VERIFIED).
+ *   3. All 5 startups belong to SimulationScenario.
  */
-import { AssuranceStatus, DataOrigin, PrismaClient, ReadinessLevel, UserRole } from '@prisma/client';
+import {
+  AssuranceStatus,
+  DataOrigin,
+  DocumentKind,
+  PrismaClient,
+  ReadinessLevel,
+  UserRole,
+} from '@prisma/client';
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 import { scoreMatch } from '../src/workflow/matching';
 
 const prisma = new PrismaClient();
 
-const SCENARIO = 'SIH 2026 — Smart Water Innovation';
+const SCENARIO_NAME = 'SIH 2026 — Innovation Procurement Demo';
 
-/**
- * Five companies, deliberately unalike.
- *
- * If they were interchangeable the ranking would be noise and the comparison
- * screen would prove nothing. Each is strong on a different axis and visibly
- * weak on another, so the ordering the engine produces is explicable from the
- * inputs — which is the whole point of a deterministic matcher.
- */
-const COMPANIES = [
-  {
-    key: 'A',
-    legalName: 'Simulated Startup A — Water Analytics',
-    oneLineDescription: 'Analytics platform for municipal water loss (simulated company).',
-    sector: 'water-distribution',
-    technologies: ['ai', 'analytics', 'cloud'],
-    capabilities: ['demand-forecasting', 'anomaly-detection', 'reporting'],
-    problemSolved: 'Utilities hold meter data but cannot tell where losses occur.',
-    solutionSummary: 'Analytics over existing district meter data to localise probable loss zones.',
-    pilotDurationDays: 90,
-    pilotTeamSummary: 'Two data engineers and an analyst.',
-    infrastructureRequirements: 'Read access to district meter exports. No field hardware.',
-    deploymentRequirements: 'Cloud hosting; no on-site installation.',
-    teamSize: 11,
-    complianceStatus: AssuranceStatus.SELF_DECLARED,
-    cybersecurityStatus: AssuranceStatus.NOT_PROVIDED,
-    strength: 'strong software and analytics; no government delivery history',
-  },
-  {
-    key: 'B',
-    legalName: 'Simulated Startup B — IoT Leakage Detection',
-    oneLineDescription: 'Acoustic IoT leak detection for distribution networks (simulated company).',
-    sector: 'water-distribution',
-    technologies: ['iot', 'acoustic-sensing', 'edge-computing'],
-    capabilities: ['leak-detection', 'real-time-monitoring', 'field-deployment'],
-    problemSolved: 'Leaks in buried mains go undetected until they surface.',
-    solutionSummary:
-      'Acoustic sensors on the network stream to a gateway and localise leaks continuously.',
-    pilotDurationDays: 90,
-    pilotTeamSummary: 'Field engineering crew of four plus a deployment lead.',
-    infrastructureRequirements: 'Access to chambers and hydrants; municipal gateway connectivity.',
-    deploymentRequirements: 'Physical node installation across the pilot wards.',
-    teamSize: 18,
-    complianceStatus: AssuranceStatus.SELF_DECLARED,
-    cybersecurityStatus: AssuranceStatus.SELF_DECLARED,
-    strength: 'strongest technical and deployment fit for network leakage',
-  },
-  {
-    key: 'C',
-    legalName: 'Simulated Startup C — Wastewater Treatment',
-    oneLineDescription: 'Effluent treatment and monitoring (simulated company).',
-    sector: 'wastewater',
-    technologies: ['chemical-treatment', 'sensors'],
-    capabilities: ['lab-analysis', 'effluent-monitoring', 'field-operations'],
-    problemSolved: 'Treatment plants exceed discharge limits without early warning.',
-    solutionSummary: 'Inline monitoring and dosing control at treatment works.',
-    pilotDurationDays: 120,
-    pilotTeamSummary: 'Process engineers and a sampling team.',
-    teamSize: 24,
-    complianceStatus: AssuranceStatus.SELF_DECLARED,
-    strength: 'strong field operations, different technology domain',
-  },
-  {
-    key: 'D',
-    legalName: 'Simulated Startup D — Municipal Operations',
-    oneLineDescription: 'Works management and integration for municipal bodies (simulated company).',
-    sector: 'municipal-operations',
-    technologies: ['workflow', 'integration', 'cloud'],
-    capabilities: ['systems-integration', 'crew-scheduling', 'reporting'],
-    problemSolved: 'Detected faults are not converted into completed repair work.',
-    solutionSummary: 'Integrates detection into municipal work orders and tracks closure.',
-    pilotDurationDays: 60,
-    pilotTeamSummary: 'Integration consultant and two engineers.',
-    infrastructureRequirements: 'API access to the existing works-management system.',
-    teamSize: 30,
-    complianceStatus: AssuranceStatus.SELF_DECLARED,
-    dataPrivacyStatus: AssuranceStatus.SELF_DECLARED,
-    strength: 'strong integration and workflow, weaker domain specialisation',
-  },
-  {
-    key: 'E',
-    legalName: 'Simulated Startup E — Infrastructure Monitoring',
-    oneLineDescription: 'Condition monitoring for water infrastructure (simulated company).',
-    sector: 'water-distribution',
-    technologies: ['iot', 'sensors'],
-    capabilities: ['real-time-monitoring', 'condition-assessment'],
-    problemSolved: 'Asset condition is unknown until failure.',
-    solutionSummary: 'Pressure and flow monitoring across the network with condition scoring.',
-    pilotDurationDays: 90,
-    teamSize: 7,
-    strength: 'relevant monitoring capability, least deployment maturity',
-  },
-] as const;
-
-const RESPONSES: Record<string, { deploymentApproach: string; expectedResult: string; pilotApproach: string; evidenceReferences: string[] }> = {
-  A: {
-    deploymentApproach: 'Ingest existing district meter exports nightly; no field installation required.',
-    expectedResult: 'Identify probable loss zones so crews are sent to the right place.',
-    pilotApproach: 'Thirty-day baseline from historical exports, then weekly zone reports.',
-    evidenceReferences: ['Model validation note'],
-  },
-  B: {
-    deploymentApproach:
-      'Install acoustic nodes across the pilot wards and stream continuously to the municipal gateway.',
-    expectedResult: 'Locate leaks earlier and reduce measured water loss over the pilot period.',
-    pilotApproach:
-      'Thirty-day baseline capture, staged deployment ward by ward, weekly reconciliation against district meters.',
-    evidenceReferences: ['Deployment log', 'Node uptime record', 'Calibration report'],
-  },
-  C: {
-    deploymentApproach: 'Install inline monitoring at the treatment works.',
-    expectedResult: 'Reduce discharge exceedances.',
-    pilotApproach: 'Weekly sampling against laboratory reference.',
-    evidenceReferences: ['Sampling protocol'],
-  },
-  D: {
-    deploymentApproach: 'Integrate with the existing works-management system through its API.',
-    expectedResult: 'Shorten the time from fault detection to completed repair.',
-    pilotApproach: 'Baseline current repair turnaround, then measure after integration.',
-    evidenceReferences: ['Integration specification', 'Turnaround baseline'],
-  },
-  E: {
-    deploymentApproach: 'Fit pressure and flow sensors at network nodes.',
-    expectedResult: 'Surface abnormal pressure patterns.',
-    pilotApproach: 'Continuous monitoring with monthly review.',
-    evidenceReferences: [],
-  },
-};
-
-async function reset() {
-  const scenario = await prisma.simulationScenario.findFirst({ where: { name: SCENARIO } });
-  if (!scenario) return console.log('nothing to reset — no such scenario');
-
-  // Detach any owners first, or the cascade cannot remove claimed companies.
-  await prisma.userProfile.updateMany({
-    where: { startup: { scenarioId: scenario.id } },
-    data: { startupId: null },
-  });
-  await prisma.simulationScenario.delete({ where: { id: scenario.id } });
-  console.log('scenario deleted, with every record it produced');
+interface ExtractedDoc {
+  company: 'CIVORA' | 'HIX';
+  zipFile: string;
+  originalFilename: string;
+  fileHash: string;
+  extension: string;
+  sizeBytes: number;
+  category: string;
+  title: string;
+  extractedText: string;
 }
 
+function ensureParsedDocs(): ExtractedDoc[] {
+  const jsonPath = path.resolve(process.cwd(), 'scripts/extracted_docs.json');
+  if (!fs.existsSync(jsonPath)) {
+    console.log('Running parse_packs.py to discover and extract ZIP packs from /data...');
+    const pyScript = path.resolve(process.cwd(), 'scripts/parse_packs.py');
+    execSync(`python "${pyScript}"`, { stdio: 'inherit' });
+  }
+  const raw = fs.readFileSync(jsonPath, 'utf-8');
+  return JSON.parse(raw) as ExtractedDoc[];
+}
+
+function mapKind(category: string): DocumentKind {
+  switch (category) {
+    case 'CORPORATE_LEGAL':
+      return DocumentKind.ELIGIBILITY;
+    case 'GOVERNMENT_FUNDING':
+      return DocumentKind.PROCUREMENT;
+    case 'FINANCIAL':
+      return DocumentKind.ELIGIBILITY;
+    case 'COMPLIANCE':
+      return DocumentKind.CYBERSECURITY;
+    case 'TECHNOLOGY':
+      return DocumentKind.OTHER;
+    case 'PILOT':
+      return DocumentKind.PILOT_REPORT;
+    case 'AI_GOVERNANCE':
+      return DocumentKind.CYBERSECURITY;
+    case 'OWNERSHIP':
+      return DocumentKind.IP_DATA;
+    case 'KYC':
+      return DocumentKind.ELIGIBILITY;
+    case 'CHECKLIST':
+      return DocumentKind.ELIGIBILITY;
+    default:
+      return DocumentKind.OTHER;
+  }
+}
+
+/**
+ * The 5 Simulated Startups
+ */
+const RICH_COMPANIES = [
+  {
+    key: 'CIVORA',
+    legalName: 'CIVORA Technologies Private Limited',
+    displayName: 'CIVORA',
+    oneLineDescription: 'AI & IoT-enabled CleanCity OS for municipal solid waste and urban infrastructure.',
+    sector: 'municipal-waste-management',
+    industry: 'GovTech / Urban Ops / AI',
+    stage: 'Growth / Seed',
+    state: 'Maharashtra',
+    city: 'Mumbai',
+    website: 'https://civora-demo.sarthi.gov.in',
+    foundedYear: 2023,
+    teamSize: 22,
+    founderSummary: 'Founded by urban systems engineers and AI researchers with municipal field experience.',
+    problemSolved: 'Municipal bodies face route inefficiencies, unverified waste collection, and high non-revenue costs.',
+    solutionSummary: 'CleanCity OS combines RouteAI route optimization, Track IoT monitoring, and Vision computer vision analytics.',
+    productSummary: 'Full-stack urban waste management platform with real-time ward dashboards and citizen engagement.',
+    targetUsers: 'Municipal corporations, smart city operators, waste management concessionaires.',
+    deploymentModel: 'SaaS + IoT Edge Gateways',
+    geographicCoverage: 'Maharashtra & Tier-1/2 Municipalities',
+    technologies: ['ai', 'iot', 'gis', 'computer-vision', 'analytics'],
+    capabilities: ['route-optimization', 'vehicle-tracking', 'segregation-analytics', 'citizen-reporting'],
+    revenueBand: '₹50L - ₹2 Cr',
+    customerCount: 3,
+    deploymentCount: 5,
+    commercializationStage: 'Commercialized / Active Pilots',
+    governmentExperienceSummary: 'Participated in Maharashtra Municipal pilot trial (100 wards, 150 vehicles, 1L households).',
+    complianceStatus: AssuranceStatus.SELF_DECLARED,
+    cybersecurityStatus: AssuranceStatus.SELF_DECLARED,
+    dataPrivacyStatus: AssuranceStatus.SELF_DECLARED,
+    procurementReadiness: ReadinessLevel.HIGH,
+    requiredCertifications: ['ISO 27001 (Self-Declared)', 'CERT-In Compliant Architecture'],
+    pilotDurationDays: 90,
+    pilotTeamSummary: '1 Deployment Lead, 2 IoT Engineers, 1 GIS Analyst.',
+    infrastructureRequirements: 'Access to vehicle GPS feeds, municipal ward GIS maps, cloud API connectivity.',
+    implementationDependencies: 'Integration with municipal vehicle tracking and ward supervisor app.',
+    deploymentRequirements: 'Edge gateway provisioning for pilot fleet; cloud environment setup.',
+    estimatedPilotBudget: 2500000.0,
+    scalingRequirements: 'City-wide rollout across all municipal zones with multi-tenant dashboard.',
+  },
+  {
+    key: 'HIX',
+    legalName: 'HIX Health & FinTech Solutions Private Limited',
+    displayName: 'HIX',
+    oneLineDescription: 'Healthcare Infrastructure Exchange & AgriVault Digital Warehouse-Receipt Financing.',
+    sector: 'agri-fintech-health',
+    industry: 'FinTech / HealthTech / Infrastructure',
+    stage: 'Early Stage / Seed',
+    state: 'Maharashtra',
+    city: 'Pune',
+    website: 'https://hix-demo.sarthi.gov.in',
+    foundedYear: 2024,
+    teamSize: 16,
+    founderSummary: 'Ex-banking fintech leaders and healthcare supply chain specialists.',
+    problemSolved: 'Lack of verified warehouse receipt financing for agri-produce and inventory tracking for healthcare hubs.',
+    solutionSummary: 'HIX AgriVault digital receipt financing platform with real-time collateral monitoring.',
+    productSummary: 'Digital warehouse receipt issuance, lender integration, regulatory reporting, and compliance audit trail.',
+    targetUsers: 'State agricultural marketing boards, banks, healthcare supply hubs.',
+    deploymentModel: 'Cloud API + Warehouse Sensor Integration',
+    geographicCoverage: 'Maharashtra & Central India',
+    technologies: ['fintech', 'blockchain', 'iot', 'cloud'],
+    capabilities: ['warehouse-receipt-financing', 'collateral-tracking', 'credit-risk-analytics'],
+    revenueBand: '₹20L - ₹50L',
+    customerCount: 2,
+    deploymentCount: 3,
+    commercializationStage: 'Pilot Ready / Seed',
+    governmentExperienceSummary: 'Submitted Maharashtra Government DPR for AgriVault warehouse receipt financing.',
+    complianceStatus: AssuranceStatus.SELF_DECLARED,
+    cybersecurityStatus: AssuranceStatus.SELF_DECLARED,
+    dataPrivacyStatus: AssuranceStatus.SELF_DECLARED,
+    procurementReadiness: ReadinessLevel.HIGH,
+    requiredCertifications: ['KYC/AML Framework', 'Data Protection Policy'],
+    pilotDurationDays: 120,
+    pilotTeamSummary: '2 FinTech Engineers, 1 Field Operations Manager.',
+    infrastructureRequirements: 'Integration with state warehouse repository APIs and bank LOS.',
+    implementationDependencies: 'NABARD / WDRA repository interface access.',
+    deploymentRequirements: 'Deployment at select district warehouses.',
+    estimatedPilotBudget: 5000000.0,
+    scalingRequirements: 'State-wide warehouse repository integration.',
+  },
+];
+
+const LIGHT_COMPANIES = [
+  {
+    legalName: 'AquaSense Systems Private Limited',
+    displayName: 'AquaSense',
+    oneLineDescription: 'Acoustic IoT sensors & cloud analytics for municipal non-revenue water reduction.',
+    sector: 'water-distribution',
+    industry: 'CleanTech / IoT',
+    stage: 'Early Stage',
+    state: 'Karnataka',
+    city: 'Bengaluru',
+    website: 'https://aquasense-demo.sarthi.gov.in',
+    foundedYear: 2023,
+    teamSize: 14,
+    founderSummary: 'Acoustic sensing engineers from IISc.',
+    problemSolved: 'Unidentified pipe leaks in municipal distribution networks.',
+    solutionSummary: 'Continuous acoustic monitoring nodes localizing underground pipe bursts.',
+    technologies: ['iot', 'acoustic-sensing', 'analytics'],
+    capabilities: ['leak-detection', 'pressure-monitoring'],
+    pilotDurationDays: 90,
+    pilotTeamSummary: '2 Field Engineers, 1 Data Scientist.',
+    infrastructureRequirements: 'Chamber mounting points and LoRaWAN gateway access.',
+    deploymentRequirements: 'Installation of 50 acoustic nodes.',
+    estimatedPilotBudget: 1800000.0,
+    complianceStatus: AssuranceStatus.SELF_DECLARED,
+    cybersecurityStatus: AssuranceStatus.NOT_PROVIDED,
+    dataPrivacyStatus: AssuranceStatus.NOT_PROVIDED,
+    procurementReadiness: ReadinessLevel.MODERATE,
+  },
+  {
+    legalName: 'TransitPulse Analytics Private Limited',
+    displayName: 'TransitPulse',
+    oneLineDescription: 'Urban mobility analytics & public transit passenger flow optimization.',
+    sector: 'urban-mobility',
+    industry: 'Mobility / Analytics',
+    stage: 'Seed',
+    state: 'Maharashtra',
+    city: 'Nagpur',
+    website: 'https://transitpulse-demo.sarthi.gov.in',
+    foundedYear: 2024,
+    teamSize: 10,
+    founderSummary: 'Transportation planners and AI analysts.',
+    problemSolved: 'Inefficient bus scheduling and unmonitored bus stop congestion.',
+    solutionSummary: 'AI camera & mobile signal analytics for dynamic bus dispatch.',
+    technologies: ['ai', 'analytics', 'computer-vision'],
+    capabilities: ['passenger-counting', 'route-planning'],
+    pilotDurationDays: 60,
+    pilotTeamSummary: '1 Traffic Analyst, 2 Software Developers.',
+    infrastructureRequirements: 'CCTV feed access at key transit hubs.',
+    deploymentRequirements: 'API integration with city transit server.',
+    estimatedPilotBudget: 1200000.0,
+    complianceStatus: AssuranceStatus.SELF_DECLARED,
+    cybersecurityStatus: AssuranceStatus.NOT_PROVIDED,
+    dataPrivacyStatus: AssuranceStatus.SELF_DECLARED,
+    procurementReadiness: ReadinessLevel.MODERATE,
+  },
+  {
+    legalName: 'SolarFlux Dynamics Private Limited',
+    displayName: 'SolarFlux',
+    oneLineDescription: 'AI-driven rooftop solar forecasting & municipal microgrid optimization.',
+    sector: 'renewable-energy',
+    industry: 'EnergyTech / Smart Grid',
+    stage: 'Early Stage',
+    state: 'Gujarat',
+    city: 'Ahmedabad',
+    website: 'https://solarflux-demo.sarthi.gov.in',
+    foundedYear: 2023,
+    teamSize: 12,
+    founderSummary: 'Power systems engineers.',
+    problemSolved: 'Grid instability due to uncoordinated rooftop solar generation.',
+    solutionSummary: 'Solar generation forecasting model integrated with SCADA.',
+    technologies: ['ai', 'smart-grid', 'analytics'],
+    capabilities: ['solar-forecasting', 'load-balancing'],
+    pilotDurationDays: 90,
+    pilotTeamSummary: '2 Energy Engineers.',
+    infrastructureRequirements: 'DISCOM SCADA telemetry feeds.',
+    deploymentRequirements: 'Cloud engine deployment with discom API.',
+    estimatedPilotBudget: 1500000.0,
+    complianceStatus: AssuranceStatus.SELF_DECLARED,
+    cybersecurityStatus: AssuranceStatus.SELF_DECLARED,
+    dataPrivacyStatus: AssuranceStatus.NOT_PROVIDED,
+    procurementReadiness: ReadinessLevel.MODERATE,
+  },
+];
+
 async function seed() {
-  /*
-   * The workspace needs a real owner. This script does not create one: a seeded
-   * government account would be a fabricated officer, which this project does
-   * not do under any circumstances.
-   */
+  console.log('Starting Sarthi Demo Ingestion & Seed...');
+
+  // 1. Get or find admin/govt user for createdBy
   const owner =
     (await prisma.userProfile.findFirst({ where: { role: UserRole.GOVERNMENT_OFFICER } })) ??
     (await prisma.userProfile.findFirst({ where: { role: UserRole.ADMIN } }));
 
   if (!owner) {
-    console.error(
-      'No GOVERNMENT_OFFICER or ADMIN profile exists yet.\n' +
-        'Sign up and confirm a government account first — this script will not create one.',
-    );
+    console.error('No GOVERNMENT_OFFICER or ADMIN profile exists yet in user_profiles.');
     process.exitCode = 1;
     return;
   }
 
+  // 2. Create/upsert SimulationScenario
+  const existingScenario = await prisma.simulationScenario.findFirst({
+    where: { name: SCENARIO_NAME },
+  });
+
   const scenario = await prisma.simulationScenario.upsert({
-    where: { id: (await prisma.simulationScenario.findFirst({ where: { name: SCENARIO } }))?.id ?? '00000000-0000-0000-0000-000000000000' },
+    where: { id: existingScenario?.id ?? '00000000-0000-0000-0000-000000000001' },
     create: {
-      name: SCENARIO,
+      name: SCENARIO_NAME,
       description:
-        'Controlled demonstration of the full procurement lifecycle. Companies and challenge are simulated; the workflow, users and records are real.',
+        'SIH 2026 Innovation Procurement Demo — 5 simulated startups with real ZIP documents and evidence validation.',
       status: 'ACTIVE',
       createdByUserId: owner.id,
+      disclaimer: 'Simulated for demonstration. Not a government decision or procurement record.',
     },
     update: { status: 'ACTIVE' },
   });
 
-  // --- the five companies, keyed by legal name so re-runs update -----------
-  const startups = [];
-  for (const c of COMPANIES) {
-    const existing = await prisma.startup.findFirst({ where: { legalName: c.legalName } });
-    const data = {
-      legalName: c.legalName,
-      oneLineDescription: c.oneLineDescription,
-      sector: c.sector,
-      technologies: [...c.technologies],
-      capabilities: [...c.capabilities],
-      problemSolved: c.problemSolved,
-      solutionSummary: c.solutionSummary,
-      pilotDurationDays: c.pilotDurationDays,
-      pilotTeamSummary: 'pilotTeamSummary' in c ? c.pilotTeamSummary : null,
-      infrastructureRequirements:
-        'infrastructureRequirements' in c ? c.infrastructureRequirements : null,
-      deploymentRequirements: 'deploymentRequirements' in c ? c.deploymentRequirements : null,
-      teamSize: c.teamSize,
-      complianceStatus: 'complianceStatus' in c ? c.complianceStatus : AssuranceStatus.NOT_PROVIDED,
-      cybersecurityStatus:
-        'cybersecurityStatus' in c ? c.cybersecurityStatus : AssuranceStatus.NOT_PROVIDED,
-      dataPrivacyStatus:
-        'dataPrivacyStatus' in c ? c.dataPrivacyStatus : AssuranceStatus.NOT_PROVIDED,
-      procurementReadiness: ReadinessLevel.NOT_ASSESSED,
-      requiredCertifications: [],
+  console.log(`Scenario ready: ${scenario.name} (${scenario.id})`);
+
+  // 3. Load parsed ZIP documents
+  const docs = ensureParsedDocs();
+  console.log(`Loaded ${docs.length} extracted document records from ZIP packs.`);
+
+  // Map to hold startup IDs
+  const startupMap: Record<string, string> = {};
+
+  // 4. Ingest Rich Startups (CIVORA & HIX) + Documents
+  for (const compData of RICH_COMPANIES) {
+    const existing = await prisma.startup.findFirst({ where: { legalName: compData.legalName } });
+
+    const startupData = {
+      legalName: compData.legalName,
+      displayName: compData.displayName,
+      oneLineDescription: compData.oneLineDescription,
+      description: compData.solutionSummary,
+      sector: compData.sector,
+      industry: compData.industry,
+      stage: compData.stage,
+      state: compData.state,
+      city: compData.city,
+      website: compData.website,
+      foundedYear: compData.foundedYear,
+      teamSize: compData.teamSize,
+      founderSummary: compData.founderSummary,
+      problemSolved: compData.problemSolved,
+      solutionSummary: compData.solutionSummary,
+      productSummary: compData.productSummary,
+      targetUsers: compData.targetUsers,
+      deploymentModel: compData.deploymentModel,
+      geographicCoverage: compData.geographicCoverage,
+      technologies: compData.technologies,
+      capabilities: compData.capabilities,
+      revenueBand: compData.revenueBand,
+      customerCount: compData.customerCount,
+      deploymentCount: compData.deploymentCount,
+      commercializationStage: compData.commercializationStage,
+      governmentExperienceSummary: compData.governmentExperienceSummary,
+      complianceStatus: compData.complianceStatus,
+      cybersecurityStatus: compData.cybersecurityStatus,
+      dataPrivacyStatus: compData.dataPrivacyStatus,
+      procurementReadiness: compData.procurementReadiness,
+      requiredCertifications: compData.requiredCertifications,
+      pilotDurationDays: compData.pilotDurationDays,
+      pilotTeamSummary: compData.pilotTeamSummary,
+      infrastructureRequirements: compData.infrastructureRequirements,
+      implementationDependencies: compData.implementationDependencies,
+      deploymentRequirements: compData.deploymentRequirements,
+      estimatedPilotBudget: compData.estimatedPilotBudget,
+      scalingRequirements: compData.scalingRequirements,
       origin: DataOrigin.DEMO,
       scenarioId: scenario.id,
     };
-    const row = existing
-      ? await prisma.startup.update({ where: { id: existing.id }, data })
-      : await prisma.startup.create({ data });
-    startups.push({ ...c, id: row.id, row });
+
+    const startup = existing
+      ? await prisma.startup.update({ where: { id: existing.id }, data: startupData })
+      : await prisma.startup.create({ data: startupData });
+
+    startupMap[compData.key] = startup.id;
+    console.log(`Ingested Startup: ${startup.displayName} (${startup.id})`);
+
+    // Ingest Documents for this startup
+    const compDocs = docs.filter((d) => d.company === compData.key);
+    console.log(`Importing ${compDocs.length} documents for ${compData.displayName}...`);
+
+    for (const docItem of compDocs) {
+      // Find or create Document by fileHash
+      let doc = await prisma.document.findFirst({
+        where: { fileHash: docItem.fileHash },
+      });
+
+      if (!doc) {
+        doc = await prisma.document.create({
+          data: {
+            kind: mapKind(docItem.category),
+            title: docItem.title,
+            publisher: 'Sarthi Demo Simulation',
+            url: null,
+            retrievedAt: new Date(),
+            origin: DataOrigin.DEMO,
+            fileHash: docItem.fileHash,
+            originalPath: docItem.originalFilename,
+            extractedText: docItem.extractedText,
+          },
+        });
+      }
+
+      // Create StartupDocument relationship
+      await prisma.startupDocument.upsert({
+        where: {
+          startupId_documentId: {
+            startupId: startup.id,
+            documentId: doc.id,
+          },
+        },
+        create: {
+          startupId: startup.id,
+          documentId: doc.id,
+          category: docItem.category,
+          label: docItem.title,
+        },
+        update: {
+          category: docItem.category,
+          label: docItem.title,
+        },
+      });
+    }
+
+    // Add Demo Funding Round if applicable
+    const existingFunding = await prisma.fundingRound.findFirst({
+      where: { startupId: startup.id },
+    });
+
+    if (!existingFunding) {
+      await prisma.fundingRound.create({
+        data: {
+          startupId: startup.id,
+          roundType: compData.key === 'CIVORA' ? 'Pre-Series A (Demonstration)' : 'Seed Grant (Demonstration)',
+          amount: compData.key === 'CIVORA' ? 15000000.0 : 5000000.0,
+          announcedOn: new Date('2025-06-15'),
+          investors: ['Sarthi Demo Innovation Fund'],
+          origin: DataOrigin.DEMO,
+        },
+      });
+    }
   }
 
-  // --- the challenge -------------------------------------------------------
-  const title = 'Smart Water Loss Reduction';
-  const existingCh = await prisma.challenge.findFirst({ where: { title, scenarioId: scenario.id } });
+  // 5. Ingest Light Startups (3 synthetic)
+  for (const lc of LIGHT_COMPANIES) {
+    const existing = await prisma.startup.findFirst({ where: { legalName: lc.legalName } });
+
+    const startupData = {
+      legalName: lc.legalName,
+      displayName: lc.displayName,
+      oneLineDescription: lc.oneLineDescription,
+      description: lc.solutionSummary,
+      sector: lc.sector,
+      industry: lc.industry,
+      stage: lc.stage,
+      state: lc.state,
+      city: lc.city,
+      website: lc.website,
+      foundedYear: lc.foundedYear,
+      teamSize: lc.teamSize,
+      founderSummary: lc.founderSummary,
+      problemSolved: lc.problemSolved,
+      solutionSummary: lc.solutionSummary,
+      technologies: lc.technologies,
+      capabilities: lc.capabilities,
+      pilotDurationDays: lc.pilotDurationDays,
+      pilotTeamSummary: lc.pilotTeamSummary,
+      infrastructureRequirements: lc.infrastructureRequirements,
+      deploymentRequirements: lc.deploymentRequirements,
+      estimatedPilotBudget: lc.estimatedPilotBudget,
+      complianceStatus: lc.complianceStatus,
+      cybersecurityStatus: lc.cybersecurityStatus,
+      dataPrivacyStatus: lc.dataPrivacyStatus,
+      procurementReadiness: lc.procurementReadiness,
+      origin: DataOrigin.DEMO,
+      scenarioId: scenario.id,
+    };
+
+    const startup = existing
+      ? await prisma.startup.update({ where: { id: existing.id }, data: startupData })
+      : await prisma.startup.create({ data: startupData });
+
+    console.log(`Ingested Light Startup: ${startup.displayName} (${startup.id})`);
+  }
+
+  // 6. Setup Demo Challenge & Matches
+  const challengeTitle = 'Municipal Waste & Urban Operations Optimization';
+  const existingCh = await prisma.challenge.findFirst({
+    where: { title: challengeTitle, scenarioId: scenario.id },
+  });
+
   const challengeData = {
     ownerUserId: owner.id,
-    department: 'Simulated Municipal Water Department',
-    title,
+    department: 'Municipal Urban Administration & Environmental Department',
+    title: challengeTitle,
     problemStatement:
-      'Municipal water distribution suffers unidentified leakage and non-revenue water. Reduce measurable water loss during a controlled pilot.',
-    domain: 'water-distribution',
-    technologies: ['iot', 'acoustic-sensing'],
-    targetMetric: 'water loss',
-    targetValue: 20,
+      'Cities face route inefficiencies, high fuel costs, unmonitored waste collection, and asset tracking gaps. Implement AI/IoT pilot to optimize route efficiency by 20%.',
+    domain: 'municipal-waste-management',
+    technologies: ['ai', 'iot', 'gis', 'analytics'],
+    targetMetric: 'Route Efficiency Gain',
+    targetValue: 20.0,
     pilotDurationDays: 90,
     status: 'PUBLISHED' as const,
     origin: DataOrigin.DEMO,
-    demoScenario: SCENARIO,
+    demoScenario: SCENARIO_NAME,
     scenarioId: scenario.id,
   };
+
   const challenge = existingCh
     ? await prisma.challenge.update({ where: { id: existingCh.id }, data: challengeData })
     : await prisma.challenge.create({ data: challengeData });
 
-  // --- responses -----------------------------------------------------------
-  //
-  // Attributed to the seeding user, because no startup has claimed a company
-  // yet and `submittedByUserId` must point at a real account. Once a teammate
-  // claims a company they can edit and resubmit their own response, which
-  // replaces this one.
-  for (const s of startups) {
-    const r = RESPONSES[s.key];
-    await prisma.challengeResponse.upsert({
+  console.log(`Demo Challenge created: ${challenge.title} (${challenge.id})`);
+
+  // Generate Responses & Matches for all 5 startups
+  const allStartups = await prisma.startup.findMany({
+    where: { scenarioId: scenario.id },
+  });
+
+  for (const s of allStartups) {
+    const respData = {
+      challengeId: challenge.id,
+      startupId: s.id,
+      solutionSummary: s.solutionSummary ?? 'Proposed AI/IoT municipal optimization solution.',
+      capabilities: s.capabilities,
+      technologies: s.technologies,
+      deploymentApproach: 'Phased ward-by-ward deployment with IoT gateway setup.',
+      expectedResult: '20% route optimization & verified collection audit trail.',
+      pilotApproach: '30-day baseline capture followed by 60-day optimized route operations.',
+      evidenceReferences: ['Technical Spec', 'Municipal Pilot Plan', 'Data Protection Policy'],
+      status: 'SUBMITTED' as const,
+      submittedByUserId: owner.id,
+      submittedAt: new Date(),
+      origin: DataOrigin.DEMO,
+    };
+
+    const response = await prisma.challengeResponse.upsert({
       where: { challengeId_startupId: { challengeId: challenge.id, startupId: s.id } },
-      create: {
-        challengeId: challenge.id,
-        startupId: s.id,
-        solutionSummary: s.solutionSummary,
-        capabilities: [...s.capabilities],
-        technologies: [...s.technologies],
-        deploymentApproach: r.deploymentApproach,
-        expectedResult: r.expectedResult,
-        pilotApproach: r.pilotApproach,
-        evidenceReferences: r.evidenceReferences,
-        status: 'SUBMITTED',
-        submittedByUserId: owner.id,
-        submittedAt: new Date(),
-        origin: DataOrigin.DEMO,
-      },
+      create: respData,
       update: { status: 'SUBMITTED' },
     });
-  }
 
-  // --- deterministic matches ----------------------------------------------
-  for (const s of startups) {
-    const response = await prisma.challengeResponse.findUniqueOrThrow({
-      where: { challengeId_startupId: { challengeId: challenge.id, startupId: s.id } },
-    });
-    const engagements = await prisma.startupProgramParticipation.count({
-      where: { startupId: s.id },
-    });
-    const result = scoreMatch({
+    const matchResult = scoreMatch({
       challenge,
-      startup: s.row,
+      startup: s,
       response,
-      governmentEngagements: engagements,
+      governmentEngagements: s.governmentExperienceSummary ? 1 : 0,
     });
+
     await prisma.startupMatch.upsert({
       where: { challengeId_startupId: { challengeId: challenge.id, startupId: s.id } },
       create: {
         challengeId: challenge.id,
         startupId: s.id,
-        problemFitScore: result.problemFitScore,
-        technicalFitScore: result.technicalFitScore,
-        deploymentReadinessScore: result.deploymentReadinessScore,
-        governmentExperienceScore: result.governmentExperienceScore,
-        evidenceStrengthScore: result.evidenceStrengthScore,
-        pilotReadinessScore: result.pilotReadinessScore,
-        overallScore: result.overallScore,
-        breakdown: result.breakdown as never,
-        rationale: result.rationale,
+        problemFitScore: matchResult.problemFitScore,
+        technicalFitScore: matchResult.technicalFitScore,
+        deploymentReadinessScore: matchResult.deploymentReadinessScore,
+        governmentExperienceScore: matchResult.governmentExperienceScore,
+        evidenceStrengthScore: matchResult.evidenceStrengthScore,
+        pilotReadinessScore: matchResult.pilotReadinessScore,
+        overallScore: matchResult.overallScore,
+        breakdown: matchResult.breakdown as never,
+        rationale: matchResult.rationale,
         status: 'SUGGESTED',
       },
       update: {
-        problemFitScore: result.problemFitScore,
-        technicalFitScore: result.technicalFitScore,
-        deploymentReadinessScore: result.deploymentReadinessScore,
-        governmentExperienceScore: result.governmentExperienceScore,
-        evidenceStrengthScore: result.evidenceStrengthScore,
-        pilotReadinessScore: result.pilotReadinessScore,
-        overallScore: result.overallScore,
-        breakdown: result.breakdown as never,
-        rationale: result.rationale,
+        problemFitScore: matchResult.problemFitScore,
+        technicalFitScore: matchResult.technicalFitScore,
+        deploymentReadinessScore: matchResult.deploymentReadinessScore,
+        governmentExperienceScore: matchResult.governmentExperienceScore,
+        evidenceStrengthScore: matchResult.evidenceStrengthScore,
+        pilotReadinessScore: matchResult.pilotReadinessScore,
+        overallScore: matchResult.overallScore,
+        breakdown: matchResult.breakdown as never,
+        rationale: matchResult.rationale,
       },
     });
   }
 
-  await prisma.challenge.update({ where: { id: challenge.id }, data: { status: 'MATCHING' } });
-
-  const ranked = await prisma.startupMatch.findMany({
-    where: { challengeId: challenge.id },
-    include: { startup: { select: { legalName: true } } },
-    orderBy: { overallScore: 'desc' },
-  });
-
-  console.log(`\nscenario   ${scenario.name}`);
-  console.log(`challenge  ${challenge.title}  [${challenge.status}]`);
-  console.log(`companies  ${startups.length} (all DEMO, all unclaimed until a teammate claims one)`);
-  console.log('\nranking (deterministic, no model involved):');
-  ranked.forEach((m, i) =>
-    console.log(`  ${i + 1}. ${(m.overallScore * 100).toFixed(0).padStart(3)}  ${m.startup.legalName}`),
-  );
-  console.log('\nNo pilot, no measurement and no outcome were created.');
-  console.log('Those are produced by running the workflow, which is the thing being demonstrated.');
+  console.log('\n==========================================');
+  console.log('SARTHI DEMO INGESTION COMPLETE');
+  console.log(`Scenario: ${scenario.name}`);
+  console.log(`Startups Imported: ${allStartups.length} (all origin = DEMO)`);
+  console.log(`Total Document Relationships: ${await prisma.startupDocument.count()}`);
+  console.log('==========================================\n');
 }
 
-const mode = process.argv[2];
-(mode === 'reset' ? reset() : seed())
+async function reset() {
+  const scenario = await prisma.simulationScenario.findFirst({ where: { name: SCENARIO_NAME } });
+  if (!scenario) return console.log('Nothing to reset — no such scenario.');
+
+  await prisma.userProfile.updateMany({
+    where: { startup: { scenarioId: scenario.id } },
+    data: { startupId: null },
+  });
+
+  await prisma.simulationScenario.delete({ where: { id: scenario.id } });
+  console.log('Demo Scenario reset complete — all scenario records removed cleanly.');
+}
+
+const action = process.argv[2];
+(action === 'reset' ? reset() : seed())
   .catch((e) => {
-    console.error('FAILED', e instanceof Error ? e.message : e);
+    console.error('Execution failed:', e);
     process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());
