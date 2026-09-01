@@ -19,17 +19,11 @@ export const createScenarioSchema = z.object({
   }),
 });
 
-export const startupProfileSchema = z.object({
+/** The minimum needed to bring a company into existence; the rest is edited. */
+export const createCompanySchema = z.object({
   body: z.object({
     legalName: z.string().trim().min(2).max(200),
-    displayName: z.string().trim().max(200).optional(),
-    description: z.string().trim().max(4000).optional(),
     sector: z.string().trim().min(2).max(120),
-    technologies: tags,
-    capabilities: tags,
-    state: z.string().trim().max(120).optional(),
-    city: z.string().trim().max(120).optional(),
-    website: z.string().url().max(300).optional(),
     scenarioId: z.string().uuid().optional(),
   }),
 });
@@ -163,4 +157,72 @@ export const scaleDecisionSchema = z.object({
     decision: z.enum(['SCALE', 'EXTEND_PILOT', 'STOP']),
     rationale: z.string().trim().min(10).max(4000),
   }),
+});
+
+/**
+ * The company profile a startup writes about itself.
+ *
+ * Every field optional so the onboarding can save step by step rather than
+ * demanding the whole dossier before anything persists. Absent from the shape
+ * entirely, and therefore unreachable: `origin`, `sourceId`, `scenarioId`,
+ * `procurementReadiness`. A company cannot label its own record as externally
+ * sourced, move itself into a workspace, or grade its own procurement standing.
+ */
+const assurance = z.enum(['NOT_PROVIDED', 'SELF_DECLARED']);
+
+export const companyProfileSchema = z.object({
+  body: z.object({
+    legalName: z.string().trim().min(2).max(200).optional(),
+    displayName: z.string().trim().max(200).nullable().optional(),
+    oneLineDescription: z.string().trim().max(300).nullable().optional(),
+    description: z.string().trim().max(6000).nullable().optional(),
+    foundedYear: z.number().int().min(1900).max(2100).nullable().optional(),
+    teamSize: z.number().int().min(1).max(100000).nullable().optional(),
+    founderSummary: z.string().trim().max(4000).nullable().optional(),
+    keyTeamMembers: z.array(z.object({
+      role: z.string().trim().min(1).max(120),
+      responsibility: z.string().trim().max(400).optional(),
+      experience: z.string().trim().max(400).optional(),
+      fullTime: z.boolean().optional(),
+    })).max(30).nullable().optional(),
+
+    sector: z.string().trim().min(2).max(120).optional(),
+    industry: z.string().trim().max(120).nullable().optional(),
+    stage: z.string().trim().max(80).nullable().optional(),
+    state: z.string().trim().max(120).nullable().optional(),
+    city: z.string().trim().max(120).nullable().optional(),
+    website: z.string().url().max(300).nullable().optional(),
+
+    problemSolved: z.string().trim().max(4000).nullable().optional(),
+    solutionSummary: z.string().trim().max(4000).nullable().optional(),
+    productSummary: z.string().trim().max(4000).nullable().optional(),
+    targetUsers: z.string().trim().max(2000).nullable().optional(),
+    deploymentModel: z.string().trim().max(500).nullable().optional(),
+    geographicCoverage: z.string().trim().max(500).nullable().optional(),
+    technologies: tags.optional(),
+    capabilities: tags.optional(),
+
+    revenueBand: z.string().trim().max(120).nullable().optional(),
+    customerCount: z.number().int().min(0).nullable().optional(),
+    deploymentCount: z.number().int().min(0).nullable().optional(),
+    commercializationStage: z.string().trim().max(120).nullable().optional(),
+
+    governmentExperienceSummary: z.string().trim().max(4000).nullable().optional(),
+    complianceStatus: assurance.optional(),
+    cybersecurityStatus: assurance.optional(),
+    dataPrivacyStatus: assurance.optional(),
+    requiredCertifications: tags.optional(),
+
+    pilotDurationDays: z.number().int().min(1).max(3650).nullable().optional(),
+    pilotTeamSummary: z.string().trim().max(2000).nullable().optional(),
+    infrastructureRequirements: z.string().trim().max(2000).nullable().optional(),
+    implementationDependencies: z.string().trim().max(2000).nullable().optional(),
+    deploymentRequirements: z.string().trim().max(2000).nullable().optional(),
+    estimatedPilotBudget: z.number().nonnegative().nullable().optional(),
+    scalingRequirements: z.string().trim().max(2000).nullable().optional(),
+  }),
+});
+
+export const claimCompanySchema = z.object({
+  body: z.object({ startupId: z.string().uuid() }),
 });

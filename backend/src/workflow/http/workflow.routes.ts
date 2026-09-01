@@ -5,6 +5,7 @@ import { AppError } from '../../middleware/errorHandler';
 import { validateRequest } from '../../middleware/validate';
 import { authenticate, requireVerifiedEmail } from '../../auth/authenticate';
 import * as svc from '../workflow.service';
+import * as company from '../company.service';
 import * as s from './workflow.schemas';
 
 /**
@@ -56,14 +57,32 @@ router.delete(
   }, 200, 'Workspace and every record it produced were removed'),
 );
 
-/* --- startup: its own company profile --- */
+/* --- the company record --- */
 
-router.get('/startup/me', h((_req, u) => svc.getOwnStartup(u)));
-router.put(
-  '/startup/me',
-  validateRequest(s.startupProfileSchema),
-  h((req, u) => svc.upsertOwnStartup(u, req.body), 200, 'Company profile saved'),
+router.get('/company/me', h((_req, u) => company.getOwnCompany(u)));
+router.post(
+  '/company',
+  validateRequest(s.createCompanySchema),
+  h((req, u) => company.createOwnCompany(u, req.body), 201, 'Company profile created'),
 );
+router.patch(
+  '/company/me',
+  validateRequest(s.companyProfileSchema),
+  h((req, u) => company.updateOwnCompany(u, req.body), 200, 'Company profile saved'),
+);
+router.get(
+  '/company/claimable/:scenarioId',
+  h((req) => company.listClaimable(req.params.scenarioId)),
+);
+router.post(
+  '/company/claim',
+  validateRequest(s.claimCompanySchema),
+  h((req, u) => company.claimCompany(u, req.body.startupId), 200, 'Company claimed'),
+);
+
+/* --- the government's dossier on a company --- */
+
+router.get('/startups/:startupId/dossier', h((req, u) => company.governmentDossier(u, req.params.startupId)));
 
 /* --- challenges --- */
 

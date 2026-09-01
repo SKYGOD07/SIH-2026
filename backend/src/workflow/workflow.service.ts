@@ -105,55 +105,6 @@ export async function deleteScenario(u: UserProfile, scenarioId: string) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Startup profile                                                     */
-/* ------------------------------------------------------------------ */
-
-export interface StartupProfileInput {
-  legalName: string;
-  displayName?: string;
-  description?: string;
-  sector: string;
-  technologies: string[];
-  capabilities: string[];
-  state?: string;
-  city?: string;
-  website?: string;
-  scenarioId?: string;
-}
-
-/**
- * Create or update the caller's own company.
- *
- * `origin` is set by the server from the workspace, never by the client: a
- * record created inside a simulation is DEMO, and one created outside it is the
- * user's own first-party entry. There is no path by which a caller can label
- * their own record VERIFIED — that state requires a cited source and is
- * refused by a database constraint besides.
- */
-export async function upsertOwnStartup(u: UserProfile, input: StartupProfileInput) {
-  if (u.role !== UserRole.STARTUP) {
-    throw new AppError('Only a startup account may maintain a company profile', 403);
-  }
-
-  const origin = input.scenarioId ? DataOrigin.DEMO : DataOrigin.USER_ENTERED;
-
-  if (u.startupId) {
-    return startupRepo.update(prisma, u.startupId, { ...input, origin });
-  }
-
-  return withTransaction(async (tx) => {
-    const startup = await startupRepo.create(tx, { ...input, origin });
-    await tx.userProfile.update({ where: { id: u.id }, data: { startupId: startup.id } });
-    return startup;
-  });
-}
-
-export async function getOwnStartup(u: UserProfile) {
-  const id = ownStartupId(u);
-  return startupRepo.findById(prisma, id);
-}
-
-/* ------------------------------------------------------------------ */
 /* Challenges                                                          */
 /* ------------------------------------------------------------------ */
 

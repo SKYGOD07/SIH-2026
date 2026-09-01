@@ -10,7 +10,9 @@
     "lint": "eslint src --ext .ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "demo:seed": "tsx scripts/demo.ts seed",
+    "demo:reset": "tsx scripts/demo.ts reset"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
