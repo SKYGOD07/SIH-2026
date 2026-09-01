@@ -44,8 +44,8 @@ const AXIS_SHORT: Record<string, string> = {
   'Deployment record': 'Deployments',
   'Team capacity': 'Team',
   'Evidence on file': 'Evidence',
-  'Government exposure': 'Govt exposure',
-  'Pilot readiness': 'Pilot ready',
+  'Government exposure': 'Govt',
+  'Pilot readiness': 'Pilot',
 };
 
 interface Row {
@@ -370,7 +370,7 @@ function RadarChart({
       })}
 
       {AXES.map((a, i) => {
-        const [x, y] = pt(i, 1.17);
+        const [x, y] = pt(i, 1.13);
         return (
           <text
             key={a}
