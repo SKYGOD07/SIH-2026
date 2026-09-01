@@ -1124,3 +1124,21 @@ model AuditEvent {
   @@index([at])
   @@map("audit_events")
 }
+
+/// Tracked user session record for security auditing and activity history.
+model UserSession {
+  id          String    @id @default(uuid())
+  userId      String
+  userEmail   String
+  role        UserRole
+  loginAt     DateTime  @default(now())
+  logoutAt    DateTime?
+  lastActive  DateTime  @default(now())
+  ipAddress   String?
+  userAgent   String?
+  activityLog Json?
+
+  @@index([userId])
+  @@index([loginAt])
+  @@map("user_sessions")
+}

@@ -25,8 +25,9 @@ const router = Router();
 
 /* --- the caller's own identity --- */
 
-// Deliberately not behind `requireVerifiedEmail`: the OTP screen needs it.
 router.get('/session', authenticate, controller.session);
+router.post('/session/logout', authenticate, controller.logLogout);
+router.get('/session/history', authenticate, controller.getSessionHistory);
 
 router.patch(
   '/profile',

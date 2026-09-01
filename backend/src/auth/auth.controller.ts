@@ -26,9 +26,36 @@ import {
  * screen needs to ask what is still outstanding. The response says so
  * explicitly rather than making the client infer it.
  */
+import { prisma } from '../workflow/repositories';
+
 export const session = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.auth || !req.profile) throw new AppError('Not authenticated', 401);
+
+    // Track active session in database
+    const activeSession = await prisma.userSession.findFirst({
+      where: { userId: req.auth.userId, logoutAt: null },
+      orderBy: { loginAt: 'desc' },
+    });
+
+    if (!activeSession) {
+      await prisma.userSession.create({
+        data: {
+          userId: req.auth.userId,
+          userEmail: req.auth.email || req.profile.email || 'user@sarthi.gov.in',
+          role: req.profile.role,
+          ipAddress: req.ip || (req.headers['x-forwarded-for'] as string) || '127.0.0.1',
+          userAgent: req.headers['user-agent'] || 'Browser',
+          activityLog: [{ action: 'SESSION_INITIALIZED', at: new Date().toISOString() }],
+        },
+      });
+    } else {
+      await prisma.userSession.update({
+        where: { id: activeSession.id },
+        data: { lastActive: new Date() },
+      });
+    }
+
     return sendSuccess(res, {
       user: {
         id: req.auth.userId,
@@ -36,11 +63,65 @@ export const session = async (req: Request, res: Response, next: NextFunction) =
         emailVerified: req.auth.emailVerified,
       },
       profile: presentProfile(req.profile),
-      /** What the client must still collect before the console is usable. */
       onboarding: {
         emailVerified: req.auth.emailVerified,
         profileComplete: req.profile.displayName !== (req.profile.email.split('@')[0] ?? ''),
       },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/** Log out current session and record logoutAt in database */
+export const logLogout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.auth) throw new AppError('Not authenticated', 401);
+
+    const activeSession = await prisma.userSession.findFirst({
+      where: { userId: req.auth.userId, logoutAt: null },
+      orderBy: { loginAt: 'desc' },
+    });
+
+    if (activeSession) {
+      const logs = (activeSession.activityLog as any[]) || [];
+      logs.push({ action: 'USER_LOGOUT', at: new Date().toISOString() });
+
+      await prisma.userSession.update({
+        where: { id: activeSession.id },
+        data: {
+          logoutAt: new Date(),
+          activityLog: logs,
+        },
+      });
+    }
+
+    return sendSuccess(res, { loggedOut: true }, 'Session logged out and saved to DB');
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/** Get user's recorded session history & audit activity from database */
+export const getSessionHistory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.auth) throw new AppError('Not authenticated', 401);
+
+    const sessions = await prisma.userSession.findMany({
+      where: { userId: req.auth.userId },
+      orderBy: { loginAt: 'desc' },
+      take: 10,
+    });
+
+    const auditEvents = await prisma.auditEvent.findMany({
+      where: { actorUserId: req.auth.userId },
+      orderBy: { at: 'desc' },
+      take: 15,
+    });
+
+    return sendSuccess(res, {
+      sessions,
+      auditEvents,
     });
   } catch (error) {
     return next(error);

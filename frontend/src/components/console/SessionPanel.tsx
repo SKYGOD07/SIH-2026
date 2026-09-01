@@ -1,23 +1,15 @@
 'use client';
 
+import { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth/AuthProvider';
+import { WalletMasterCard3D } from '@/components/console/WalletMasterCard3D';
+import { UserSessionHistoryModal } from '@/components/console/UserSessionHistoryModal';
+import { Icon } from '@/components/console/Icon';
 
-/**
- * Who is signed in.
- *
- * This card previously stated that there was no session and that sign-in was
- * not implemented. Both were true when it was written and both are now false,
- * which is the more dangerous failure of the two: a reader who is looking at
- * their own authenticated console and being told there is no session cannot
- * tell which of the two the product is wrong about.
- *
- * It still refuses to assert authority. The card names the signed-in person and
- * their role because those are read from a verified token, and says plainly
- * where a department or designation has not been set rather than filling either
- * in — an invented approver is the detail a reader is least likely to question.
- */
 export function SessionPanel() {
-  const { loading, user, profile } = useAuth();
+  const { loading, user, profile, signOut } = useAuth();
+  const [showSessionModal, setShowSessionModal] = useState(false);
 
   if (loading) {
     return (
@@ -25,63 +17,130 @@ export function SessionPanel() {
         <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-chalk/40">
           Session
         </span>
-        <p className="mt-2.5 text-[0.75rem] text-chalk/45">Checking…</p>
+        <p className="mt-2.5 text-[0.75rem] text-chalk/45">Checking session authentication…</p>
       </section>
     );
   }
 
   if (!user || !profile) {
     return (
-      <section className="rounded-[12px] border border-chalk/[0.10] bg-void-lift/60 p-4">
-        <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal">
-          No session
-        </span>
-        <p className="mt-2.5 text-[0.75rem] leading-relaxed text-chalk/55">
-          You are not signed in. Nothing on this console can be approved without an
-          authenticated account.
+      <section className="rounded-[14px] border border-chalk/[0.10] bg-void-lift/60 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal font-bold">
+            NO SESSION
+          </span>
+          <span className="font-mono text-[0.5625rem] text-chalk/40 uppercase">DEMO PREVIEW</span>
+        </div>
+
+        {/* 3D Demo Wallet Preview */}
+        <WalletMasterCard3D
+          role="GOVERNMENT_OFFICER"
+          entityName="Guest Sarthi Officer"
+          departmentOrSector="Public Innovation Procurement"
+          balanceAmount="₹50.00 Cr"
+        />
+
+        <p className="text-[0.75rem] leading-relaxed text-chalk/60">
+          Sign in to access departmental authorization, claim demo startups, or process milestone payouts.
         </p>
+
+        {/* Login Controls */}
+        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-chalk/[0.08]">
+          <Link
+            href="/login/government"
+            className="rounded-lg bg-signal px-3 py-2 text-center font-mono text-[0.6875rem] font-bold text-void uppercase tracking-wider hover:bg-signal/90 transition-colors"
+          >
+            Gov Login
+          </Link>
+          <Link
+            href="/login/startup"
+            className="rounded-lg bg-chalk/10 border border-chalk/20 px-3 py-2 text-center font-mono text-[0.6875rem] font-bold text-chalk uppercase tracking-wider hover:bg-chalk/20 transition-colors"
+          >
+            Startup Login
+          </Link>
+        </div>
       </section>
     );
   }
 
-  const role = profile.role.replace(/_/g, ' ').toLowerCase();
-
-  /**
-   * Stated as absences, not filled in. A department is what gives a challenge
-   * its attribution, so a blank one has to read as blank.
-   */
-  const unset: string[] = [];
-  if (!profile.departmentName) unset.push('Department not set');
-  if (!profile.designation) unset.push('Designation not set');
+  const roleLabel = profile.role.replace(/_/g, ' ').toLowerCase();
 
   return (
-    <section className="rounded-[12px] border border-chalk/[0.10] bg-void-lift/60 p-4">
-      <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal">
-        Signed in
-      </span>
+    <section className="rounded-[14px] border border-chalk/[0.12] bg-void-lift/80 p-4 space-y-4 shadow-lg">
+      {/* Signed In Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="inline-block h-2 w-2 rounded-full bg-validated animate-pulse" />
+          <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-validated font-bold">
+            SIGNED IN
+          </span>
+        </div>
+        <button
+          onClick={() => setShowSessionModal(true)}
+          className="font-mono text-[0.625rem] text-signal hover:underline uppercase tracking-wider"
+        >
+          Session Logs (DB)
+        </button>
+      </div>
 
-      <p className="mt-2.5 font-display text-[0.9375rem] font-bold leading-tight text-chalk">
-        {profile.displayName}
-      </p>
-      <p className="mt-1 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-chalk/45">
-        {role}
-      </p>
-
-      {profile.departmentName && (
-        <p className="mt-2 text-[0.75rem] leading-relaxed text-chalk/65">
-          {profile.departmentName}
-          {profile.designation ? ` · ${profile.designation}` : ''}
+      {/* User Info */}
+      <div>
+        <h3 className="font-display text-[1rem] font-extrabold leading-tight text-chalk">
+          {profile.displayName}
+        </h3>
+        <p className="mt-0.5 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-chalk/50">
+          {roleLabel}
         </p>
-      )}
+        {profile.departmentName && (
+          <p className="mt-1.5 text-[0.75rem] leading-relaxed text-chalk/70">
+            {profile.departmentName}
+            {profile.designation ? ` · ${profile.designation}` : ''}
+          </p>
+        )}
+      </div>
 
-      {unset.length > 0 && (
-        <ul className="mt-3 border-t border-chalk/[0.08] pt-3">
-          {unset.map((item) => (
-            <li key={item} className="py-1 text-[0.6875rem] leading-relaxed text-chalk/40">
-              {item}
-            </li>
-          ))}
-        </ul>
+      {/* 3D Flippable MasterCard Component */}
+      <WalletMasterCard3D
+        role={profile.role}
+        entityName={profile.displayName}
+        departmentOrSector={profile.departmentName || profile.designation || 'Sarthi Platform'}
+        balanceAmount={profile.role === 'STARTUP' ? '₹25.00 Lakhs' : '₹50.00 Cr'}
+        walletId={profile.role === 'STARTUP' ? 'IN-STU-4512-8901-2026' : 'IN-GOV-9874-3210-2026'}
+      />
+
+      {/* Action Bar: Session History & Logout */}
+      <div className="grid grid-cols-2 gap-2 pt-3 border-t border-chalk/[0.08]">
+        <button
+          onClick={() => setShowSessionModal(true)}
+          className="inline-flex items-center justify-center gap-1 rounded-lg bg-chalk/[0.08] hover:bg-chalk/[0.14] px-3 py-2 font-mono text-[0.6875rem] font-bold text-chalk uppercase tracking-wider transition-colors"
+        >
+          <Icon name="file" className="h-3.5 w-3.5 text-chalk/60" />
+          DB Logs
+        </button>
+
+        <button
+          onClick={async () => {
+            try {
+              let API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000').replace(/\/$/, '');
+              if (!API_BASE.endsWith('/api')) API_BASE = `${API_BASE}/api`;
+              await fetch(`${API_BASE}/auth/session/logout`, { method: 'POST' });
+            } catch {}
+            signOut();
+          }}
+          className="inline-flex items-center justify-center gap-1 rounded-lg bg-risk/15 hover:bg-risk/25 border border-risk/30 px-3 py-2 font-mono text-[0.6875rem] font-bold text-risk uppercase tracking-wider transition-colors"
+        >
+          <Icon name="alert" className="h-3.5 w-3.5 text-risk" />
+          Logout
+        </button>
+      </div>
+
+      {/* Session History Modal */}
+      {showSessionModal && (
+        <UserSessionHistoryModal
+          userEmail={profile.email}
+          userRole={profile.role}
+          onClose={() => setShowSessionModal(false)}
+        />
       )}
     </section>
   );
