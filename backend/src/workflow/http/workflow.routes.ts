@@ -82,8 +82,23 @@ router.post(
 
 /* --- the government's dossier and document vault on a company --- */
 
-router.get('/startups/:startupId/dossier', h((req, u) => company.governmentDossier(u, req.params.startupId)));
-router.get('/startups/:startupId/documents', h((req, u) => company.getStartupDocuments(u, req.params.startupId, req.query.category as string)));
+router.get('/startups/:startupId/dossier', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await company.governmentDossier(req.profile || null, req.params.startupId);
+    return sendSuccess(res, data);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/startups/:startupId/documents', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await company.getStartupDocuments(req.profile || null, req.params.startupId, req.query.category as string);
+    return sendSuccess(res, data);
+  } catch (error) {
+    return next(error);
+  }
+});
 
 /* --- challenges --- */
 

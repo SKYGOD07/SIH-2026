@@ -63,6 +63,24 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
 };
 
 /**
+ * Optional authentication middleware. Populates req.auth & req.profile if valid token present,
+ * but proceeds without error if missing.
+ */
+export const optionalAuth = async (req: Request, _res: Response, next: NextFunction) => {
+  const token = bearerFrom(req);
+  if (!token) return next();
+
+  try {
+    const identity = await verifyAccessToken(token);
+    req.auth = identity;
+    req.profile = await syncUserProfile(identity);
+  } catch {
+    // Ignore invalid/expired token on optional routes
+  }
+  return next();
+};
+
+/**
  * Require a confirmed email address.
  *
  * Kept separate from `authenticate` so the session endpoint stays reachable

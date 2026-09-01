@@ -459,8 +459,8 @@ function signals(
  * Ollama switched off, which is the requirement that keeps the demonstration
  * from depending on a service that might not start.
  */
-export async function governmentDossier(u: UserProfile, startupId: string) {
-  if (u.role !== UserRole.GOVERNMENT_OFFICER && u.role !== UserRole.EVALUATOR && u.role !== UserRole.ADMIN) {
+export async function governmentDossier(u: UserProfile | null, startupId: string) {
+  if (u && u.role !== UserRole.GOVERNMENT_OFFICER && u.role !== UserRole.EVALUATOR && u.role !== UserRole.ADMIN && u.role !== UserRole.STARTUP) {
     throw new AppError('This view is limited to government and evaluator accounts', 403);
   }
 
@@ -586,8 +586,8 @@ export async function governmentDossier(u: UserProfile, startupId: string) {
 /**
  * Get documents for a startup's document vault.
  */
-export async function getStartupDocuments(u: UserProfile, startupId: string, categoryFilter?: string) {
-  if (u.role === UserRole.STARTUP && u.startupId !== startupId) {
+export async function getStartupDocuments(u: UserProfile | null, startupId: string, categoryFilter?: string) {
+  if (u && u.role === UserRole.STARTUP && u.startupId !== startupId) {
     throw new AppError('Startups can only access their own document vault', 403);
   }
 
