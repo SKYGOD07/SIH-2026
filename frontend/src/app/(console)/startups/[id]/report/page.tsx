@@ -146,7 +146,7 @@ function Report() {
                 label: h.label,
                 value: h.count,
                 highlight: h.isOwn,
-                suffix: h.isOwn ? `← ${name}` : undefined,
+                suffix: h.isOwn ? 'this company' : undefined,
               }))}
               max={maxHist}
               unit="companies"
@@ -162,7 +162,7 @@ function Report() {
                 label: r.level.replace(/_/g, ' ').toLowerCase(),
                 value: r.count,
                 highlight: r.isOwn,
-                suffix: r.isOwn ? `← ${name}` : undefined,
+                suffix: r.isOwn ? 'this company' : undefined,
               }))}
               max={maxRead}
               unit="companies"
@@ -358,9 +358,22 @@ function Bars({
   return (
     <ul className="flex flex-col gap-2.5">
       {rows.map((r) => (
-        <li key={r.label} className="grid grid-cols-[6.5rem_1fr_2rem] items-center gap-2.5">
-          <span className="truncate text-[0.6875rem] text-chalk/55" title={r.label}>
-            {r.label}
+        <li key={r.label} className="grid grid-cols-[9.5rem_1fr_2rem] items-center gap-2.5">
+          {/*
+            The "this company" marker lives in the label column, not after the
+            bar. Positioned after it, the marker overlapped the value on exactly
+            the rows it was meant to draw attention to.
+          */}
+          <span className="flex items-baseline gap-1.5 truncate text-[0.6875rem]" title={r.label}>
+            <span className={r.highlight ? 'text-chalk/85' : 'text-chalk/55'}>{r.label}</span>
+            {r.suffix && (
+              <span
+                className="shrink-0 font-mono text-[0.5rem] uppercase tracking-[0.1em]"
+                style={{ color: HIGHLIGHT }}
+              >
+                {r.suffix}
+              </span>
+            )}
           </span>
           <span className="relative block h-2.5 rounded-full bg-chalk/[0.07]">
             <span
@@ -371,11 +384,6 @@ function Bars({
               }}
               title={`${r.value} ${unit}`}
             />
-            {r.suffix && (
-              <span className="absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-chalk/50">
-                {r.suffix}
-              </span>
-            )}
           </span>
           <span className="text-right font-mono text-[0.6875rem] text-chalk/60">{r.value}</span>
         </li>
