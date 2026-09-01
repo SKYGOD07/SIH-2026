@@ -37,6 +37,8 @@ interface FieldSuggestion {
 }
 
 interface Company {
+  documentCount: number;
+  dossier: 'FULL' | 'PARTIAL' | 'METADATA_ONLY';
   id: string;
   legalName: string;
   displayName: string | null;
@@ -81,6 +83,12 @@ function Discover() {
   const [filters, setFilters] = useState<Filters | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  /** Server-reported total, never the length of what happens to be loaded. */
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+
   // active filter state
   const [tech, setTech] = useState<string[]>([]);
   const [minDeployments, setMinDeployments] = useState(0);
@@ -99,19 +107,29 @@ function Discover() {
       setError(null);
       try {
         const [res, opts] = await Promise.all([
-          fetchApi<{ startups: Company[] }>('/api/ai/discover/startups', {
-            method: 'POST',
-            body: JSON.stringify({
-              field: f.field,
-              technologies: tech.length ? tech : undefined,
-              minDeployments: minDeployments || undefined,
-              cybersecurityProvided: cyberOnly || undefined,
-              minReadiness: minReadiness || undefined,
-            }),
-          }),
+          fetchApi<{ startups: Company[]; total: number; hasMore: boolean }>(
+            '/api/ai/discover/startups',
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                field: f.field,
+                technologies: tech.length ? tech : undefined,
+                minDeployments: minDeployments || undefined,
+                cybersecurityProvided: cyberOnly || undefined,
+                minReadiness: minReadiness || undefined,
+                // One page. Fetching 500 companies to display twenty-four is a
+                // request whose cost grows with the dataset.
+                limit: 24,
+                offset: 0,
+              }),
+            },
+          ),
           fetchApi<Filters>(`/api/ai/discover/filters?field=${encodeURIComponent(f.field)}`),
         ]);
         setCompanies(res.startups);
+        setTotal(res.total);
+        setHasMore(res.hasMore);
+        setSelected([]);
         setFilters(opts);
         setStage('results');
       } catch (e) {
@@ -121,6 +139,35 @@ function Discover() {
     },
     [tech, minDeployments, cyberOnly, minReadiness],
   );
+
+  async function loadMore() {
+    if (!field || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetchApi<{ startups: Company[]; total: number; hasMore: boolean }>(
+        '/api/ai/discover/startups',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            field: field.field,
+            technologies: tech.length ? tech : undefined,
+            minDeployments: minDeployments || undefined,
+            cybersecurityProvided: cyberOnly || undefined,
+            minReadiness: minReadiness || undefined,
+            limit: 24,
+            offset: companies.length,
+          }),
+        },
+      );
+      setCompanies((prev) => [...prev, ...res.startups]);
+      setTotal(res.total);
+      setHasMore(res.hasMore);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load more.');
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   // Re-run when a filter changes, once results are on screen.
   useEffect(() => {
