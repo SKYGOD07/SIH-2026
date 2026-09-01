@@ -61,7 +61,6 @@ const GOVERNMENT: Workspace = {
     { href: '/ledger', label: 'Evidence & ledger', icon: 'ledger' },
   ],
   secondary: [
-    { href: '/templates', label: 'Templates', icon: 'templates' },
     { href: '/corpus', label: 'Evidence base', icon: 'corpus' },
     { href: '/intelligence', label: 'Intelligence', icon: 'intelligence' },
     { href: '/settings', label: 'Settings', icon: 'settings' },

@@ -16,7 +16,10 @@
     "demo:reset": "tsx scripts/demo.ts reset",
     "demo:fields": "tsx scripts/seed-fields.ts",
     "demo:responses": "tsx scripts/seed-responses.ts",
-    "demo:generate-companies": "tsx scripts/generate-companies.ts"
+    "demo:generate-companies": "tsx scripts/generate-companies.ts",
+    "demo:generate-evidence": "tsx scripts/generate-evidence.ts",
+    "demo:verify": "tsx scripts/verify-demo.ts",
+    "demo:dataset": "npm run demo:generate-companies && npm run demo:generate-evidence && npm run demo:verify"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

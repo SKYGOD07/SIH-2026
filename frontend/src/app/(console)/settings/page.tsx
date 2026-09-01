@@ -3,6 +3,7 @@ import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead, Card, Pill } from '@/components/console/primitives';
 import { Icon, type IconName } from '@/components/console/Icon';
 import { AIProviderPanel } from '@/components/console/AIProviderPanel';
+import { SessionSettingsCard } from '@/components/console/SessionSettingsCard';
 import { fetchDashboard } from '@/lib/api/sarthi';
 import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { STANDARD_TEMPLATES } from '@/data/templates';
@@ -10,7 +11,7 @@ import { STANDARD_TEMPLATES } from '@/data/templates';
 export const metadata: Metadata = {
   title: 'Settings',
   description:
-    'The thresholds and standards this console enforces, where each one is defined, and what is deliberately not configurable.',
+    'The thresholds and standards this console enforces, where each one is defined, and session controls.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -114,31 +115,10 @@ export default async function SettingsPage() {
         notifications={rail.notifications}
       />
 
-      {/* --- who is signed in, which is nobody --- */}
+      {/* --- Session & Authentication --- */}
       <section aria-label="Session">
-        <SectionHead title="Session" meta="Not implemented" />
-        <Card>
-          <Pill tone="signal">No authenticated session</Pill>
-
-          <p className="mt-4 max-w-[68ch] text-[0.8125rem] leading-relaxed text-chalk/55">
-            {SESSION.notice}
-          </p>
-
-          <ul className="mt-5 border-t border-chalk/[0.08] pt-4">
-            {SESSION.requires.map((item) => (
-              <li key={item} className="py-1 text-[0.78125rem] leading-relaxed text-chalk/45">
-                {item}
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-5 border-t border-chalk/[0.06] pt-4 text-[0.78125rem] leading-relaxed text-chalk/40">
-            This card previously named an officer, their department and the approvals they were
-            authorised to make. All of it was invented. Approval and scale decisions are recorded
-            against a named officer, so authentication is the one thing that must become real
-            before this console is used on an actual pilot.
-          </p>
-        </Card>
+        <SectionHead title="Session & Account Management" meta="Authentication & Audit Logs" />
+        <SessionSettingsCard />
       </section>
 
       {/* --- AI provider --- */}

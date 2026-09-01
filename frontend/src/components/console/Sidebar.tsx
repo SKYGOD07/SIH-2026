@@ -150,14 +150,6 @@ export function Sidebar() {
         <p className="mt-2 text-[0.6875rem] leading-relaxed text-chalk/50">
           Payment follows validated evidence. No tranche is released from this console without it.
         </p>
-        <Link
-          href="/templates"
-          data-cursor="open"
-          className="mt-3 inline-flex items-center gap-1.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-chalk transition-colors hover:text-signal"
-        >
-          Read the standing clauses
-          <Icon name="upRight" className="h-2.5 w-2.5" strokeWidth={2.2} />
-        </Link>
       </div>
     </nav>
   );

@@ -349,7 +349,17 @@ export function Nav() {
             </span>
           </Link>
 
-          {/* --- the primary action --- */}
+          {/* --- primary actions --- */}
+          <Link
+            href="/templates"
+            className={cn(
+              'hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-chalk/20 bg-chalk/10 px-3.5 py-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-chalk transition-all duration-500 hover:bg-chalk/20 sm:inline-flex',
+              expanded ? 'max-w-[10rem] opacity-100' : 'max-w-0 overflow-hidden px-0 opacity-0',
+            )}
+          >
+            Templates
+          </Link>
+
           <Link
             href="/dashboard"
             data-cursor="enter"
