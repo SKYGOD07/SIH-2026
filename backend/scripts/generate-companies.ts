@@ -559,14 +559,7 @@ async function main() {
    * would take responses and matches with it — this is the blanket-delete failure
    * the project's standing rules exist to prevent, and the fix is to refuse.
    */
-  const GRAMMAR_WORDS = new Set(FIELDS.flatMap((f) => f.words));
   const intendedLegal = new Set([...rows, ...reconcile].map((c) => c.legalName));
-  const teamLegal = new Set(TEAM_COMPANIES.map((t) => t.legalName));
-
-  const generatedGrammar = (legalName: string) => {
-    const m = /^(\S+) (\S+) Private Limited$/.exec(legalName);
-    return m !== null && GRAMMAR_WORDS.has(m[1]) && SUFFIX.includes(m[2]);
-  };
 
   const surplus = (
     await prisma.startup.findMany({
@@ -576,12 +569,7 @@ async function main() {
         _count: { select: { documents: true, responses: true, matches: true, pilots: true, participations: true, fundingRounds: true } },
       },
     })
-  ).filter(
-    (s) =>
-      !intendedLegal.has(s.legalName) &&
-      !teamLegal.has(s.legalName) &&
-      generatedGrammar(s.legalName),
-  );
+  ).filter((s) => !intendedLegal.has(s.legalName) && !PROTECTED.has(s.legalName));
 
   const removable = surplus.filter((s) => Object.values(s._count).every((n) => n === 0));
   const keptWithHistory = surplus.filter((s) => !removable.includes(s));
