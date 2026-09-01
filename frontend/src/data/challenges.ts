@@ -17,7 +17,7 @@ import type { Challenge } from '@/types/platform';
  * between the places that show it.
  */
 export const DEMO_NOTICE =
-  'This is a prototype. It holds no departmental records, and no figure shown here is a government decision, an eligibility determination or a procurement notice.';
+  'SIH 2026 — Innovation Procurement Demo. Company records are synthetic demonstration data inspired by common public-sector innovation domains; they are not Maharashtra government funding records and not verified government startups. No figure shown here is a government decision, an eligibility determination or a procurement notice.';
 
 export const CHALLENGES: Challenge[] = [];
 

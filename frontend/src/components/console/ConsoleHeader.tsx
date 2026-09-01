@@ -82,7 +82,7 @@ export function ConsoleHeader({
       <div className="flex items-center gap-3">
         {source ? (
           <Pill tone={source === 'unavailable' ? 'risk' : 'signal'}>
-            {source === 'unavailable' ? 'API unavailable' : 'Prototype — no live records'}
+            {source === 'unavailable' ? 'API unavailable' : 'Demo simulation'}
           </Pill>
         ) : null}
 
