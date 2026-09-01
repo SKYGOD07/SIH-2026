@@ -3,6 +3,7 @@ import healthRoutes from './health.routes';
 import authRoutes from '../auth/auth.routes';
 import sarthiRoutes from '../sarthi/http/sarthi.routes';
 import workflowRoutes from '../workflow/http/workflow.routes';
+import aiRoutes from '../sarthi/ai/ai.routes';
 
 const router = Router();
 
@@ -19,5 +20,8 @@ router.use('/workflow', workflowRoutes);
 // Sarthi — the pilot design simulator. Still in-memory; orthogonal to the
 // lifecycle above and scheduled for its own round.
 router.use('/sarthi', sarthiRoutes);
+
+// AI provider — status and test-connection. No secrets returned.
+router.use('/ai', aiRoutes);
 
 export default router;

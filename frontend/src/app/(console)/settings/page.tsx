@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead, Card, Pill } from '@/components/console/primitives';
 import { Icon, type IconName } from '@/components/console/Icon';
+import { AIProviderPanel } from '@/components/console/AIProviderPanel';
 import { fetchDashboard } from '@/lib/api/sarthi';
 import { buildRailContext, SESSION } from '@/lib/console/rail';
 import { STANDARD_TEMPLATES } from '@/data/templates';
@@ -138,6 +139,22 @@ export default async function SettingsPage() {
             before this console is used on an actual pilot.
           </p>
         </Card>
+      </section>
+
+      {/* --- AI provider --- */}
+      <section aria-label="AI provider">
+        <SectionHead
+          title="AI Provider"
+          meta="Ollama · backend-configured"
+        />
+        <AIProviderPanel />
+        <p className="mt-3 max-w-[62ch] text-[0.78125rem] leading-relaxed text-chalk/40">
+          The Ollama API key is configured in{' '}
+          <code className="font-mono text-[0.75rem] text-chalk/60">backend/.env</code> and
+          read only by the backend process. It is never sent to the browser, never included in
+          API responses, and must never be given a{' '}
+          <code className="font-mono text-[0.75rem] text-chalk/60">NEXT_PUBLIC_</code> prefix.
+        </p>
       </section>
 
       {/* --- the values --- */}
