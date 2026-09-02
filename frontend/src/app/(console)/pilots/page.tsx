@@ -1,71 +1,180 @@
-import type { Metadata } from 'next';
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
-import { AwaitingData } from '@/components/console/Figure';
-import { Card, SectionHead } from '@/components/console/primitives';
-import { fetchDashboard } from '@/lib/api/sarthi';
-import { PAYMENT_RULE } from '@/data/pilots';
-
-export const metadata: Metadata = {
-  title: 'Pilots',
-  description:
-    'Bounded deployments under a signed agreement, with milestone evidence validated before any payment is released.',
-};
-
-export const dynamic = 'force-dynamic';
+import { SectionHead } from '@/components/console/primitives';
+import { RoleGate } from '@/components/auth/RoleGate';
+import { fetchApi } from '@/lib/api';
 
 /**
- * Pilots.
+ * Contracted pilots.
  *
- * Empty. This page previously carried four invented pilots — sixteen milestones,
- * rupee values per tranche, real Pune ward names attached to a fabricated
- * deployment, measured outcome deltas, and a "90 / 100 independent validation
- * score" against a decision to scale. None of it had happened.
- *
- * What survives is the part that is ours to state rather than to report: the
- * rule the ledger enforces. That is a property of the mechanism, true before any
- * pilot exists, and it is the reason this page will be worth reading when one
- * does.
+ * Reads `/workflow/pilots/mine`, which returns the caller's own — a government
+ * officer sees pilots on challenges they own, a startup sees its own pilot.
+ * The same endpoint serves both because ownership is resolved server-side from
+ * the verified token, not from a role check in the browser.
  */
-export default async function PilotsPage() {
-  const { source } = await fetchDashboard();
+
+interface PilotRow {
+  id: string;
+  status: string;
+  outcome: string | null;
+  department: string;
+  location: string | null;
+  contractValue: string | number;
+  durationDays: number;
+  origin: string;
+  createdAt: string;
+  challenge?: { title: string; targetMetric: string; targetValue: number | null };
+  startup?: { legalName: string; displayName: string | null };
+}
+
+const STATUS: Record<string, { label: string; tone: 'signal' | 'muted' | 'done' | 'risk' }> = {
+  PLANNED: { label: 'Planned', tone: 'muted' },
+  ACTIVE: { label: 'Active', tone: 'signal' },
+  AWAITING_VALIDATION: { label: 'Awaiting validation', tone: 'signal' },
+  CLOSED: { label: 'Closed', tone: 'done' },
+  CANCELLED: { label: 'Cancelled', tone: 'risk' },
+};
+
+export default function PilotsPage() {
+  return (
+    <RoleGate roles={['GOVERNMENT_OFFICER', 'EVALUATOR', 'ADMIN']}>
+      <Pilots />
+    </RoleGate>
+  );
+}
+
+function Pilots() {
+  const [rows, setRows] = useState<PilotRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchApi<PilotRow[]>('/api/workflow/pilots/mine')
+      .then(setRows)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Could not load pilots.'));
+  }, []);
+
+  const money = (v: string | number) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? `₹${n.toLocaleString('en-IN')}` : '—';
+  };
 
   return (
     <>
       <ConsoleHeader
         title="Pilots"
-        subtitle="No pilots have been contracted."
-        source={source}
+        subtitle="Contracted pilots and where each one has reached."
+        source="demonstration"
       />
 
-      <AwaitingData
-        title="No pilots on record"
-        holds="Each contracted pilot: its scope and boundary, milestone chain, evidence filed against each milestone, validated outcome metrics against baseline, and the scale decision with the evidence behind it."
-        blockedBy="The four pilots previously shown here were invented, down to the ward names and the validation scores. They have been removed rather than relabelled."
-        next="A challenge reaching contract. The pilot record is created from the pilot agreement template, and the ledger begins at its first milestone."
-      />
+      {error && <p className="card border-risk/30 p-4 text-[0.8125rem] text-risk">{error}</p>}
 
-      {/* --- what is true before any pilot exists --- */}
-      <section aria-label="The rule">
-        <SectionHead title="The rule a pilot is run under" meta="Enforced in code" />
+      <section aria-label="Pilots">
+        <SectionHead title="Contracted" meta={rows ? `${rows.length}` : undefined} />
 
-        <Card>
-          <p className="font-display text-[clamp(1.25rem,3vw,1.875rem)] font-extrabold uppercase tracking-[-0.03em] text-chalk">
-            {PAYMENT_RULE}
-          </p>
+        {rows === null ? (
+          <div className="card p-5 text-[0.8125rem] text-chalk/50">Loading…</div>
+        ) : rows.length === 0 ? (
+          <div className="card p-6">
+            <span className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-signal">
+              No pilot yet
+            </span>
+            <p className="mt-2.5 max-w-[58ch] text-[0.875rem] leading-relaxed text-chalk/60">
+              A pilot exists once a startup has been selected against a challenge. Review the
+              candidates on a challenge and select one — the pilot, its milestone chain and its
+              measurement are created by that decision.
+            </p>
+            <Link
+              href="/challenges"
+              className="mt-5 inline-block font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-signal hover:underline"
+            >
+              Review challenges ↗
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {rows.map((p) => {
+              const s = STATUS[p.status] ?? { label: p.status, tone: 'muted' as const };
+              return (
+                <Link
+                  key={p.id}
+                  href={`/pilots/${p.id}`}
+                  className="card block p-5 transition-colors hover:border-signal/40"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`font-mono text-[0.625rem] uppercase tracking-[0.16em] ${
+                            s.tone === 'signal'
+                              ? 'text-signal'
+                              : s.tone === 'done'
+                                ? 'text-validated'
+                                : s.tone === 'risk'
+                                  ? 'text-risk'
+                                  : 'text-chalk/40'
+                          }`}
+                        >
+                          {s.label}
+                        </span>
+                        {p.origin === 'DEMO' && (
+                          <span className="rounded-full border border-chalk/25 px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.12em] text-chalk/55">
+                            Demo simulation
+                          </span>
+                        )}
+                        {/* An outcome only exists once a pilot has closed. */}
+                        {p.outcome && (
+                          <span className="font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-chalk/55">
+                            {p.outcome.replace(/_/g, ' ').toLowerCase()}
+                          </span>
+                        )}
+                      </div>
 
-          <p className="mt-5 max-w-[68ch] text-[0.8125rem] leading-relaxed text-chalk/55">
-            The milestone ledger is a state machine with no transition from filed evidence to
-            paid. There is no argument to any method that releases an unapproved tranche, so an
-            officer cannot release one early through this console — only by changing the service
-            that refuses it, which leaves a diff.
-          </p>
+                      <p className="mt-2 font-display text-[1.0625rem] font-bold leading-tight text-chalk">
+                        {p.challenge?.title ?? 'Pilot'}
+                      </p>
+                      <p className="mt-1 text-[0.8125rem] text-chalk/55">
+                        {p.startup?.displayName ?? p.startup?.legalName ?? 'Selected startup'}
+                        {p.location ? ` · ${p.location}` : ''}
+                      </p>
+                    </div>
+                    <span className="shrink-0 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-signal">
+                      Open ↗
+                    </span>
+                  </div>
 
-          <p className="mt-4 max-w-[68ch] text-[0.78125rem] leading-relaxed text-chalk/40">
-            This is a property of the mechanism rather than a claim about any pilot, which is why
-            it is still on the page while the records are not.
-          </p>
-        </Card>
+                  <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-chalk/[0.08] pt-3.5 sm:grid-cols-4">
+                    <Fact label="Department" value={p.department} />
+                    <Fact label="Contract" value={money(p.contractValue)} />
+                    <Fact label="Duration" value={`${p.durationDays} days`} />
+                    <Fact
+                      label="Target"
+                      value={
+                        p.challenge?.targetValue != null
+                          ? `${p.challenge.targetValue} · ${p.challenge.targetMetric}`
+                          : (p.challenge?.targetMetric ?? '—')
+                      }
+                    />
+                  </dl>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </section>
     </>
+  );
+}
+
+function Fact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-chalk/35">{label}</dt>
+      <dd className="mt-1 truncate text-[0.8125rem] text-chalk/75" title={value}>
+        {value}
+      </dd>
+    </div>
   );
 }

@@ -1,10 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ConsoleHeader } from '@/components/console/ConsoleHeader';
 import { SectionHead } from '@/components/console/primitives';
 import { fetchApi } from '@/lib/api';
+
+interface Evidence {
+  id: string;
+  label: string;
+  status: string;
+  reviewNote: string | null;
+  milestoneId: string | null;
+}
 
 interface Milestone {
   id: string;
@@ -14,6 +22,10 @@ interface Milestone {
   status: string;
   payment: string;
   dueOn: string;
+  /** The artefacts this milestone's payment is conditional on. */
+  evidenceRequired: string[];
+  evidence: Evidence[];
+  rejectionReason: string | null;
 }
 
 interface PilotDetail {
@@ -33,28 +45,52 @@ export default function PilotDetailPage({ params }: { params: { id: string } }) 
   const [pilot, setPilot] = useState<PilotDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filing, setFiling] = useState<string | null>(null);
+
+  const load = useCallback(
+    () => fetchApi<PilotDetail>(`/api/workflow/pilots/${params.id}`).then(setPilot),
+    [params.id],
+  );
 
   useEffect(() => {
     let live = true;
-    fetchApi<PilotDetail>(`/api/workflow/pilots/${params.id}`)
-      .then((r) => {
-        if (live) {
-          setPilot(r);
-          setLoading(false);
-        }
-      })
+    load()
       .catch((e) => {
-        if (live) {
-          setError(e instanceof Error ? e.message : 'Failed to fetch pilot details');
-          setLoading(false);
-        }
+        if (live) setError(e instanceof Error ? e.message : 'Failed to fetch pilot details');
+      })
+      .finally(() => {
+        if (live) setLoading(false);
       });
-    
+
     return () => { live = false; };
-  }, [params.id]);
+  }, [load]);
+
+  /**
+   * File one artefact against a milestone.
+   *
+   * Filing is not claiming: the artefact arrives as SUBMITTED and stays there
+   * until a government officer accepts it. That is why this returns the
+   * milestone to the board rather than showing a success state — the next move
+   * is not the startup's.
+   */
+  const fileEvidence = async (milestoneId: string, label: string, reference: string) => {
+    setFiling(milestoneId);
+    setError(null);
+    try {
+      await fetchApi(`/api/workflow/pilots/${params.id}/evidence`, {
+        method: 'POST',
+        body: JSON.stringify({ milestoneId, label, reference }),
+      });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'The filing was refused.');
+    } finally {
+      setFiling(null);
+    }
+  };
 
   if (loading) return <div className="p-8 text-chalk/50">Loading pilot details...</div>;
-  if (error || !pilot) return <div className="p-8 text-risk">{error}</div>;
+  if (!pilot) return <div className="p-8 text-risk">{error ?? 'Pilot not found.'}</div>;
 
   return (
     <>
@@ -114,13 +150,56 @@ export default function PilotDetailPage({ params }: { params: { id: string } }) 
                     </div>
                     
                     <p className="text-[0.875rem] text-chalk/70 mt-2">{m.description}</p>
-                    
-                    {m.status === 'IN_PROGRESS' && (
-                      <div className="mt-4 pt-4 border-t border-chalk/10">
-                        <button className="bg-chalk/10 hover:bg-chalk/20 text-chalk px-4 py-2 rounded text-[0.8125rem] transition-colors">
-                          Submit Evidence
-                        </button>
-                      </div>
+
+                    {m.rejectionReason && m.status === 'REJECTED' && (
+                      <p className="mt-2 border-l-2 border-risk/40 pl-3 text-[0.8125rem] text-risk/90">
+                        Returned: {m.rejectionReason}
+                      </p>
+                    )}
+
+                    {/* What this milestone owes, and what has actually been
+                        filed against it. Showing the required list unfiled is
+                        the point — it is the startup's to-do, not an error. */}
+                    <div className="mt-4 pt-4 border-t border-chalk/10">
+                      <span className="font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-chalk/35">
+                        Required evidence
+                      </span>
+                      <ul className="mt-2 flex flex-col gap-1.5">
+                        {(m.evidenceRequired ?? []).map((required) => {
+                          const filed = (m.evidence ?? []).find(
+                            (e) => e.label.toLowerCase() === required.toLowerCase(),
+                          );
+                          return (
+                            <li key={required} className="flex flex-wrap items-center gap-x-3">
+                              <span className="text-[0.8125rem] text-chalk/70">{required}</span>
+                              <span
+                                className={`font-mono text-[0.5625rem] uppercase tracking-[0.1em] ${
+                                  !filed
+                                    ? 'text-chalk/30'
+                                    : filed.status === 'ACCEPTED'
+                                      ? 'text-validated'
+                                      : filed.status === 'REJECTED'
+                                        ? 'text-risk'
+                                        : 'text-signal'
+                                }`}
+                              >
+                                {filed ? filed.status.toLowerCase() : 'not filed'}
+                              </span>
+                              {filed?.reviewNote && (
+                                <span className="text-[0.6875rem] text-chalk/45">{filed.reviewNote}</span>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+
+                    {(m.status === 'IN_PROGRESS' || m.status === 'REJECTED') && (
+                      <EvidenceForm
+                        options={m.evidenceRequired ?? []}
+                        busy={filing === m.id}
+                        onSubmit={(label, reference) => fileEvidence(m.id, label, reference)}
+                      />
                     )}
                   </div>
                 ))
