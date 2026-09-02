@@ -45,7 +45,7 @@ export default function ChallengeDetailPage({ params }: { params: { id: string }
     
     Promise.all([
       fetchApi<OpenChallenge[]>('/api/workflow/challenges/open'),
-      fetchApi<{ challengeId: string; status: string; solutionSummary: string; capabilities: string[]; technologies: string[]; deploymentApproach: string; expectedResult: string; pilotApproach: string; constraints?: string }[]>('/api/workflow/responses/mine')
+      fetchApi<{ challengeId: string; status: 'DRAFT' | 'SUBMITTED'; solutionSummary: string; capabilities: string[]; technologies: string[]; deploymentApproach: string; expectedResult: string; pilotApproach: string; constraints?: string }[]>('/api/workflow/responses/mine')
     ]).then(([challenges, responses]) => {
       if (!live) return;
       const found = challenges.find((c) => c.id === params.id);
