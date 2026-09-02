@@ -82,7 +82,15 @@ function Challenges() {
       {error && <p className="card border-risk/30 p-4 text-[0.8125rem] text-risk">{error}</p>}
 
       <section aria-label="Challenges">
-        <SectionHead title="Your challenges" meta={rows ? `${rows.length}` : undefined} />
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <SectionHead title="Your challenges" meta={rows ? `${rows.length}` : undefined} />
+          <Link
+            href="/challenges/new"
+            className="rounded-[8px] bg-signal px-4 py-2 font-mono text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-void transition-opacity hover:opacity-90"
+          >
+            + Create Challenge
+          </Link>
+        </div>
 
         {rows === null ? (
           <div className="card p-5 text-[0.8125rem] text-chalk/50">Loading…</div>

@@ -235,22 +235,21 @@ export function AIAssistancePanel() {
         </button>
       </div>
 
-      {/* what an officer needs */}
+      {/* what a user needs */}
       <div className="rounded-[10px] border border-chalk/[0.06] bg-void/40 px-3">
         <Row label="Provider" value={status.provider} />
+        <Row label="Model" value={status.model ?? <NotSet />} />
         <Row
           label="Status"
           value={
             state === 'ready' ? (
               <span className="text-validated">Ready</span>
             ) : (
-              <span className="text-risk">{status.reason ?? 'Not available'}</span>
+              <span className="text-risk">{status.reason ?? 'Unavailable (Fallback Mode Active)'}</span>
             )
           }
         />
-        <Row label="Model" value={status.model ?? <NotSet />} />
-        <Row label="Embedding" value={status.embedModel ?? <NotSet />} />
-        <Row label="Last AI request" value={when(status.lastRequestAt)} />
+        <Row label="Last tested" value={when(status.lastRequestAt)} />
       </div>
 
       {/*
@@ -369,59 +368,6 @@ export function AIAssistancePanel() {
         </div>
       )}
 
-      {/*
-       * Configuration, for administrators only. The backend omits this block
-       * entirely for everyone else, so this is not a UI-level hide.
-       */}
-      {isAdmin && status.configuration && (
-        <details className="group mt-4">
-          <summary className="flex cursor-pointer list-none items-center gap-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-chalk/40 transition-colors hover:text-chalk/70">
-            <Icon name="chevronRight" className="h-3 w-3 transition-transform group-open:rotate-90" />
-            Configuration · administrator
-          </summary>
-
-          <div className="mt-3 rounded-[10px] border border-chalk/[0.06] bg-void/40 px-3">
-            <Row
-              label="Host"
-              value={<code className="font-mono text-[0.75rem]">{status.configuration.baseUrl}</code>}
-            />
-            <Row label="Deployment" value={status.configuration.hosted ? 'Hosted' : 'Local'} />
-            <Row
-              label="Credential"
-              value={
-                status.configuration.hosted ? (
-                  status.configuration.apiKeyConfigured ? (
-                    <span className="text-validated">Configured</span>
-                  ) : (
-                    <span className="text-risk">Not set</span>
-                  )
-                ) : (
-                  <span className="italic text-chalk/40">not required</span>
-                )
-              }
-            />
-            <Row label="Timeout" value={`${status.configuration.timeoutMs} ms`} />
-            <Row label="Environment" value={status.configuration.environment} />
-            <Row
-              label="Per-user credentials"
-              value={
-                status.configuration.perUserCredentialStorage.ready ? (
-                  <span className="text-validated">Key present</span>
-                ) : (
-                  <span className="text-chalk/40">{status.configuration.perUserCredentialStorage.reason}</span>
-                )
-              }
-            />
-          </div>
-
-          <p className="mt-2.5 max-w-[68ch] text-[0.75rem] leading-relaxed text-chalk/40">
-            Set in the backend environment and read only by the backend process. The credential is never
-            returned by an API response and must never carry a{' '}
-            <code className="font-mono text-[0.6875rem] text-chalk/60">NEXT_PUBLIC_</code> prefix — the
-            browser calls this API, and this API calls the model.
-          </p>
-        </details>
-      )}
     </div>
   );
 }

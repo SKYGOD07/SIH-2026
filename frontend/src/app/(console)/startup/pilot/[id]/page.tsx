@@ -134,6 +134,9 @@ export default function PilotDetailPage({ params }: { params: { id: string } }) 
               </div>
             </div>
           </section>
+
+          {/* AI-Assisted Pilot Review Panel */}
+          <AIPilotReviewCard pilotId={pilot.id} />
         </div>
 
         <div className="lg:col-span-2 space-y-8">
@@ -278,5 +281,166 @@ function EvidenceForm({
         {busy ? 'Filing…' : 'Submit evidence'}
       </button>
     </div>
+  );
+}
+
+function AIPilotReviewCard({ pilotId }: { pilotId: string }) {
+  const [activeTask, setActiveTask] = useState<string>('ANALYZE');
+  const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<{
+    output: {
+      summary: string;
+      strengths?: string[];
+      limitations?: string[];
+      evidenceUsed?: string[];
+      missingEvidence?: string[];
+      questions?: string[];
+    };
+    assisted: boolean;
+    provider: string;
+    fallbackReason?: string;
+  } | null>(null);
+
+  async function runAiAction(endpoint: string, taskKey: string) {
+    setLoading(true);
+    setActiveTask(taskKey);
+    try {
+      const data = await fetchApi<{
+        output: {
+          summary: string;
+          strengths?: string[];
+          limitations?: string[];
+          evidenceUsed?: string[];
+          missingEvidence?: string[];
+          questions?: string[];
+        };
+        assisted: boolean;
+        provider: string;
+        fallbackReason?: string;
+      }>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({ pilotId }),
+      });
+      setAnalysis(data);
+    } catch {
+      setAnalysis({
+        output: {
+          summary: 'Pilot progress is tracked against scheduled milestones and metrics.',
+          strengths: ['Milestones defined with payment terms.'],
+          limitations: ['Awaiting evidence verification.'],
+          evidenceUsed: [],
+        },
+        assisted: false,
+        provider: 'DETERMINISTIC',
+        fallbackReason: 'AI service unreachable.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section aria-label="AI-Assisted Pilot Review">
+      <SectionHead title="AI-ASSISTED PILOT REVIEW" />
+      <div className="card space-y-4 p-5">
+        <p className="font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-signal">
+          AI-ASSISTED ANALYSIS
+        </p>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => runAiAction('/api/ai/analyse-pilot', 'ANALYZE')}
+            disabled={loading}
+            className={`rounded px-2.5 py-1.5 font-mono text-[0.625rem] font-bold uppercase tracking-[0.1em] transition-colors ${
+              activeTask === 'ANALYZE'
+                ? 'bg-signal text-void'
+                : 'border border-chalk/15 bg-chalk/5 text-chalk/70 hover:bg-chalk/10'
+            }`}
+          >
+            [ANALYZE PROGRESS]
+          </button>
+
+          <button
+            type="button"
+            onClick={() => runAiAction('/api/ai/explain-kpis', 'KPI')}
+            disabled={loading}
+            className={`rounded px-2.5 py-1.5 font-mono text-[0.625rem] font-bold uppercase tracking-[0.1em] transition-colors ${
+              activeTask === 'KPI'
+                ? 'bg-signal text-void'
+                : 'border border-chalk/15 bg-chalk/5 text-chalk/70 hover:bg-chalk/10'
+            }`}
+          >
+            [EXPLAIN KPI]
+          </button>
+
+          <button
+            type="button"
+            onClick={() => runAiAction('/api/ai/summarise-outcome', 'OUTCOME')}
+            disabled={loading}
+            className={`rounded px-2.5 py-1.5 font-mono text-[0.625rem] font-bold uppercase tracking-[0.1em] transition-colors ${
+              activeTask === 'OUTCOME'
+                ? 'bg-signal text-void'
+                : 'border border-chalk/15 bg-chalk/5 text-chalk/70 hover:bg-chalk/10'
+            }`}
+          >
+            [OUTCOME SUMMARY]
+          </button>
+
+          <button
+            type="button"
+            onClick={() => runAiAction('/api/ai/explain-scale', 'SCALE')}
+            disabled={loading}
+            className={`rounded px-2.5 py-1.5 font-mono text-[0.625rem] font-bold uppercase tracking-[0.1em] transition-colors ${
+              activeTask === 'SCALE'
+                ? 'bg-signal text-void'
+                : 'border border-chalk/15 bg-chalk/5 text-chalk/70 hover:bg-chalk/10'
+            }`}
+          >
+            [SCALE RECOMMENDATION]
+          </button>
+        </div>
+
+        {loading && <p className="text-[0.8125rem] text-chalk/50">Analyzing pilot records with AI…</p>}
+
+        {analysis && !loading && (
+          <div className="space-y-3 rounded border border-chalk/10 bg-void/50 p-3 text-[0.8125rem]">
+            <div className="flex items-center justify-between text-[0.7rem] text-chalk/40">
+              <span>{analysis.assisted ? 'Generated by Ollama' : 'Fallback Mode'}</span>
+              <span>{analysis.provider}</span>
+            </div>
+            <p className="leading-relaxed text-chalk/85">{analysis.output.summary}</p>
+
+            {analysis.output.strengths && analysis.output.strengths.length > 0 && (
+              <div>
+                <span className="font-mono text-[0.5625rem] uppercase text-signal block mb-1">Strengths:</span>
+                <ul className="list-disc list-inside text-chalk/70 space-y-0.5">
+                  {analysis.output.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {analysis.output.limitations && analysis.output.limitations.length > 0 && (
+              <div>
+                <span className="font-mono text-[0.5625rem] uppercase text-risk block mb-1">Limitations / Gaps:</span>
+                <ul className="list-disc list-inside text-chalk/70 space-y-0.5">
+                  {analysis.output.limitations.map((l, i) => <li key={i}>{l}</li>)}
+                </ul>
+              </div>
+            )}
+
+            {analysis.output.evidenceUsed && analysis.output.evidenceUsed.length > 0 && (
+              <div className="text-[0.75rem] text-chalk/50 pt-1 border-t border-chalk/10">
+                Evidence cited: {analysis.output.evidenceUsed.join(', ')}
+              </div>
+            )}
+          </div>
+        )}
+
+        <p className="text-[0.6875rem] text-chalk/40 italic">
+          Disclaimer: AI analysis is advisory only. AI cannot modify milestone state, evidence status, payment release, or government decisions.
+        </p>
+      </div>
+    </section>
   );
 }

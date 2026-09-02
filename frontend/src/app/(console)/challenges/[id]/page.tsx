@@ -293,7 +293,7 @@ function ChallengeReview() {
             {view === 'list' ? (
               <div className="flex flex-col gap-3">
                 {matches.map((m, i) => (
-                  <MatchCard key={m.id} match={m} rank={i + 1} />
+                  <MatchCard key={m.id} match={m} rank={i + 1} challengeId={params.id} />
                 ))}
               </div>
             ) : (
@@ -330,8 +330,46 @@ function ChallengeReview() {
   );
 }
 
-function MatchCard({ match, rank }: { match: MatchRow; rank: number }) {
+function MatchCard({ match, rank, challengeId }: { match: MatchRow; rank: number; challengeId: string }) {
   const bd = match.breakdown ?? {};
+  const [aiExplanation, setAiExplanation] = useState<{
+    output: { summary: string; strengths: string[]; limitations: string[]; recommendationExplanation: string };
+    assisted: boolean;
+    provider: string;
+    fallbackReason?: string;
+  } | null>(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+
+  async function handleExplainMatch() {
+    setLoadingAi(true);
+    try {
+      const res = await fetchApi<{
+        output: { summary: string; strengths: string[]; limitations: string[]; recommendationExplanation: string };
+        assisted: boolean;
+        provider: string;
+        fallbackReason?: string;
+      }>('/api/ai/explain-match', {
+        method: 'POST',
+        body: JSON.stringify({ challengeId, startupId: match.startupId }),
+      });
+      setAiExplanation(res);
+    } catch {
+      setAiExplanation({
+        output: {
+          summary: `${match.startup.displayName ?? match.startup.legalName} scores ${(match.overallScore * 100).toFixed(0)}% overall. ${match.rationale}`,
+          strengths: bd.strengths ?? [],
+          limitations: bd.limitations ?? [],
+          recommendationExplanation: 'Computed deterministically from database records.',
+        },
+        assisted: false,
+        provider: 'DETERMINISTIC',
+        fallbackReason: 'AI service unreachable.',
+      });
+    } finally {
+      setLoadingAi(false);
+    }
+  }
+
   return (
     <article className="card p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -363,8 +401,7 @@ function MatchCard({ match, rank }: { match: MatchRow; rank: number }) {
         </div>
       </div>
 
-      {/* Per-axis bars. A number an officer cannot take apart is a number they
-          cannot justify, so every axis is shown, not just the total. */}
+      {/* Per-axis bars */}
       <div className="mt-4 grid gap-2.5 border-t border-chalk/[0.08] pt-4 sm:grid-cols-2">
         {AXES.map((a) => {
           const v = (match[a.key] as number) ?? 0;
@@ -409,16 +446,43 @@ function MatchCard({ match, rank }: { match: MatchRow; rank: number }) {
         </div>
       )}
 
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-chalk/[0.08] pt-3.5">
-        <span className="font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-chalk/35">
-          {match.evaluations?.length ? `${match.evaluations.length} evaluation(s)` : 'Not yet evaluated'}
-        </span>
-        <Link
-          href={`/startups/${match.startupId}`}
-          className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-signal hover:underline"
+      {/* AI Explanation Panel */}
+      {aiExplanation && (
+        <div className="mt-4 rounded-[8px] border border-signal/30 bg-signal/5 p-4 text-[0.8125rem] space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[0.625rem] font-bold uppercase tracking-[0.12em] text-signal">
+              AI-ASSISTED MATCH EXPLANATION {aiExplanation.assisted ? '(Ollama)' : '(Fallback Mode)'}
+            </span>
+            <span className="text-[0.7rem] text-chalk/40">Scores remain immutable</span>
+          </div>
+          <p className="text-chalk/80 leading-relaxed">{aiExplanation.output.summary}</p>
+          {aiExplanation.output.recommendationExplanation && (
+            <p className="text-[0.75rem] text-chalk/60 italic">{aiExplanation.output.recommendationExplanation}</p>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-chalk/[0.08] pt-3.5">
+        <button
+          type="button"
+          onClick={handleExplainMatch}
+          disabled={loadingAi}
+          className="rounded-[6px] border border-signal/40 bg-signal/10 px-3 py-1.5 font-mono text-[0.625rem] font-bold uppercase tracking-[0.12em] text-signal hover:bg-signal/20 disabled:opacity-40"
         >
-          Open dossier ↗
-        </Link>
+          {loadingAi ? 'Explaining…' : '✨ Why this match?'}
+        </button>
+
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-[0.5625rem] uppercase tracking-[0.12em] text-chalk/35">
+            {match.evaluations?.length ? `${match.evaluations.length} evaluation(s)` : 'Not yet evaluated'}
+          </span>
+          <Link
+            href={`/startups/${match.startupId}`}
+            className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-signal hover:underline"
+          >
+            Open dossier ↗
+          </Link>
+        </div>
       </div>
     </article>
   );

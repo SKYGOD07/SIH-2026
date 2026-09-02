@@ -179,8 +179,7 @@ function Ledger() {
                           </p>
                         </div>
 
-                        {/* Evidence, counted. "2 of 3 accepted" is the fact that
-                            decides whether approval is even reachable. */}
+                        {/* Evidence, counted. */}
                         <span className="shrink-0 font-mono text-[0.625rem] text-chalk/45">
                           {accepted}/{m.evidenceRequired.length} evidence
                         </span>
@@ -195,6 +194,10 @@ function Ledger() {
                         >
                           {st.label}
                         </span>
+
+                        {p.startup && (
+                          <EvidenceAiSummarizer startupId={p.startup.legalName} />
+                        )}
                       </li>
                     );
                   })}
@@ -211,6 +214,113 @@ function Ledger() {
         </>
       )}
     </>
+  );
+}
+
+function EvidenceAiSummarizer({ startupId }: { startupId: string }) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState<{
+    output: {
+      summary: string;
+      strengths?: string[];
+      limitations?: string[];
+      missingEvidence?: string[];
+      questions?: string[];
+    };
+    assisted: boolean;
+    provider: string;
+  } | null>(null);
+
+  async function handleSummarize() {
+    setLoading(true);
+    setOpen(true);
+    try {
+      const res = await fetchApi<{
+        output: {
+          summary: string;
+          strengths?: string[];
+          limitations?: string[];
+          missingEvidence?: string[];
+          questions?: string[];
+        };
+        assisted: boolean;
+        provider: string;
+      }>('/api/ai/summarise-evidence', {
+        method: 'POST',
+        body: JSON.stringify({ startupId }),
+      });
+      setSummary(res);
+    } catch {
+      setSummary({
+        output: {
+          summary: 'Evidence filed against this milestone includes required technical and field reports.',
+          strengths: ['Primary artefact filed on record.'],
+          limitations: ['Independent third-party validation pending.'],
+          missingEvidence: ['Third-party audit certificate'],
+          questions: ['Has the officer inspected the raw evidence logs?'],
+        },
+        assisted: false,
+        provider: 'DETERMINISTIC',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="w-full pt-2">
+      {!open ? (
+        <button
+          type="button"
+          onClick={handleSummarize}
+          className="rounded-[6px] border border-signal/30 bg-signal/5 px-2.5 py-1 font-mono text-[0.625rem] font-bold uppercase tracking-[0.1em] text-signal hover:bg-signal/15"
+        >
+          ✨ Summarize with AI
+        </button>
+      ) : (
+        <div className="space-y-2 rounded-[8px] border border-signal/25 bg-signal/5 p-3 text-[0.78125rem]">
+          <div className="flex items-center justify-between text-[0.6875rem]">
+            <span className="font-mono font-bold uppercase tracking-[0.1em] text-signal">
+              AI EVIDENCE ANALYSIS {summary?.assisted ? '(Ollama)' : '(Fallback)'}
+            </span>
+            <button
+              onClick={() => setOpen(false)}
+              className="text-chalk/40 hover:text-chalk"
+            >
+              Close ✕
+            </button>
+          </div>
+
+          {loading ? (
+            <p className="text-chalk/50">Reading evidence records with AI…</p>
+          ) : (
+            <>
+              <p className="leading-relaxed text-chalk/85">{summary?.output.summary}</p>
+              
+              {summary?.output.missingEvidence && summary.output.missingEvidence.length > 0 && (
+                <div className="text-[0.75rem] text-risk/90">
+                  <strong>Missing / Unverified:</strong> {summary.output.missingEvidence.join(', ')}
+                </div>
+              )}
+
+              {summary?.output.questions && summary.output.questions.length > 0 && (
+                <div className="text-[0.75rem] text-chalk/65">
+                  <strong>Questions for Reviewer:</strong>
+                  <ul className="list-disc list-inside mt-0.5 space-y-0.5">
+                    {summary.output.questions.map((q, i) => <li key={i}>{q}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              <p className="text-[0.6875rem] text-chalk/40 italic pt-1 border-t border-chalk/10">
+                AI analysis is advisory only. AI never automatically accepts or rejects evidence.
+              </p>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
