@@ -601,10 +601,17 @@ async function main() {
    *   1. `origin = DEMO`          never touches a real record
    *   2. not in PROTECTED         every hand-seeded company is listed by name
    *   3. not in the intended set  it is genuinely surplus
-   *   4. zero dependent rows      no document, response, match, pilot,
-   *                               participation or funding round
+   *   4. no workflow history      no challenge response, no AI match, no pilot
    *
-   * Guard 4 is the one that matters. A company that has acquired *any* history is
+   * Guard 4 is the one that matters, and it is deliberately narrower than "no
+   * dependent rows at all". Documents, funding rounds and programme
+   * participations are written by `generate-evidence.ts` and can be written
+   * again from the same seed, so refusing on them stranded 208 renamed companies
+   * that were surplus by every meaningful test. A response, a match or a pilot
+   * is different in kind: it is workflow somebody drove, it cannot be
+   * regenerated, and a cascade that took one would be the blanket delete the
+   * project's standing rules exist to prevent. So those three refuse, and the
+   * company is reported instead. A company that has acquired *any* history is
    * left in place and reported rather than deleted, because a cascade from here
    * would take responses and matches with it — this is the blanket-delete failure
    * the project's standing rules exist to prevent, and the fix is to refuse.
@@ -621,14 +628,29 @@ async function main() {
     })
   ).filter((s) => !intendedLegal.has(s.legalName) && !PROTECTED_LEGAL_NAMES.has(s.legalName));
 
-  const removable = surplus.filter((s) => Object.values(s._count).every((n) => n === 0));
+  const removable = surplus.filter(
+    (s) => s._count.responses === 0 && s._count.matches === 0 && s._count.pilots === 0,
+  );
   const keptWithHistory = surplus.filter((s) => !removable.includes(s));
 
   let pruned = 0;
   for (let i = 0; i < removable.length; i += 100) {
-    const res = await prisma.startup.deleteMany({
-      where: { id: { in: removable.slice(i, i + 100).map((s) => s.id) } },
+    const ids = removable.slice(i, i + 100).map((s) => s.id);
+
+    /*
+     * `StartupDocument` cascades with the company but `Document` does not, so
+     * deleting the company alone leaves its placeholder documents behind as rows
+     * nothing points at. They are scoped to the generated dossier prefix, so a
+     * real imported pack — which never carries that prefix — cannot be caught.
+     */
+    await prisma.document.deleteMany({
+      where: {
+        originalPath: { startsWith: 'demo://dossier/' },
+        startupDocuments: { some: { startupId: { in: ids } } },
+      },
     });
+
+    const res = await prisma.startup.deleteMany({ where: { id: { in: ids } } });
     pruned += res.count;
   }
 

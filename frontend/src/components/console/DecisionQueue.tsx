@@ -103,6 +103,17 @@ export function DecisionQueue() {
                 <Label tone={NEEDS_DECISION.has(c.status) ? 'signal' : 'muted'}>
                   {c.status.replace(/_/g, ' ')}
                 </Label>
+                {/*
+                  Disclosure, not decoration. A simulated challenge sitting in a
+                  government decision queue is the single easiest thing on this
+                  console to mistake for a real procurement notice, so the label
+                  travels with the row rather than living only on the detail page.
+                */}
+                {c.origin === 'DEMO' && (
+                  <span className="rounded-full border border-chalk/25 px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.12em] text-chalk/55">
+                    Demo simulation
+                  </span>
+                )}
               </div>
               <p className="mt-2 font-display text-[1rem] font-bold leading-tight text-chalk">
                 {c.title}
