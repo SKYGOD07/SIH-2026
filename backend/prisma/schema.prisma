@@ -1102,6 +1102,11 @@ enum AuditAction {
   PAYMENT_RELEASED
   VALIDATION_RECORDED
   SCALE_DECISION_RECORDED
+  /// A model drafted or summarised something. Advisory by definition: it is
+  /// never the same event as a person filing an evaluation or a decision, and
+  /// keeping it a separate action is what stops the trail from claiming a
+  /// human reviewed a company that only a model read.
+  AI_ANALYSIS_GENERATED
 }
 
 /// One immutable line in the lifecycle trail.

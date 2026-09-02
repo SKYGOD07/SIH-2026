@@ -1,0 +1,12 @@
+-- AI-assisted analysis gets its own audit action.
+--
+-- It was previously recorded as EVALUATION_SUBMITTED, which is the action a
+-- human expert takes when they file a review. Conflating the two makes the
+-- trail say a person evaluated a company when a model summarised one — the
+-- exact distinction the platform exists to hold. A model's output is advisory
+-- and now says so in the ledger.
+--
+-- Safe on PostgreSQL 12+: ADD VALUE inside a transaction is permitted as long
+-- as the new value is not used in that same transaction, and nothing here
+-- writes a row.
+ALTER TYPE "AuditAction" ADD VALUE IF NOT EXISTS 'AI_ANALYSIS_GENERATED';

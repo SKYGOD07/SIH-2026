@@ -78,6 +78,27 @@ export const env = {
   OLLAMA_EMBED_MODEL: process.env.OLLAMA_EMBED_MODEL || 'nomic-embed-text',
   OLLAMA_API_KEY: process.env.OLLAMA_API_KEY || '',
 
+  /**
+   * How long to wait on a generation before giving up and falling back.
+   *
+   * A hosted model behind a cold container is slower than a warm local one, so
+   * this is configurable rather than fixed. It is a ceiling on user-visible
+   * latency, not a target: every AI surface has a deterministic fallback, so
+   * timing out degrades the page rather than breaking it.
+   */
+  OLLAMA_TIMEOUT_MS: process.env.OLLAMA_TIMEOUT_MS
+    ? parseInt(process.env.OLLAMA_TIMEOUT_MS, 10)
+    : 20000,
+
+  /**
+   * A kill switch for the whole assistance layer.
+   *
+   * Set `AI_ENABLED=false` to run the platform on deterministic output alone —
+   * useful when demonstrating that the procurement mechanism does not depend on
+   * a model, and useful when the model host is having a bad day.
+   */
+  AI_ENABLED: process.env.AI_ENABLED !== 'false',
+
   /** 32 bytes, base64. Absent means per-user credentials cannot be stored. */
   AI_CREDENTIAL_ENCRYPTION_KEY: process.env.AI_CREDENTIAL_ENCRYPTION_KEY || '',
 };
@@ -95,9 +116,34 @@ export const isOllamaCloud = (): boolean =>
  */
 export function ollamaReadiness(): { ready: boolean; mode: 'local' | 'cloud'; reason?: string } {
   const mode = isOllamaCloud() ? 'cloud' : 'local';
+
+  if (!env.AI_ENABLED) {
+    return { ready: false, mode, reason: 'AI assistance is switched off (AI_ENABLED=false)' };
+  }
+
   if (mode === 'cloud' && !env.OLLAMA_API_KEY) {
     return { ready: false, mode, reason: 'OLLAMA_BASE_URL is a cloud host but OLLAMA_API_KEY is not set' };
   }
+
+  /*
+   * The deployment trap.
+   *
+   * A loopback address is correct on a developer's machine and meaningless on a
+   * hosted one: `localhost` inside a Render container is that container, which
+   * is not running a model. Left undetected this reads as "Ready" in the
+   * interface and fails only on the first request, which is the worst place to
+   * discover it. Named here instead, with the fix in the message.
+   */
+  if (mode === 'local' && env.NODE_ENV === 'production') {
+    return {
+      ready: false,
+      mode,
+      reason:
+        'OLLAMA_BASE_URL points at localhost, which on a hosted backend is the backend itself. ' +
+        'Set OLLAMA_BASE_URL to a reachable host (https://ollama.com) and supply OLLAMA_API_KEY.',
+    };
+  }
+
   return { ready: true, mode };
 }
 
