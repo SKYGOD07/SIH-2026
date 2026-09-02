@@ -2,32 +2,31 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/client';
-import { useAuth } from '@/lib/auth/AuthProvider';
 import { AuthShell, Field, Notice, SubmitButton } from '@/components/auth/AuthShell';
 
 /**
  * Startup registration — the only public signup in Sarthi.
  *
- * Two steps in one route rather than two pages, because the second step is
- * meaningless without the first: an OTP screen reached directly has no address
- * to verify against, and a user who reloads midway would land on a form that
- * cannot work. Keeping the email in component state makes that impossible.
+ * Confirmation is a link, not a typed code.
  *
- * Verification is Supabase Auth's own email OTP. There is deliberately no
- * `otp_codes` table in this project: a second implementation of something the
- * auth provider already does correctly is a second thing to get wrong, and it
- * would have to store a credential.
+ * The six-digit OTP screen this replaces required the same browser tab that
+ * started the signup to still be open when the code arrived, because the email
+ * address lived in component state. That is a reasonable assumption on a
+ * developer's laptop and a poor one for a deployed site: readers open mail on a
+ * phone, or an hour later, or in a different browser, and the code then has
+ * nowhere to be typed. A link carries its own credential and works from
+ * anywhere.
+ *
+ * The redirect is built from `window.location.origin` at the moment of signup,
+ * so the same code sends readers back to localhost in development, to the
+ * preview URL on a Vercel preview deployment, and to the production domain in
+ * production — with no build-time variable to forget.
  */
 export default function StartupSignupPage() {
-  const router = useRouter();
-  const { refresh } = useAuth();
-
-  const [step, setStep] = useState<'register' | 'verify'>('register');
+  const [sent, setSent] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,9 +42,12 @@ export default function StartupSignupPage() {
       return;
     }
 
-    const { error: signUpError } = await getSupabaseClient().auth.signUp({
+    const { data, error: signUpError } = await getSupabaseClient().auth.signUp({
       email: email.trim(),
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     if (signUpError) {
@@ -54,32 +56,17 @@ export default function StartupSignupPage() {
       return;
     }
 
-    setNotice(`We sent a 6-digit code to ${email.trim()}.`);
-    setStep('verify');
-    setBusy(false);
-  }
-
-  async function verify(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setBusy(true);
-
-    const { error: verifyError } = await getSupabaseClient().auth.verifyOtp({
-      email: email.trim(),
-      token: code.trim(),
-      type: 'email',
-    });
-
-    if (verifyError) {
-      setError(verifyError.message);
-      setBusy(false);
+    // With confirmation enabled Supabase returns a user but no session. If the
+    // project ever has confirmation switched off a session arrives immediately,
+    // and the callback route handles that case too — so this screen does not
+    // need to know which way the project is configured.
+    if (data.session) {
+      window.location.assign('/auth/callback');
       return;
     }
 
-    // Verification establishes the session. Pull the profile the backend
-    // created on the first authenticated request, then collect the rest.
-    await refresh();
-    router.replace('/onboarding/startup');
+    setSent(true);
+    setBusy(false);
   }
 
   async function resend() {
@@ -88,52 +75,46 @@ export default function StartupSignupPage() {
     const { error: resendError } = await getSupabaseClient().auth.resend({
       type: 'signup',
       email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
     if (resendError) setError(resendError.message);
-    else setNotice('A new code is on its way.');
+    else setNotice('Another link is on its way.');
   }
 
-  if (step === 'verify') {
+  if (sent) {
     return (
       <AuthShell
-        eyebrow="Startup · Step 2 of 3"
-        title="Verify your email"
-        lede="Check your inbox! Enter the 6-digit code sent to your email, or click the 'Confirm email address' button inside the email. Verification is required once."
+        eyebrow="Startup · Step 2 of 2"
+        title="Check your email"
+        lede={`We sent a confirmation link to ${email.trim()}. Open it on any device to finish signing up.`}
         back={{ href: '/login/startup', label: 'Back to sign in' }}
       >
-        <form onSubmit={verify} noValidate>
-          <Notice kind="error">{error}</Notice>
-          <Notice kind="info">{notice}</Notice>
+        <Notice kind="error">{error}</Notice>
+        <Notice kind="info">{notice}</Notice>
 
-          <Field
-            label="Verification code"
-            name="code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={6}
-            required
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-            placeholder="000000"
-          />
+        <p className="text-[0.875rem] leading-relaxed text-chalk/55">
+          The link signs you in and brings you straight to your workspace. It can be used once and
+          expires after a while — if it has lapsed, request another below.
+        </p>
 
-          <SubmitButton busy={busy}>Verify and continue</SubmitButton>
+        <button
+          type="button"
+          onClick={resend}
+          className="mt-5 w-full rounded-[8px] border border-chalk/20 px-4 py-2.5 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-chalk transition-colors hover:border-signal/60 hover:text-signal"
+        >
+          Send another link
+        </button>
 
-          <button
-            type="button"
-            onClick={resend}
-            className="mt-4 w-full font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-chalk/45 transition-colors hover:text-signal"
-          >
-            Resend code
-          </button>
-        </form>
+        <p className="mt-4 text-[0.75rem] leading-relaxed text-chalk/40">
+          Nothing arrived? Check the spam folder. Mail can take a minute or two.
+        </p>
       </AuthShell>
     );
   }
 
   return (
     <AuthShell
-      eyebrow="Startup · Step 1 of 3"
+      eyebrow="Startup · Step 1 of 2"
       title="Create a startup account"
       lede="Registration is open to any startup. Departmental accounts are issued separately by an administrator."
       back={{ href: '/login', label: 'Back' }}

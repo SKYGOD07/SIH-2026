@@ -35,10 +35,17 @@ export function RequireAuth({
       router.replace('/login');
       return;
     }
-    // Verification gates the console. The backend refuses these requests too;
-    // this only spares the user a screen of failures.
+    /*
+     * Verification gates the console. The backend refuses these requests too;
+     * this only spares the reader a screen of failures.
+     *
+     * It no longer redirects to the signup page: that page has no verification
+     * step any more, and sending a *government* user there was wrong in the
+     * first place — they never signed up, they were invited. Both roles now get
+     * the same honest instruction, which is to open the link they were emailed.
+     */
     if (onboarding && !onboarding.emailVerified) {
-      router.replace('/signup/startup');
+      router.replace('/login/unverified');
       return;
     }
     if (onboarding && !onboarding.profileComplete && profile?.role === 'STARTUP') {

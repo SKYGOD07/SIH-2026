@@ -13,8 +13,34 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
  */
 const clientUrls = (process.env.CLIENT_URLS || process.env.CLIENT_URL || 'http://localhost:3000')
   .split(',')
-  .map((s) => s.trim())
+  .map((s) => s.trim().replace(/\/$/, ''))
   .filter(Boolean);
+
+/**
+ * Whether an origin may call this API.
+ *
+ * An exact allowlist, plus one deliberate pattern: Vercel gives every preview
+ * deployment its own generated subdomain, so pinning the production origin
+ * alone means the API rejects every preview build. `VERCEL_PREVIEW_SUFFIX`
+ * (for example `.vercel.app`) permits those, and is opt-in rather than assumed
+ * — an unset value keeps the allowlist strictly exact.
+ *
+ * Only `https` previews are accepted, and only as a suffix of the host, so
+ * `https://evil-vercel.app.attacker.com` does not match.
+ */
+const previewSuffix = (process.env.VERCEL_PREVIEW_SUFFIX || '').trim();
+
+export function isAllowedOrigin(origin: string): boolean {
+  const normalised = origin.replace(/\/$/, '');
+  if (clientUrls.includes(normalised)) return true;
+  if (!previewSuffix) return false;
+  try {
+    const url = new URL(normalised);
+    return url.protocol === 'https:' && url.hostname.endsWith(previewSuffix);
+  } catch {
+    return false;
+  }
+}
 
 export const env = {
   PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 5000,

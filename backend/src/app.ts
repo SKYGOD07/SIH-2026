@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
-import { env } from './config/env';
+import { env, isAllowedOrigin } from './config/env';
 
 export function createApp(): Express {
   const app = express();
@@ -35,7 +35,7 @@ export function createApp(): Express {
         // raising an Error here would return a 500 that reads in the logs as a
         // server fault. CORS is not an authorisation control — the bearer token
         // is — so refusing to add a header is the whole of the job.
-        callback(null, !origin || env.CLIENT_URLS.includes(origin));
+        callback(null, !origin || isAllowedOrigin(origin));
       },
       credentials: false,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
