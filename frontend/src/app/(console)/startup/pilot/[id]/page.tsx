@@ -100,6 +100,13 @@ export default function PilotDetailPage({ params }: { params: { id: string } }) 
         source="demonstration"
       />
 
+      {/* A refusal from the API is shown, not swallowed. The backend's reason
+          — a milestone in the wrong state, an artefact already filed — is the
+          only explanation the startup will get. */}
+      {error && (
+        <div className="card border-risk/30 p-4 text-[0.8125rem] text-risk">{error}</div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
           <section aria-label="Pilot Overview">
@@ -213,5 +220,63 @@ export default function PilotDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * One artefact, filed against one milestone.
+ *
+ * The label is chosen from the contract's own list rather than typed freely.
+ * A free-text label would drift — "baseline data" against a milestone that
+ * requires "Baseline dataset" — and the approval check matches on that name,
+ * so a typo would silently block payment with no visible cause.
+ */
+function EvidenceForm({
+  options,
+  busy,
+  onSubmit,
+}: {
+  options: string[];
+  busy: boolean;
+  onSubmit: (label: string, reference: string) => Promise<void>;
+}) {
+  const [label, setLabel] = useState(options[0] ?? '');
+  const [reference, setReference] = useState('');
+
+  if (options.length === 0) return null;
+
+  return (
+    <div className="mt-4 flex flex-wrap gap-2 border-t border-chalk/10 pt-4">
+      <select
+        value={label}
+        onChange={(e) => setLabel(e.target.value)}
+        aria-label="Which artefact"
+        className="rounded border border-chalk/15 bg-transparent px-3 py-2 text-[0.8125rem] text-chalk focus:border-signal/50 focus:outline-none"
+      >
+        {options.map((o) => (
+          <option key={o} value={o}>
+            {o}
+          </option>
+        ))}
+      </select>
+      <input
+        value={reference}
+        onChange={(e) => setReference(e.target.value)}
+        placeholder="Reference — document ID, URL or file note"
+        aria-label="Reference"
+        className="min-w-[16rem] flex-1 rounded border border-chalk/15 bg-transparent px-3 py-2 text-[0.8125rem] text-chalk placeholder:text-chalk/30 focus:border-signal/50 focus:outline-none"
+      />
+      <button
+        type="button"
+        disabled={!label || reference.trim().length < 1 || busy}
+        onClick={async () => {
+          await onSubmit(label, reference.trim());
+          setReference('');
+        }}
+        className="rounded bg-chalk/10 px-4 py-2 text-[0.8125rem] text-chalk transition-colors hover:bg-chalk/20 disabled:cursor-not-allowed disabled:opacity-35"
+      >
+        {busy ? 'Filing…' : 'Submit evidence'}
+      </button>
+    </div>
   );
 }
