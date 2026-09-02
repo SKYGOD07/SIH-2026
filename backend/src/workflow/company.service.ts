@@ -357,6 +357,41 @@ const GOVERNMENT_VISIBLE = {
   origin: true,
   scenarioId: true,
   createdAt: true,
+
+  revenueTrend: true,
+  cashPosition: true,
+  burnBand: true,
+  runwayBand: true,
+  profitabilityStatus: true,
+  debtIndicators: true,
+  fundingDependence: true,
+
+  founderOwnership: true,
+  institutionalOwnership: true,
+  otherOwnership: true,
+  fundingHistory: true,
+  publicMarketStatus: true,
+
+  teamCapacity: true,
+  implementationTeam: true,
+  deploymentCapacity: true,
+  supportModel: true,
+  integrationRequirements: true,
+
+  ipOwnershipStatus: true,
+  patentCount: true,
+  softwareOwnershipEvidence: true,
+  licensingConstraints: true,
+  thirdPartyDependency: true,
+
+  securityPosture: true,
+  dataPrivacyPosture: true,
+  regulatoryDependencies: true,
+
+  deploymentSectors: true,
+  deploymentGeographies: true,
+  repeatDeployments: true,
+  projectOutcomesSummary: true,
   // Deliberately absent: keyTeamMembers (named individuals), sourceId.
 } satisfies Prisma.StartupSelect;
 
@@ -378,25 +413,38 @@ export interface AnalysisSignal {
  * its own is how much it has evidenced, and how ready it says it is.
  */
 function signals(
-  s: Startup & {
-    participations: unknown[];
-    fundingRounds: unknown[];
-    pilots: { status: string; outcome: string | null }[];
-  },
+  s: {
+    pilots?: { status: string; outcome: string | null }[];
+    participations?: { id: string; origin: string }[];
+    projects?: { id: string; evidenceStatus: string; origin: string; status: string; clientType: string }[];
+    fundingRounds?: { id: string; amount: number; announcedOn: Date; roundType: string }[];
+    pilotDurationDays?: number | null;
+    pilotTeamSummary?: string | null;
+    infrastructureRequirements?: string | null;
+    deploymentRequirements?: string | null;
+    complianceStatus?: AssuranceStatus;
+    cybersecurityStatus?: AssuranceStatus;
+    dataPrivacyStatus?: AssuranceStatus;
+  }
 ): AnalysisSignal[] {
-  const assured = (v: AssuranceStatus) =>
-    v === AssuranceStatus.VERIFIED
+  const pilots = s.pilots ?? [];
+  const participations = s.participations ?? [];
+  const projects = s.projects ?? [];
+  const fundingRounds = s.fundingRounds ?? [];
+  const assured = (v?: AssuranceStatus) => {
+    if (!v) return 'NOT_ASSESSED';
+    return v === AssuranceStatus.VERIFIED
       ? 'HIGH'
       : v === AssuranceStatus.PARTIALLY_VERIFIED
         ? 'MODERATE'
         : v === AssuranceStatus.SELF_DECLARED
           ? 'LOW'
           : 'NOT_ASSESSED';
+  };
 
-  const closedPilots = s.pilots.filter((p) => p.status === 'CLOSED');
+  const closedPilots = pilots.filter((p) => p.status === 'CLOSED');
   const met = closedPilots.filter((p) => p.outcome === 'TARGET_MET').length;
 
-  const govtCount = s.participations.length;
   const pilotReadyInputs = [
     s.pilotDurationDays,
     s.pilotTeamSummary,
@@ -404,14 +452,41 @@ function signals(
     s.deploymentRequirements,
   ].filter(filled).length;
 
+  const govtProjects = projects.filter((p) => p.clientType === 'GOVERNMENT' || p.clientType === 'PUBLIC_SECTOR');
+  const hasEvidenceBacked = govtProjects.some((p) => p.evidenceStatus === 'VERIFIED') || 
+                            participations.some((p) => p.origin === 'MAHARASHTRA_PROCUREMENT_PORTAL');
+  const hasDemo = govtProjects.some((p) => p.origin === 'DEMO') || 
+                  participations.some((p) => p.origin === 'DEMO');
+  const hasStartupReported = govtProjects.length > 0 || participations.length > 0;
+  
+  let govtLevel: 'NOT_ASSESSED' | 'LOW' | 'MODERATE' | 'HIGH' = 'NOT_ASSESSED';
+  let govtBasis = 'No known experience';
+  if (hasEvidenceBacked) {
+    govtLevel = 'HIGH';
+    govtBasis = 'Evidence-backed (Verified projects or official program participations)';
+  } else if (hasDemo) {
+    govtLevel = 'MODERATE';
+    govtBasis = 'Demo (Simulated or demonstration projects)';
+  } else if (hasStartupReported) {
+    govtLevel = 'LOW';
+    govtBasis = 'Startup-reported (Unverified claims)';
+  }
+
+  const fundingTotal = fundingRounds.reduce((acc, r) => acc + (r.amount ?? 0), 0);
+  const fundingLatest = fundingRounds.sort((a, b) => (b.announcedOn?.getTime() ?? 0) - (a.announcedOn?.getTime() ?? 0))[0];
+
   return [
     {
       label: 'Government experience',
-      level: govtCount >= 3 ? 'HIGH' : govtCount >= 1 ? 'MODERATE' : 'NOT_ASSESSED',
-      basis:
-        govtCount > 0
-          ? [`${govtCount} recorded programme participation(s)`]
-          : ['No government programme participation is recorded for this company'],
+      level: govtLevel,
+      basis: [govtBasis],
+    },
+    {
+      label: 'Funding',
+      level: fundingTotal > 5000000 ? 'HIGH' : fundingTotal > 1000000 ? 'MODERATE' : fundingTotal > 0 ? 'LOW' : 'NOT_ASSESSED',
+      basis: fundingRounds.length > 0
+        ? [`${fundingRounds.length} rounds. Latest: ${fundingLatest.roundType} on ${fundingLatest.announcedOn?.toISOString().split('T')[0] ?? 'Unknown date'}`]
+        : ['No disclosed funding rounds'],
     },
     {
       label: 'Pilot readiness',
@@ -421,24 +496,18 @@ function signals(
     },
     {
       label: 'Compliance',
-      level: assured(s.complianceStatus),
-      basis: [`Stated as ${s.complianceStatus.replace(/_/g, ' ').toLowerCase()}`],
+      level: assured(s.complianceStatus ?? undefined),
+      basis: [`Stated as ${(s.complianceStatus ?? 'NOT_ASSESSED').replace(/_/g, ' ').toLowerCase()}`],
     },
     {
       label: 'Cybersecurity',
-      level: assured(s.cybersecurityStatus),
-      basis:
-        s.cybersecurityStatus === AssuranceStatus.NOT_PROVIDED
-          ? ['Cybersecurity evidence not provided']
-          : [`Stated as ${s.cybersecurityStatus.replace(/_/g, ' ').toLowerCase()}`],
+      level: assured(s.cybersecurityStatus ?? undefined),
+      basis: [`Stated as ${(s.cybersecurityStatus ?? 'NOT_ASSESSED').replace(/_/g, ' ').toLowerCase()}`],
     },
     {
       label: 'Data protection',
-      level: assured(s.dataPrivacyStatus),
-      basis:
-        s.dataPrivacyStatus === AssuranceStatus.NOT_PROVIDED
-          ? ['Data protection evidence not provided']
-          : [`Stated as ${s.dataPrivacyStatus.replace(/_/g, ' ').toLowerCase()}`],
+      level: assured(s.dataPrivacyStatus ?? undefined),
+      basis: [`Stated as ${(s.dataPrivacyStatus ?? 'NOT_ASSESSED').replace(/_/g, ' ').toLowerCase()}`],
     },
     {
       label: 'Prior pilot outcomes',
@@ -571,7 +640,7 @@ export async function governmentDossier(u: UserProfile | null, startupId: string
 
   return {
     company: startup,
-    signals: signals(s),
+    signals: signals(s as any),
     documentReadiness,
     totalDocuments: totalDocs,
     whyThisStartup,
@@ -649,12 +718,13 @@ export async function companyReport(u: UserProfile, startupId: string) {
       documents: { select: { category: true } },
       // `signals()` counts these; selecting only the columns would make it
       // throw on a relation it expects to be present.
-      participations: { select: { id: true } },
-      fundingRounds: { select: { id: true } },
-      pilots: { select: { status: true, outcome: true } },
-      _count: { select: { documents: true, participations: true, pilots: true, responses: true } },
+      participations: { select: { id: true, origin: true } },
+      fundingRounds: { select: { id: true, amount: true, announcedOn: true, roundType: true } },
+      projects: { select: { id: true, evidenceStatus: true, origin: true, status: true, clientType: true } },
+      pilots: { select: { status: true, outcome: true, id: true } },
+      _count: { select: { documents: true, participations: true, pilots: true, responses: true, projects: true, fundingRounds: true } },
     },
-  });
+  }) as any;
   if (!company) throw new AppError('No such company', 404);
 
   const peers = await prisma.startup.findMany({
@@ -699,13 +769,13 @@ export async function companyReport(u: UserProfile, startupId: string) {
 
   // Documents by category, counted rather than asserted from a checklist.
   const byCategory = new Map<string, number>();
-  company.documents.forEach((d) => {
+  (company.documents || []).forEach((d: any) => {
     const k = d.category ?? 'OTHER';
     byCategory.set(k, (byCategory.get(k) ?? 0) + 1);
   });
 
   return {
-    company: { ...company, documents: undefined, pilots: undefined, participations: undefined, fundingRounds: undefined },
+    company: { ...company, documents: undefined, pilots: undefined, participations: undefined, fundingRounds: undefined, projects: undefined },
     field: {
       sector: company.sector,
       peerCount: peers.length,
@@ -726,7 +796,7 @@ export async function companyReport(u: UserProfile, startupId: string) {
     documentsByCategory: [...byCategory.entries()]
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count),
-    signals: signals(company as never),
+    signals: signals(company as any),
     gaps: completeness(company as never).requiredMissing,
     disclaimer:
       company.origin === 'DEMO'
