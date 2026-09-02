@@ -145,9 +145,35 @@ export interface GroundingIndex {
   citable: string[];
 }
 
-/** Loose comparison: case, punctuation and spacing are not the point. */
+/** Case, punctuation and spacing are not the point. */
 function normalise(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+/** Words that carry no identity, so their absence is not a difference. */
+const STOPWORDS = new Set(['the', 'of', 'a', 'an', 'and', 'for', 'to', 'by', 'in', 'on', 'at', 'with']);
+
+function tokens(s: string): Set<string> {
+  return new Set(normalise(s).split(' ').filter((t) => t && !STOPWORDS.has(t)));
+}
+
+const isSubset = (a: Set<string>, b: Set<string>): boolean =>
+  a.size > 0 && [...a].every((t) => b.has(t));
+
+/**
+ * Whether a citation names a record that was supplied.
+ *
+ * Subset in either direction, after stopwords. A paraphrase drops words — "KYC
+ * pack" for "KYC Document Pack" — so its tokens are a subset of the record's.
+ * A fabrication introduces words that appear nowhere, so it is a subset of
+ * nothing. That asymmetry is what separates the two, and plain substring
+ * matching misses it: "kyc document pack" does not contain "kyc pack".
+ */
+function cites(cited: string, candidate: string): boolean {
+  const a = tokens(cited);
+  const b = tokens(candidate);
+  if (a.size === 0 || b.size === 0) return false;
+  return isSubset(a, b) || isSubset(b, a);
 }
 
 /**
@@ -178,15 +204,11 @@ export function groundOutput(
     return { output: { ...output, evidenceUsed: [] }, warnings };
   }
 
-  const haystack = index.citable.map(normalise).filter(Boolean);
-
   const kept: string[] = [];
   for (const cited of output.evidenceUsed) {
-    const needle = normalise(cited);
-    if (!needle) continue;
+    if (!normalise(cited)) continue;
 
-    const matched = haystack.some((h) => h.includes(needle) || needle.includes(h));
-    if (matched) kept.push(cited);
+    if (index.citable.some((candidate) => cites(cited, candidate))) kept.push(cited);
     else warnings.push(`Dropped citation "${cited}" — no such record was supplied to the model.`);
   }
 

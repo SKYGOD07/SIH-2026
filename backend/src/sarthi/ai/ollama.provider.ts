@@ -159,7 +159,11 @@ export class OllamaProvider implements AIProvider {
 
       return validated.data;
     } catch (err) {
-      console.warn('Ollama structured generation failed, using fallback:', err);
+      // One line, not a stack. Falling back is an expected path — the caller
+      // has a deterministic answer ready — and a stack trace for a routine
+      // condition is how people learn to stop reading the logs.
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[ai] falling back to deterministic output: ${msg}`);
       return null;
     }
   }
