@@ -20,7 +20,7 @@ import {
  * constraint in month four and writing it into the agreement in month zero.
  */
 
-interface RiskTemplate {
+export interface RiskTemplate {
   /** The finding, in plain language. */
   risk: string;
   /** The condition it becomes. Written to be pasted into an agreement. */
@@ -34,7 +34,7 @@ interface RiskTemplate {
  * it here would silently drop it from every register, so the map is exhaustive
  * by type — TypeScript will refuse to compile if a cause is missed.
  */
-const RISK_LIBRARY: Record<FailureCause, RiskTemplate> = {
+export const RISK_LIBRARY: Record<FailureCause, RiskTemplate> = {
   INSUFFICIENT_BASELINE: {
     risk: 'The baseline period is too short to separate the intervention from normal variation',
     precondition: (q) =>

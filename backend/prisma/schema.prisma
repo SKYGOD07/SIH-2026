@@ -1142,3 +1142,126 @@ model UserSession {
   @@index([loginAt])
   @@map("user_sessions")
 }
+
+/* ------------------------------------------------------------------ */
+/* Pilot simulation                                                     */
+/* ------------------------------------------------------------------ */
+
+/// Where a simulation run has reached.
+///
+/// A run takes minutes, so it has to survive a page refresh and a server
+/// restart with its state legible. RUNNING with a stale `updatedAt` is how a
+/// crashed run is told apart from a slow one.
+enum SimulationRunStatus {
+  QUEUED
+  RUNNING
+  COMPLETE
+  FAILED
+  CANCELLED
+}
+
+/// One execution of the pilot simulation model over a cohort.
+///
+/// The row carries its own `modelVersion` and the full `assumptions` it ran
+/// under. That is not bookkeeping — a ranking is meaningless without the
+/// parameters that produced it, and a result read six months later against a
+/// changed model would be quietly wrong. Storing them together means a run is
+/// always interpretable against the model that made it.
+///
+/// Progress counters are written during the run so the interface can show real
+/// state rather than an animated guess.
+model PilotSimulationRun {
+  id          String    @id @default(uuid())
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  challengeId String
+
+  createdBy       UserProfile @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdByUserId String
+
+  status SimulationRunStatus @default(QUEUED)
+
+  /// Everything random in the run derives from this. Same seed, same result.
+  seed               Int
+  runsPerCompany     Int
+  perturbationPasses Int
+  modelVersion       String
+  /// The parameter set, printed, so the ranking can be read against it.
+  assumptions        Json
+
+  /// Live progress, polled by the running view.
+  phase         String @default("QUEUED")
+  cohortSize    Int    @default(0)
+  eligibleCount Int    @default(0)
+  companiesDone Int    @default(0)
+  passesDone    Int    @default(0)
+  runsDone      Int    @default(0)
+  simulatedDays BigInt @default(0)
+
+  startedAt  DateTime?
+  finishedAt DateTime?
+  /// Why it failed, when it did. Shown rather than swallowed.
+  error      String?
+
+  /// Always DEMO. A simulation is never a record of something that happened.
+  origin DataOrigin @default(DEMO)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  results PilotSimulationResult[]
+
+  @@index([challengeId])
+  @@index([status])
+  @@index([createdByUserId])
+  @@map("pilot_simulation_runs")
+}
+
+/// One company's result within a run.
+///
+/// Counts are stored with their denominator (`runsTotal`) rather than as a
+/// rate. "142 of 200 runs" is a statement about the model and can be checked;
+/// "71%" invites being read as a probability that this company will succeed,
+/// which nothing here supports.
+model PilotSimulationResult {
+  id    String             @id @default(uuid())
+  run   PilotSimulationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  runId String
+
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startupId String
+
+  /// A screened-out company keeps its row and its reason. Who was excluded, and
+  /// why, is part of the answer rather than noise to be dropped.
+  eligible        Boolean
+  exclusionReason String?
+
+  runsMetTarget Int @default(0)
+  runsPartial   Int @default(0)
+  runsMissed    Int @default(0)
+  runsTotal     Int @default(0)
+
+  medianAchieved         Float?
+  p10                    Float?
+  p90                    Float?
+  medianCoverage         Float?
+  medianMobilisationDays Float?
+
+  /// What bound the runs that missed, and the contract condition it implies.
+  dominantCause FailureCause?
+  precondition  String?
+
+  rankPosition Int?
+  /// In how many of the perturbation passes this company held its position.
+  rankStability Float?
+
+  /// The median daily curve. Stored for the leading companies only — 515 rows
+  /// each carrying 90 points would dominate the table for data nobody opens.
+  trajectory Json?
+
+  createdAt DateTime @default(now())
+
+  @@unique([runId, startupId])
+  @@index([runId, rankPosition])
+  @@index([startupId])
+  @@map("pilot_simulation_results")
+}

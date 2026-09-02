@@ -8,6 +8,7 @@ import {
   UserRole,
 } from '@prisma/client';
 import { AppError } from '../middleware/errorHandler';
+import { classifyOutcome } from './outcome';
 import { scoreMatch } from './matching';
 import * as audit from './audit';
 import {
