@@ -306,6 +306,51 @@ model Startup {
   estimatedPilotBudget       Decimal? @db.Decimal(14, 2)
   scalingRequirements        String?
 
+  // --- Phase 3 Extensions ---
+
+  // financial health
+  revenueTrend        String?
+  cashPosition        String?
+  burnBand            String?
+  runwayBand          String?
+  profitabilityStatus String?
+  debtIndicators      String?
+  fundingDependence   String?
+
+  // ownership / cap table
+  founderOwnership       String?
+  institutionalOwnership String?
+  otherOwnership         String?
+  fundingHistory         String?
+
+  // public market status
+  publicMarketStatus     String?
+
+  // delivery capability
+  teamCapacity           String?
+  implementationTeam     String?
+  deploymentCapacity     String?
+  supportModel           String?
+  integrationRequirements String?
+
+  // intellectual property
+  ipOwnershipStatus         String?
+  patentCount               Int?
+  softwareOwnershipEvidence String?
+  licensingConstraints      String?
+  thirdPartyDependency      String?
+
+  // regulatory / compliance
+  securityPosture        String?
+  dataPrivacyPosture     String?
+  regulatoryDependencies String?
+
+  // customer / deployment evidence
+  deploymentSectors      String[]
+  deploymentGeographies  String[]
+  repeatDeployments      Int?
+  projectOutcomesSummary String?
+
   /// What the company can actually do, and with what. These are the axes the
   /// matching engine scores against a challenge — without them `problemFit`
   /// and `technicalFit` would have nothing to compare and the scores would be
@@ -326,6 +371,7 @@ model Startup {
   scenarioId String?
 
   fundingRounds     FundingRound[]
+  projects          StartupProject[]
   participations    StartupProgramParticipation[]
   matches           StartupMatch[]
   responses         ChallengeResponse[]
@@ -358,6 +404,8 @@ model FundingRound {
 
   roundType   String
   amount      Decimal?  @db.Decimal(14, 2)
+  currency    String?
+  instrument  String?
   announcedOn DateTime? @db.Date
   investors   String[]
 
@@ -395,6 +443,41 @@ model GovernmentProgram {
   participations StartupProgramParticipation[]
 
   @@map("government_programs")
+}
+
+/// A previous project delivered by the startup, used as evidence of capability.
+model StartupProject {
+  id                 String    @id @default(uuid())
+  startup            Startup   @relation(fields: [startupId], references: [id], onDelete: Cascade)
+  startupId          String
+
+  projectName        String
+  clientType         String
+  sector             String
+  location           String
+  projectDescription String
+  startDate          DateTime  @db.Date
+  endDate            DateTime? @db.Date
+  status             String
+
+  budgetBand         String?
+  deploymentCount    Int?
+  outcomeSummary     String?
+  kpiSummary         String?
+  
+  evidenceStatus     String
+
+  origin             DataOrigin
+  scenario           SimulationScenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  scenarioId         String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([startupId])
+  @@index([origin])
+  @@index([scenarioId])
+  @@map("startup_projects")
 }
 
 /// A startup's participation in a programme edition.
@@ -473,6 +556,7 @@ model SimulationScenario {
 
   challenges Challenge[]
   startups   Startup[]
+  projects   StartupProject[]
   pilots     Pilot[]
 
   @@index([status])
@@ -585,6 +669,7 @@ model Challenge {
   deploymentRequirements String?
   ipDataConstraints String?
   evaluationCriteria String[]
+  evaluationWeights Json?
 
   status ChallengeStatus @default(DRAFT)
 
@@ -636,17 +721,19 @@ model StartupMatch {
   startup     Startup   @relation(fields: [startupId], references: [id], onDelete: Cascade)
   startupId   String
 
-  /// All scores 0–1. Kept as separate axes so a weak overall score can be read
-  /// as "no government delivery history" rather than as a verdict.
-  problemFitScore           Float
-  technicalFitScore         Float
-  deploymentReadinessScore  Float
-  governmentExperienceScore Float
-  evidenceStrengthScore     Float
-  pilotReadinessScore       Float
-  financialEvidenceScore    Float?
-  scalabilityScore          Float?
-  overallScore              Float
+  /// All scores 0–1. Phase 3 dynamic dimensions.
+  problemFitScore                Float
+  technicalFitScore              Float
+  previousProjectRelevanceScore  Float
+  deploymentCapabilityScore      Float
+  evidenceStrengthScore          Float
+  financialCapacityScore         Float
+  governmentReadinessScore       Float
+  complianceReadinessScore       Float
+  pilotReadinessScore            Float
+  scalabilityScore               Float
+
+  overallScore                   Float
 
   /// Per-axis working: the evidence each score was derived from.
   breakdown Json
