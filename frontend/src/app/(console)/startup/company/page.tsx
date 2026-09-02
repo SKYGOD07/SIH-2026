@@ -99,7 +99,7 @@ function CompanyEditor() {
     try {
       const res = await fetchApi<{ startup: CompanyData }>('/api/workflow/company/me', {
         method: 'PATCH',
-        body: patch,
+        body: JSON.stringify(patch),
       });
       setCompany(res.startup);
       setSaved(true);
