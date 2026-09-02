@@ -29,7 +29,7 @@ to anything real, and none of it may be presented as a government record.
 
 ```bash
 cd backend
-npm run demo:dataset          # companies -> evidence -> verify
+npm run demo:dataset          # companies -> evidence -> team -> verify
 ```
 
 or one phase at a time:
@@ -37,7 +37,7 @@ or one phase at a time:
 ```bash
 npm run demo:generate-companies   # the company population
 npm run demo:generate-evidence    # participation, funding, dossier
-npm run demo:verify               # 36 checks; exits non-zero on failure
+npm run demo:verify               # 43 checks; exits non-zero on failure
 ```
 
 All three are **deterministic** (seeded PRNG keyed on the company id, never
@@ -46,21 +46,20 @@ All three are **deterministic** (seeded PRNG keyed on the company id, never
 
 ### Protected companies
 
-`generate-companies.ts` holds a `PROTECTED` set naming every company seeded by
-something other than itself: the five rich profiles from `demo.ts`, the ten
-field companies from `seed-fields.ts`, and the three team companies it creates
-once. Nothing in that set is ever renamed, reconciled or removed.
+`scripts/team.ts` holds `PROTECTED_LEGAL_NAMES`, naming every company seeded by
+something other than the generator: the five rich profiles from `demo.ts`, the
+ten field companies from `seed-fields.ts`, and all seven team companies. Nothing
+in that set is ever renamed, reconciled or removed.
 
-**`generate-evidence.ts` writes nothing at all against the five team-owned
-companies** — CIVORA, HIX, Crop Saver, WaterManager, EnviroPlus. They get no
-invented participation, no invented funding round and no placeholder document.
-Their dossiers are the real imported packs, and three of them currently hold no
-evidence; that is an honest reading, not a gap to be filled.
+**`generate-evidence.ts` writes nothing at all against a team-owned company.**
+No invented participation, no invented funding round, no placeholder document.
+Their evidence comes from their own imported packs and from
+`seed-team-companies.ts`, never from the synthetic evidence pass.
 
-> Add a company to `PROTECTED` the moment it is seeded anywhere other than by the
-> generator. It is enumerated rather than inferred on purpose: an earlier version
-> recognised its own output by name shape, which both missed surplus rows and put
-> hand-seeded companies at risk.
+> Add a company to `PROTECTED_LEGAL_NAMES` the moment it is seeded anywhere other
+> than by the generator. It is enumerated rather than inferred on purpose: an
+> earlier version recognised its own output by name shape, which both missed
+> surplus rows and put hand-seeded companies at risk.
 
 ### The prune step
 
@@ -70,11 +69,20 @@ Four guards must all hold:
 1. `origin = DEMO`
 2. not in `PROTECTED`
 3. not in the set the current run intends to produce
-4. **zero** documents, responses, matches, pilots, participations, funding rounds
+4. **no workflow history** — no challenge response, no AI match, no pilot
 
-Guard 4 is the one that matters. A surplus company that has acquired any history
-is left in place and reported, never deleted — a cascade from here would take
-responses and matches with it.
+Guard 4 is the one that matters, and it is deliberately narrower than "no
+dependent rows at all". Documents, funding rounds and programme participations
+are written by `generate-evidence.ts` and can be written again from the same
+seed; refusing on those once stranded 208 renamed companies that were surplus by
+every meaningful test. A response, a match or a pilot is different in kind — it
+is workflow somebody drove, it cannot be regenerated, and a cascade that took one
+would be the blanket delete the standing rules exist to prevent. Those three
+refuse, and the company is reported instead.
+
+Deleting a pruned company also deletes its `demo://dossier/` documents:
+`StartupDocument` cascades but `Document` does not, so the company alone would
+leave orphan rows behind.
 
 ## The derived metrics view
 
