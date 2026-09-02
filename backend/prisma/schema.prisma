@@ -325,17 +325,17 @@ model Startup {
   scenario   SimulationScenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
   scenarioId String?
 
-  fundingRounds  FundingRound[]
-  participations StartupProgramParticipation[]
-  matches        StartupMatch[]
-  responses      ChallengeResponse[]
-  pilots         Pilot[]
-  documents      StartupDocument[]
+  fundingRounds     FundingRound[]
+  participations    StartupProgramParticipation[]
+  matches           StartupMatch[]
+  responses         ChallengeResponse[]
+  pilots            Pilot[]
+  documents         StartupDocument[]
   simulationResults PilotSimulationResult[]
   /// The one startup user who has claimed this company. Enforced 1:1 by a
   /// unique constraint on `UserProfile.startupId`, so two people cannot claim
   /// the same demonstration slot.
-  owner          UserProfile?
+  owner             UserProfile?
 
   @@index([scenarioId])
   @@index([sector])
@@ -584,9 +584,9 @@ model Challenge {
   scenario   SimulationScenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
   scenarioId String?
 
-  matches   StartupMatch[]
-  responses ChallengeResponse[]
-  pilots    Pilot[]
+  matches        StartupMatch[]
+  responses      ChallengeResponse[]
+  pilots         Pilot[]
   simulationRuns PilotSimulationRun[]
 
   @@index([scenarioId])
@@ -1146,9 +1146,9 @@ model UserSession {
   @@map("user_sessions")
 }
 
-/* ------------------------------------------------------------------ */
-/* Pilot simulation                                                     */
-/* ------------------------------------------------------------------ */
+// ------------------------------------------------------------------
+// Pilot simulation
+// ------------------------------------------------------------------
 
 /// Where a simulation run has reached.
 ///
@@ -1253,7 +1253,7 @@ model PilotSimulationResult {
   dominantCause FailureCause?
   precondition  String?
 
-  rankPosition Int?
+  rankPosition  Int?
   /// In how many of the perturbation passes this company held its position.
   rankStability Float?
 
