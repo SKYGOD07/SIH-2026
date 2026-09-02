@@ -315,10 +315,14 @@ export async function matchContext(challengeId: string, startupId: string): Prom
   const axes: [string, number][] = [
     ['problem fit', m.problemFitScore],
     ['technical fit', m.technicalFitScore],
-    ['deployment readiness', m.deploymentReadinessScore],
-    ['government experience', m.governmentExperienceScore],
+    ['previous project relevance', m.previousProjectRelevanceScore],
+    ['deployment capability', m.deploymentCapabilityScore],
     ['evidence strength', m.evidenceStrengthScore],
+    ['financial capacity', m.financialCapacityScore],
+    ['government readiness', m.governmentReadinessScore],
+    ['compliance readiness', m.complianceReadinessScore],
     ['pilot readiness', m.pilotReadinessScore],
+    ['scalability', m.scalabilityScore],
   ];
   const sorted = [...axes].sort((a, b) => a[1] - b[1]);
   const weakest = sorted[0];
@@ -347,10 +351,14 @@ export async function matchContext(challengeId: string, startupId: string): Prom
       overall: m.overallScore,
       problemFit: m.problemFitScore,
       technicalFit: m.technicalFitScore,
-      deploymentReadiness: m.deploymentReadinessScore,
-      governmentExperience: m.governmentExperienceScore,
+      previousProjectRelevance: m.previousProjectRelevanceScore,
+      deploymentCapability: m.deploymentCapabilityScore,
       evidenceStrength: m.evidenceStrengthScore,
+      financialCapacity: m.financialCapacityScore,
+      governmentReadiness: m.governmentReadinessScore,
+      complianceReadiness: m.complianceReadinessScore,
       pilotReadiness: m.pilotReadinessScore,
+      scalability: m.scalabilityScore,
       weakestAxis: weakest[0],
       strongestAxis: strongest[0],
     },

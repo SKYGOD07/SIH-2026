@@ -508,11 +508,16 @@ async function seed() {
       update: { status: 'SUBMITTED' },
     });
 
+    const relevantProjects = await prisma.startupProject.count({
+      where: { startupId: s.id, sector: challenge.domain },
+    });
+
     const matchResult = scoreMatch({
-      challenge,
-      startup: s,
+      challenge: challenge as any,
+      startup: s as any,
       response,
       governmentEngagements: s.governmentExperienceSummary ? 1 : 0,
+      relevantProjects,
     });
 
     await prisma.startupMatch.upsert({
@@ -522,10 +527,14 @@ async function seed() {
         startupId: s.id,
         problemFitScore: matchResult.problemFitScore,
         technicalFitScore: matchResult.technicalFitScore,
-        deploymentReadinessScore: matchResult.deploymentReadinessScore,
-        governmentExperienceScore: matchResult.governmentExperienceScore,
+        previousProjectRelevanceScore: matchResult.previousProjectRelevanceScore,
+        deploymentCapabilityScore: matchResult.deploymentCapabilityScore,
         evidenceStrengthScore: matchResult.evidenceStrengthScore,
+        financialCapacityScore: matchResult.financialCapacityScore,
+        governmentReadinessScore: matchResult.governmentReadinessScore,
+        complianceReadinessScore: matchResult.complianceReadinessScore,
         pilotReadinessScore: matchResult.pilotReadinessScore,
+        scalabilityScore: matchResult.scalabilityScore,
         overallScore: matchResult.overallScore,
         breakdown: matchResult.breakdown as never,
         rationale: matchResult.rationale,
@@ -534,10 +543,14 @@ async function seed() {
       update: {
         problemFitScore: matchResult.problemFitScore,
         technicalFitScore: matchResult.technicalFitScore,
-        deploymentReadinessScore: matchResult.deploymentReadinessScore,
-        governmentExperienceScore: matchResult.governmentExperienceScore,
+        previousProjectRelevanceScore: matchResult.previousProjectRelevanceScore,
+        deploymentCapabilityScore: matchResult.deploymentCapabilityScore,
         evidenceStrengthScore: matchResult.evidenceStrengthScore,
+        financialCapacityScore: matchResult.financialCapacityScore,
+        governmentReadinessScore: matchResult.governmentReadinessScore,
+        complianceReadinessScore: matchResult.complianceReadinessScore,
         pilotReadinessScore: matchResult.pilotReadinessScore,
+        scalabilityScore: matchResult.scalabilityScore,
         overallScore: matchResult.overallScore,
         breakdown: matchResult.breakdown as never,
         rationale: matchResult.rationale,

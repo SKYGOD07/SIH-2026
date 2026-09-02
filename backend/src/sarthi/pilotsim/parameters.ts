@@ -291,10 +291,11 @@ export function parameterise(
   assumptions: ModelAssumptions,
 ): ParameterisedCompany {
   const match = scoreMatch({
-    challenge,
-    startup,
+    challenge: challenge as any,
+    startup: startup as any,
     response,
     governmentEngagements,
+    relevantProjects: 0,
   });
 
   // `scoreMatch` is better evidence where it exists, because the company wrote

@@ -103,19 +103,27 @@ async function main() {
       const engagements = await prisma.startupProgramParticipation.count({
         where: { startupId: r.startupId },
       });
+      const relevantProjects = await prisma.startupProject.count({
+        where: { startupId: r.startupId, sector: challenge.domain },
+      });
       const result = scoreMatch({
-        challenge,
-        startup: r.startup,
+        challenge: challenge as any,
+        startup: r.startup as any,
         response: r,
         governmentEngagements: engagements,
+        relevantProjects,
       });
       const scores = {
         problemFitScore: result.problemFitScore,
         technicalFitScore: result.technicalFitScore,
-        deploymentReadinessScore: result.deploymentReadinessScore,
-        governmentExperienceScore: result.governmentExperienceScore,
+        previousProjectRelevanceScore: result.previousProjectRelevanceScore,
+        deploymentCapabilityScore: result.deploymentCapabilityScore,
         evidenceStrengthScore: result.evidenceStrengthScore,
+        financialCapacityScore: result.financialCapacityScore,
+        governmentReadinessScore: result.governmentReadinessScore,
+        complianceReadinessScore: result.complianceReadinessScore,
         pilotReadinessScore: result.pilotReadinessScore,
+        scalabilityScore: result.scalabilityScore,
         overallScore: result.overallScore,
         breakdown: result.breakdown as never,
         rationale: result.rationale,

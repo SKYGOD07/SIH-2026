@@ -341,11 +341,16 @@ export async function generateMatches(u: UserProfile, challengeId: string) {
       where: { startupId: response.startupId },
     });
 
+    const relevantProjects = await prisma.startupProject.count({
+      where: { startupId: response.startupId, sector: challenge.domain },
+    });
+
     const result = scoreMatch({
-      challenge,
-      startup: response.startup,
+      challenge: challenge as any,
+      startup: response.startup as any,
       response,
       governmentEngagements: engagements,
+      relevantProjects,
     });
 
     const existing = await prisma.startupMatch.findUnique({
@@ -356,10 +361,14 @@ export async function generateMatches(u: UserProfile, challengeId: string) {
     await matchRepo.upsert(prisma, challengeId, response.startupId, {
       problemFitScore: result.problemFitScore,
       technicalFitScore: result.technicalFitScore,
-      deploymentReadinessScore: result.deploymentReadinessScore,
-      governmentExperienceScore: result.governmentExperienceScore,
+      previousProjectRelevanceScore: result.previousProjectRelevanceScore,
+      deploymentCapabilityScore: result.deploymentCapabilityScore,
       evidenceStrengthScore: result.evidenceStrengthScore,
+      financialCapacityScore: result.financialCapacityScore,
+      governmentReadinessScore: result.governmentReadinessScore,
+      complianceReadinessScore: result.complianceReadinessScore,
       pilotReadinessScore: result.pilotReadinessScore,
+      scalabilityScore: result.scalabilityScore,
       overallScore: result.overallScore,
       breakdown: result.breakdown as unknown as Prisma.InputJsonValue,
       rationale: result.rationale,
