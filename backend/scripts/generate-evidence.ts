@@ -41,6 +41,7 @@
  * already present rather than duplicating it. Nothing is ever deleted.
  */
 import { DataOrigin, DocumentKind, PrismaClient } from '@prisma/client';
+import { TEAM_DISPLAY_NAMES } from './team';
 
 const prisma = new PrismaClient();
 
@@ -48,7 +49,8 @@ const prisma = new PrismaClient();
 const DOSSIER_URI = 'demo://dossier';
 const DOSSIER_PUBLISHER = 'Sarthi demonstration workspace';
 
-const TEAM_COMPANIES = ['CIVORA', 'HIX', 'Crop Saver', 'WaterManager', 'EnviroPlus'];
+/** Imported rather than restated: three scripts used to keep their own copy. */
+const TEAM_COMPANIES = TEAM_DISPLAY_NAMES;
 
 /* ------------------------------------------------------------------ */
 /* Deterministic randomness, seeded from the company                   */

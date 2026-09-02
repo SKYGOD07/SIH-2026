@@ -23,10 +23,11 @@
  * works and never changes a result, which is worse than not shipping it.
  */
 import { PrismaClient } from '@prisma/client';
+import { TEAM_COMPANIES as TEAM_REGISTRY, TEAM_DISPLAY_NAMES } from './team';
 
 const prisma = new PrismaClient();
 
-const TEAM_COMPANIES = ['CIVORA', 'HIX', 'Crop Saver', 'WaterManager', 'EnviroPlus'];
+const TEAM_COMPANIES = TEAM_DISPLAY_NAMES;
 const MIN_COMPANIES = 500;
 const MIN_FIELDS = 20;
 const MAX_FIELDS = 25;
@@ -336,6 +337,78 @@ async function main() {
   realProgramNames.length === 0
     ? pass('programme naming', 'no DEMO participation cites a real-world programme name')
     : warn('programme naming', `DEMO programmes not marked as simulated: ${realProgramNames.map((p) => p.name).join(', ')}`);
+
+  /* --- the team-owned companies as a product surface --------------- */
+
+  /*
+   * A team company is what a judge opens first, so "the row exists" is not the
+   * bar. These check it is worth opening: the profile fields a government reader
+   * looks at are filled, the mock documents say what they are, and the account
+   * that owns it can actually sign in.
+   */
+  const PROFILE_FIELDS = [
+    'description', 'founderSummary', 'productSummary', 'targetUsers', 'deploymentModel',
+    'geographicCoverage', 'revenueBand', 'pilotTeamSummary', 'infrastructureRequirements',
+    'deploymentRequirements', 'scalingRequirements', 'website', 'foundedYear',
+  ] as const;
+
+  const teamRows = await prisma.startup.findMany({
+    where: { legalName: { in: TEAM_REGISTRY.map((c) => c.legalName) } },
+    select: {
+      id: true, legalName: true, displayName: true,
+      ...Object.fromEntries(PROFILE_FIELDS.map((f) => [f, true])),
+    } as never,
+  }) as unknown as (Record<string, unknown> & { id: string; legalName: string; displayName: string | null })[];
+
+  const thin = teamRows
+    .map((r) => ({ name: r.displayName ?? r.legalName, missing: PROFILE_FIELDS.filter((f) => r[f] === null || r[f] === '') }))
+    .filter((r) => r.missing.length > 0);
+
+  teamRows.length === TEAM_REGISTRY.length
+    ? pass('team registry resolves', `all ${TEAM_REGISTRY.length} team companies exist`)
+    : fail('team registry resolves', `${TEAM_REGISTRY.length - teamRows.length} of ${TEAM_REGISTRY.length} team companies have no row`);
+
+  thin.length === 0
+    ? pass('team profiles filled', `every team company has all ${PROFILE_FIELDS.length} reader-facing profile fields`)
+    : fail('team profiles filled', thin.map((t) => `${t.name} missing ${t.missing.join(', ')}`).join(' · '));
+
+  const mockDocs = await prisma.document.findMany({
+    where: { originalPath: { startsWith: 'demo://team-dossier/' } },
+    select: { title: true, extractedText: true },
+  });
+  const undisclosed = mockDocs.filter((d) => !d.extractedText?.startsWith('SIMULATED PLACEHOLDER'));
+  const withIdentifier = mockDocs.filter((d) =>
+    // A well-formed CIN, PAN, GSTIN or Udyam number survives being copied out of
+    // the interface into a real form, so none may exist even marked as a dummy.
+    /([A-Z]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}|[A-Z]{5}\d{4}[A-Z]|\d{2}[A-Z]{5}\d{4}[A-Z]\dZ[A-Z\d]|UDYAM-[A-Z]{2}-\d{2}-\d{7})/.test(
+      `${d.title} ${d.extractedText ?? ''}`,
+    ),
+  );
+
+  mockDocs.length === 0
+    ? warn('team mock dossier', 'no mock documents filed — run `npm run demo:seed-team`')
+    : undisclosed.length === 0
+      ? pass('team mock dossier', `${mockDocs.length} mock documents, every one opening with its disclaimer`)
+      : fail('team mock dossier', `${undisclosed.length} mock document(s) do not open with the SIMULATED PLACEHOLDER line`);
+
+  withIdentifier.length === 0
+    ? pass('no statutory identifiers', 'no mock document contains a CIN, PAN, GSTIN or Udyam number')
+    : fail('no statutory identifiers', `${withIdentifier.length} mock document(s) contain a well-formed statutory identifier`);
+
+  const owners = await prisma.userProfile.findMany({
+    where: { email: { in: TEAM_REGISTRY.map((c) => c.ownerEmail) } },
+    select: { email: true, startupId: true },
+  });
+  const claimed = new Set(owners.map((o) => o.startupId).filter(Boolean));
+  const expectedClaims = TEAM_REGISTRY.filter((c) => c.primary).length;
+  const actualClaims = teamRows.filter((r) => claimed.has(r.id)).length;
+
+  actualClaims === expectedClaims
+    ? pass('team accounts linked', `${actualClaims} of ${expectedClaims} primary companies are claimed by their owner`)
+    : warn(
+        'team accounts linked',
+        `${actualClaims} of ${expectedClaims} primary companies claimed — run \`npm run demo:seed-accounts\` (needs SUPABASE_SECRET_KEY)`,
+      );
 
   /* --- report ------------------------------------------------------ */
 

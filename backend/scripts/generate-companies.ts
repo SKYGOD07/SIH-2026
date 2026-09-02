@@ -25,6 +25,7 @@
  * and it never touches the five team-owned companies or their document packs.
  */
 import { AssuranceStatus, DataOrigin, PrismaClient, ReadinessLevel } from '@prisma/client';
+import { PROTECTED_LEGAL_NAMES } from './team';
 
 const prisma = new PrismaClient();
 
@@ -292,22 +293,51 @@ const DEPLOY_MODEL = ['SaaS', 'SaaS + IoT edge', 'On-premise', 'Hybrid cloud', '
 
 /* ------------------------------------------------------------------ */
 
-function buildCompany(i: number, field: Field, used: Set<string>) {
+function buildCompany(i: number, k: number, field: Field, seen: Set<string>) {
   const r = rng(0x5a17 + i * 2654435761);
 
-  // Names are composed deterministically and de-duplicated by suffix rotation.
+  /*
+   * The name is the seed identity, and it is derived from `k` alone.
+   *
+   * It previously rotated suffixes until it found a name not already in the
+   * database — which made identity depend on what happened to be stored. A
+   * second run then saw a fuller `used` set, rotated further, and produced a
+   * *different* 500 companies on top of the first: the run that briefly took
+   * this dataset from 515 to 827.
+   *
+   * Now `k` is the company's index within its own field, so word and suffix are
+   * pure functions of it. The same k always yields the same name, whatever the
+   * database contains, which is what makes the reconcile below able to converge.
+   */
+  const wordIdx = k % field.words.length;
+  const base = field.words[wordIdx];
+
+  /*
+   * Suffix rotation, resolved against the names generated *in this run*.
+   *
+   * `seen` is created fresh by the caller and filled only from this pass, never
+   * from a query. That distinction is the whole fix: rotation against the
+   * database made identity depend on stored state, so a second run produced a
+   * different 500 on top of the first. Rotation against a list rebuilt in a
+   * fixed order is fully deterministic — the same k always resolves the same
+   * way, whatever the database holds.
+   *
+   * Rotation is needed because word pools overlap between fields: "Nirmal"
+   * serves both water distribution and wastewater, so the base name alone is
+   * not unique across the population.
+   */
   let name = '';
-  for (let attempt = 0; attempt < SUFFIX.length + 4; attempt += 1) {
-    const word = field.words[(i + attempt) % field.words.length];
-    const suffix = SUFFIX[(i + attempt * 3) % SUFFIX.length];
-    const candidate = `${word} ${suffix}`;
-    if (!used.has(candidate)) {
+  for (let attempt = 0; attempt < SUFFIX.length; attempt += 1) {
+    const suffixIdx = (Math.floor(k / field.words.length) + attempt) % SUFFIX.length;
+    const candidate = `${base} ${SUFFIX[suffixIdx]}`;
+    if (!seen.has(candidate)) {
       name = candidate;
       break;
     }
   }
-  if (!name) name = `${field.words[i % field.words.length]} ${SUFFIX[i % SUFFIX.length]} ${i}`;
-  used.add(name);
+  // Every suffix taken: fall back to a stable ordinal rather than colliding.
+  if (!name) name = `${base} ${SUFFIX[k % SUFFIX.length]} ${Math.floor(k / SUFFIX.length) + 2}`;
+  seen.add(name);
 
   const stage = weighted(r, STAGES);
   const teamSize = weighted<number>(r, [[4, 10], [7, 16], [12, 22], [18, 18], [31, 16], [65, 12], [120, 6]]);
@@ -420,41 +450,6 @@ const TEAM_COMPANIES = [
     city: 'Mumbai', stage: 'MVP', teamSize: 11, pilotDays: 90, budget: 1400000 },
 ];
 
-/**
- * Companies this script must never create, rename, reconcile or remove.
- *
- * Enumerated rather than inferred. An earlier version of the prune step tried to
- * recognise its own output by name shape, which fails in both directions: a
- * surplus row that took the fallback naming branch is not recognised and
- * survives, and any hand-seeded company that happens to fit the shape becomes
- * deletable. Neither error is acceptable when the second one loses a document
- * pack, so the protected set is written down.
- *
- * Sources: the five rich companies in `demo.ts`, the ten field companies in
- * `seed-fields.ts`, and the three team companies defined above. Add a company
- * here the moment it is seeded anywhere other than by this generator.
- */
-const PROTECTED = new Set<string>([
-  // demo.ts — rich profiles with imported document packs
-  'CIVORA Technologies Private Limited',
-  'HIX Health & FinTech Solutions Private Limited',
-  'AquaSense Systems Private Limited',
-  'TransitPulse Analytics Private Limited',
-  'SolarFlux Dynamics Private Limited',
-  // seed-fields.ts — one company per field, some carrying challenge responses
-  'Nirmal Flow Technologies Private Limited',
-  'Sanchay Wastewater Systems Private Limited',
-  'GatiMarg Mobility Analytics Private Limited',
-  'Suryodaya Grid Solutions Private Limited',
-  'Krishi Setu Agritech Private Limited',
-  'Arogya Reach Health Systems Private Limited',
-  'Suraksha Grid Public Safety Private Limited',
-  'Seva Setu Digital Governance Private Limited',
-  'Vidya Bridge Learning Private Limited',
-  'Chakra Circular Waste Private Limited',
-  // the team companies this script creates once and then leaves alone
-  ...TEAM_COMPANIES.map((t) => t.legalName),
-]);
 
 /* ------------------------------------------------------------------ */
 
@@ -521,11 +516,31 @@ async function main() {
   let index = 0;
 
   const reconcile: ReturnType<typeof buildCompany>[] = [];
+  /** Every name this script is supposed to produce, for the stray sweep below. */
+  const targetNames = new Set<string>();
+  /** Names produced by this pass. Rebuilt every run; never read from the database. */
+  const seen = new Set<string>();
 
   for (const field of FIELDS) {
     const want = Math.round((field.weight / totalWeight) * TARGET);
     for (let k = 0; k < want; k += 1) {
-      const c = buildCompany(index++, field, usedNames);
+      const c = buildCompany(index++, k, field, seen);
+      if (targetNames.has(c.legalName)) {
+        // A collision would silently shrink the population, so it fails loudly.
+        throw new Error(`Name collision on "${c.legalName}" — widen the word or suffix pool.`);
+      }
+      targetNames.add(c.legalName);
+      /*
+       * A team-owned company keeps the name slot but not the generated body.
+       *
+       * Two of the seven team companies were promoted out of this population, so
+       * their names are still ones this loop produces. Leaving them in
+       * `targetNames` keeps the prune below from treating them as strays;
+       * keeping them out of `reconcile` keeps their authored profile — written
+       * by `seed-team-companies.ts` — from being overwritten with generated
+       * prose on the next run.
+       */
+      if (PROTECTED_LEGAL_NAMES.has(c.legalName)) continue;
       if (existingLegal.has(c.legalName)) reconcile.push(c);
       else rows.push(c);
     }
@@ -604,7 +619,7 @@ async function main() {
         _count: { select: { documents: true, responses: true, matches: true, pilots: true, participations: true, fundingRounds: true } },
       },
     })
-  ).filter((s) => !intendedLegal.has(s.legalName) && !PROTECTED.has(s.legalName));
+  ).filter((s) => !intendedLegal.has(s.legalName) && !PROTECTED_LEGAL_NAMES.has(s.legalName));
 
   const removable = surplus.filter((s) => Object.values(s._count).every((n) => n === 0));
   const keptWithHistory = surplus.filter((s) => !removable.includes(s));
@@ -680,6 +695,7 @@ async function main() {
       console.log(`  ${s.displayName ?? s.legalName} — ${Object.entries(s._count).filter(([, n]) => n > 0).map(([k, n]) => `${k}:${n}`).join(', ')}`),
     );
   }
+  console.log(`deterministic target   : ${targetNames.size}`);
   console.log(`total companies        : ${total}`);
   console.log(`fields                 : ${bySector.length}`);
   console.log(`marked VERIFIED        : ${verified}  (must be 0)`);

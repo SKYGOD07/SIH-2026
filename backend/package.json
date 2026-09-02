@@ -19,7 +19,10 @@
     "demo:generate-companies": "tsx scripts/generate-companies.ts",
     "demo:generate-evidence": "tsx scripts/generate-evidence.ts",
     "demo:verify": "tsx scripts/verify-demo.ts",
-    "demo:dataset": "npm run demo:generate-companies && npm run demo:generate-evidence && npm run demo:verify"
+    "demo:dataset": "npm run demo:generate-companies && npm run demo:generate-evidence && npm run demo:seed-team && npm run demo:verify",
+    "demo:team-files": "python scripts/parse-team-files.py",
+    "demo:seed-team": "tsx scripts/seed-team-companies.ts",
+    "demo:seed-accounts": "tsx scripts/seed-team-accounts.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
