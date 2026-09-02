@@ -23,7 +23,8 @@
     "demo:team-files": "python scripts/parse-team-files.py",
     "demo:seed-team": "tsx scripts/seed-team-companies.ts",
     "demo:seed-accounts": "tsx scripts/seed-team-accounts.ts",
-    "demo:pilot": "tsx scripts/seed-pilot.ts"
+    "demo:pilot": "tsx scripts/seed-pilot.ts",
+    "verify:workflow": "tsx scripts/verify-pilot-workflow.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

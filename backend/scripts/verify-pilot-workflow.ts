@@ -21,7 +21,7 @@
  * Nothing here mutates. It is safe to run at any time.
  */
 import { PrismaClient, UserRole } from '@prisma/client';
-import { AppError } from '../src/utils/AppError';
+import { AppError } from '../src/middleware/errorHandler';
 import * as svc from '../src/workflow/workflow.service';
 
 const prisma = new PrismaClient();
