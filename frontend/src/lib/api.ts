@@ -13,8 +13,9 @@ import { getSupabaseClient } from '@/lib/supabase/client';
  * mistake structurally impossible.
  */
 
-const API_BASE_URL =
+const rawBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = rawBaseUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 export class ApiError extends Error {
   constructor(

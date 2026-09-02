@@ -70,10 +70,29 @@ export function RequireAuth({
 
   if (error) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-void px-5">
-        <p className="max-w-sm rounded-[8px] border border-red-400/30 bg-red-400/[0.07] px-4 py-3 text-center text-[0.8125rem] leading-relaxed text-red-300">
-          {error}
-        </p>
+      <div className="flex min-h-svh flex-col items-center justify-center bg-void px-5 text-center">
+        <div className="max-w-md rounded-[12px] border border-risk/30 bg-risk/[0.08] p-5">
+          <p className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-risk font-bold">
+            Connection Notice
+          </p>
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-chalk/80">
+            {error}
+          </p>
+          <div className="mt-4 flex items-center justify-center gap-3 border-t border-chalk/10 pt-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-md bg-signal px-3 py-1.5 font-mono text-[0.6875rem] uppercase tracking-wider text-void font-bold hover:bg-signal/90"
+            >
+              Retry
+            </button>
+            <a
+              href="/"
+              className="font-mono text-[0.6875rem] uppercase tracking-wider text-chalk/60 hover:text-chalk underline"
+            >
+              Return Home
+            </a>
+          </div>
+        </div>
       </div>
     );
   }
