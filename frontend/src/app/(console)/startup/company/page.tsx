@@ -324,7 +324,7 @@ function EditSection({
   function startEdit() {
     const state: Record<string, string> = {};
     for (const f of fields) {
-      const val = (company as Record<string, unknown>)[f.key];
+      const val = (company as unknown as Record<string, unknown>)[f.key];
       if (f.type === 'tags') {
         state[f.key] = Array.isArray(val) ? (val as string[]).join(', ') : '';
       } else {
@@ -414,7 +414,7 @@ function EditSection({
           <div>
             <div className="space-y-3">
               {fields.map((f) => {
-                const val = (company as Record<string, unknown>)[f.key];
+                const val = (company as unknown as Record<string, unknown>)[f.key];
                 const display = f.type === 'tags'
                   ? Array.isArray(val) ? (val as string[]).join(', ') : '—'
                   : val == null || val === ''
