@@ -176,20 +176,41 @@ async function main() {
 
   // Their document packs must not have been duplicated by a re-run.
   const teamIds = startups.filter((s) => TEAM_COMPANIES.includes(s.displayName ?? '')).map((s) => s.id);
+  /*
+   * The pollution check applies to the five companies that arrived with their
+   * own document packs, not to the two promoted out of the synthetic population.
+   * A promoted company keeps the dossier it already had — that is the point of
+   * promoting rather than creating — so counting its inherited placeholders as
+   * pollution would fail a state the design asks for. What must never happen is
+   * a placeholder landing on a real imported pack.
+   */
+  const promotedNames = new Set(TEAM_REGISTRY.filter((c) => c.promotedFromSynthetic).map((c) => c.displayName));
+  const packOwnedIds = startups
+    .filter((s) => TEAM_COMPANIES.includes(s.displayName ?? '') && !promotedNames.has(s.displayName ?? ''))
+    .map((s) => s.id);
   const teamDocs = await prisma.startupDocument.findMany({
     where: { startupId: { in: teamIds } },
     select: { startupId: true, documentId: true, document: { select: { title: true, originalPath: true } } },
   });
   const dupTeamDocs = tally(teamDocs, (d) => `${d.startupId}|${d.document.title}`).filter(([, n]) => n > 1);
-  const syntheticOnTeam = teamDocs.filter((d) => d.document.originalPath?.startsWith('demo://dossier/')).length;
+  const syntheticOnTeam = teamDocs.filter(
+    (d) => packOwnedIds.includes(d.startupId) && d.document.originalPath?.startsWith('demo://dossier/'),
+  ).length;
+  const inheritedOnPromoted = teamDocs.filter(
+    (d) => !packOwnedIds.includes(d.startupId) && d.document.originalPath?.startsWith('demo://dossier/'),
+  ).length;
 
   dupTeamDocs.length === 0
     ? pass('team document packs', `${teamDocs.length} imported documents, none duplicated`)
     : fail('team document packs', `${dupTeamDocs.length} duplicated document title(s) across the team companies`);
 
   syntheticOnTeam === 0
-    ? pass('team packs unpolluted', 'no generated placeholder document was attached to a team-owned company')
-    : fail('team packs unpolluted', `${syntheticOnTeam} generated placeholder documents are attached to team-owned companies`);
+    ? pass(
+        'team packs unpolluted',
+        `no generated placeholder reached the ${packOwnedIds.length} companies with their own packs` +
+          (inheritedOnPromoted ? ` (${inheritedOnPromoted} inherited by the 2 promoted companies, as intended)` : ''),
+      )
+    : fail('team packs unpolluted', `${syntheticOnTeam} generated placeholder documents are attached to a company with its own imported pack`);
 
   /* --- the fifteen filters ----------------------------------------- */
 

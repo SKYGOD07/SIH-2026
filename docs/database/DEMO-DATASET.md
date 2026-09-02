@@ -207,3 +207,92 @@ Generated dossier documents carry `originalPath = demo://dossier/<startupId>/<CA
 
 `verify-demo.ts` fails if any of them acquires extractable text or a non-`DEMO`
 origin.
+
+## The seven team-owned companies
+
+Five teammates own seven companies. The registry is `backend/scripts/team.ts`,
+imported by every script that must treat them differently from the synthetic 500.
+
+| Account | Company | Field | Claim |
+|---|---|---|---|
+| pathaniqra303@gmail.com | CIVORA | municipal-waste-management | claimed |
+| pathaniqra303@gmail.com | HIX | agri-fintech-health | unclaimed |
+| sr5937424@gmail.com | Crop Saver | agritech | claimed |
+| sr5937424@gmail.com | WaterManager | water-distribution | unclaimed |
+| Suhanigoyal856@gmail.com | EnviroPlus | climate-environment | claimed |
+| heoric361004@gmail.com | Chalan Solutions | urban-mobility | claimed |
+| mohammadhaaris791@gmail.com | Rakshak Innovations | public-safety | claimed |
+
+> **One company per account.** `UserProfile.startupId` is unique in both
+> directions, so an account can claim exactly one company. HIX and WaterManager
+> stay unclaimed until ownership moves onto `Startup` as a many-to-one relation.
+> They are fully profiled and fully visible; only the sign-in link is missing.
+
+### The two promoted companies
+
+`data/heoric361004@gmail.com/` and `data/mohammadhaaris791@gmail.com/` are empty
+— no packs, no source material. Rather than invent two more fictions for a
+dataset that already holds five hundred, two existing synthetic companies were
+promoted: they keep their id, funding history and programme participation, and
+gain a full profile and a dossier. Nothing was created and nothing was deleted.
+
+They are in `PROTECTED_LEGAL_NAMES`, so `generate-companies.ts` keeps their name
+slot in `targetNames` (the prune leaves them alone) but excludes them from
+`reconcile` (their authored profile is never overwritten with generated prose).
+
+### The dossier
+
+```bash
+python scripts/parse-team-files.py   # manifest the real files, once
+npm run demo:seed-team               # profiles + dossiers + funding
+```
+
+**Real files first.** `data/<email>/` holds five documents that were never
+ingested. They are registered as themselves — real path, real SHA-256, real size
+— keyed on the content hash so a re-run never files a second copy. The two
+`.xlsx` files have their text extracted; the three PDFs do not, because this
+environment has no PDF parser and "filed, not yet ingested" is the honest state.
+
+**Mock documents fill only the gaps.** The catalogue of 28 requirements comes
+from the team's own `WaterManager_Government_Funding_Due_Diligence.xlsx`, which
+is the closest thing the project has to a specification of what a department
+asks for. A mock document is added only where a company holds nothing in that
+category — CIVORA and HIX arrive with 33 real documents each, so most of the
+catalogue is skipped for them. A placeholder standing beside a real filing is
+worse than no placeholder, because it dilutes the evidence worth reading.
+
+Two rules `verify-demo.ts` enforces:
+
+- **No statutory identifiers.** No CIN, PAN, GSTIN, Udyam or DPIIT number is
+  generated, not even a marked-dummy one — a well-formed fake survives being
+  copied out of the interface into a real form. The record says which document
+  is needed and what it must show.
+- **Every mock document opens with `SIMULATED PLACEHOLDER —`**, so a retrieval
+  answer that quotes one carries the caveat inside the quotation.
+
+Mock documents live under `demo://team-dossier/`, distinct from the synthetic
+population's `demo://dossier/`.
+
+## Sign-in accounts
+
+```bash
+npm run demo:seed-accounts     # needs SUPABASE_SECRET_KEY
+```
+
+Creates or repairs one Supabase Auth user per teammate, confirms the address,
+sets the password and claims the primary company.
+
+**Requires the service role key** (Supabase dashboard → Project Settings → API →
+`service_role`) in `backend/.env` as `SUPABASE_SECRET_KEY`. The publishable key
+cannot do it: the project has `mailer_autoconfirm` disabled, so an ordinary
+signup emails a confirmation link to five real addresses and leaves every account
+unverified — which `requireVerifiedEmail` then blocks. `email_confirm: true` on
+the admin path sends nothing and produces an account that can sign in at once.
+
+> **The password is `11111111`** — weak on purpose, so five people can sign in
+> during a judging session without a reset. Two things follow: these accounts
+> must never hold anything that is not simulated, and every one of them must be
+> rotated before this repository is made public or this database is pointed at
+> anything real. Override with `TEAM_SEED_PASSWORD`.
+
+All five accounts are role `STARTUP` and sign in at `/login/startup`.

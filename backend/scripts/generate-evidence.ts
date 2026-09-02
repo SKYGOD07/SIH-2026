@@ -29,9 +29,8 @@
  *
  * WHAT IT DOES NOT TOUCH.
  *
- * The five team-owned companies — CIVORA, HIX, Crop Saver, WaterManager,
- * EnviroPlus — get no invented participation, no invented funding and no
- * invented document. Their dossiers are the real imported packs, and attaching
+ * The team-owned companies listed in `team.ts` get no invented participation,
+ * no invented funding and no invented document. Their dossiers are the real imported packs, and attaching
  * a fabricated government work order to a real team's company is the one thing
  * this project must never do. They keep whatever their packs gave them, which
  * for three of them is currently nothing; that is an honest reading, not a bug.
@@ -252,7 +251,7 @@ async function main() {
     },
     orderBy: { legalName: 'asc' },
   });
-  console.log(`companies in scope    : ${companies.length}  (five team-owned companies excluded)`);
+  console.log(`companies in scope    : ${companies.length}  (${TEAM_COMPANIES.length} team-owned companies excluded)`);
 
   /* --- phase 2: programme participation --------------------------------- */
 
