@@ -100,7 +100,7 @@ export class OllamaProvider implements AIProvider {
     }
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), env.OLLAMA_TIMEOUT_MS);
 
     try {
       const res = await fetch(`${this.baseUrl}/api/generate`, {
@@ -169,7 +169,7 @@ export class OllamaProvider implements AIProvider {
     if (!readiness.ready) return [];
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeout = setTimeout(() => controller.abort(), env.OLLAMA_TIMEOUT_MS);
 
     try {
       const res = await fetch(`${this.baseUrl}/api/embeddings`, {

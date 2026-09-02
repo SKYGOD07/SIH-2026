@@ -1,166 +1,276 @@
-import { z } from 'zod';
-import { DataOrigin, UserProfile } from '@prisma/client';
+import { UserProfile } from '@prisma/client';
 import { prisma } from '../../workflow/repositories';
+import { env, ollamaReadiness } from '../../config/env';
 import { defaultAIProvider, AIProvider } from './ollama.provider';
-
-export const AIAnalysisOutputSchema = z.object({
-  summary: z.string(),
-  strengths: z.array(z.string()),
-  limitations: z.array(z.string()),
-  evidenceUsed: z.array(z.string()),
-});
-
-export type AIAnalysisOutput = z.infer<typeof AIAnalysisOutputSchema> & {
-  isFallback?: boolean;
-  provider?: string;
-  model?: string;
-};
-
-const SYSTEM_PROMPT = `You are an analysis assistant for Sarthi — Innovation Procurement Platform.
-
-Use ONLY the supplied facts and evidence.
-
-Do NOT invent:
-- companies
-- customers
-- government contracts
-- certifications
-- funding
-- government approvals
-- pilot outcomes
-- legal status
-
-If evidence is missing, say that evidence is missing.
-Distinguish DEMO from VERIFIED information.
-Do not make a final procurement decision.
-
-Return a concise evidence-grounded analysis as a valid JSON object matching this schema:
-{
-  "summary": "...",
-  "strengths": ["...", "..."],
-  "limitations": ["...", "..."],
-  "evidenceUsed": ["document title / reference"]
-}`;
+import { challengeContext, matchContext, pilotContext, startupContext, AiContext } from './ai.context';
+import {
+  AI_DISCLOSURE,
+  AI_SYSTEM_PROMPT,
+  AI_TASK_LABELS,
+  AiEnvelope,
+  AiOutputSchema,
+  AiTask,
+  groundOutput,
+} from './ai.contract';
 
 /**
- * Generate AI-assisted analysis for a startup dossier and optional challenge context.
+ * The assistance layer.
  *
- * Grounded strictly in stored database facts. If Ollama is unavailable or fails,
- * a deterministic fallback explanation is returned so the workflow is never blocked.
+ * One function does the work — `runTask` — and ten thin wrappers name the
+ * surfaces it serves. The shape is deliberate: every AI feature in the platform
+ * goes through the same five steps, in the same order, so there is exactly one
+ * place where the rules can be enforced and exactly one place they can be
+ * broken.
+ *
+ *   1. build the context deterministically, including the answer to give
+ *      without a model;
+ *   2. return that answer immediately if there is no model to call;
+ *   3. call the model with the context and nothing else;
+ *   4. validate the shape, then drop citations that were not supplied;
+ *   5. record that a model spoke, as an advisory event.
+ *
+ * Step 2 is what makes the platform robust rather than dependent. Ollama being
+ * down degrades a summary from prose to a structured reading of the same rows;
+ * it never blocks a procurement action, because no procurement action asks this
+ * file anything.
+ */
+
+/* ------------------------------------------------------------------- core */
+
+/** Which context builder answers which task. */
+type ContextArgs =
+  | { kind: 'challenge'; challengeId: string }
+  | { kind: 'startup'; startupId: string }
+  | { kind: 'match'; challengeId: string; startupId: string }
+  | { kind: 'pilot'; pilotId: string };
+
+async function buildContext(args: ContextArgs): Promise<AiContext> {
+  switch (args.kind) {
+    case 'challenge':
+      return challengeContext(args.challengeId);
+    case 'startup':
+      return startupContext(args.startupId);
+    case 'match':
+      return matchContext(args.challengeId, args.startupId);
+    case 'pilot':
+      return pilotContext(args.pilotId);
+  }
+}
+
+/**
+ * What to ask, per task.
+ *
+ * The instruction, not the facts — the facts are appended once by `runTask`, so
+ * no task can smuggle in a different context or a different set of rules.
+ */
+const TASK_INSTRUCTION: Record<AiTask, string> = {
+  CHALLENGE_BRIEFING:
+    'Brief a government officer on this challenge before they begin discovery. Say what the department is asking for, what it has specified, and what it has left unspecified. Do not name or suggest any company.',
+  STARTUP_SUMMARY:
+    'Summarise this company for an officer who has not seen it before. What it does, who it is for, and how much of the profile is actually backed by filed records.',
+  MATCH_EXPLANATION:
+    'Explain why the platform ranked this company against this challenge as it did. Explain the computed scores, especially the weakest axis. Do not propose different scores and do not recommend selection.',
+  EVIDENCE_SUMMARY:
+    'Summarise the evidence this company has filed. Group what is present, state plainly what is absent, and say what an officer still cannot verify from this dossier.',
+  EVALUATION_DRAFT:
+    'Draft the factual section of an evaluation note for a human evaluator to edit. Set out what the evidence shows and what it does not. Do not state a recommendation — the evaluator decides that.',
+  PILOT_PLAN_DRAFT:
+    'Draft pilot design considerations from the challenge and the company profile: what the pilot would need to establish, what the baseline must capture, and what would make the result uninterpretable.',
+  PILOT_PROGRESS_ANALYSIS:
+    'Analyse where this pilot stands. Use the computed milestone, metric and evidence counts as given. Identify what is late, unmeasured or unreviewed.',
+  KPI_EXPLANATION:
+    'Explain the KPIs on this pilot: what each measures, how it is measured, and how far the measured value is from target. A metric with no achieved value has not been measured — say so rather than treating it as zero.',
+  PILOT_OUTCOME_SUMMARY:
+    'Summarise how this pilot ended and how well the outcome is supported by its baseline and its accepted evidence.',
+  SCALE_RECOMMENDATION_EXPLANATION:
+    'Explain what the recorded evidence supports regarding scale, extension or stop. If a scale decision has been recorded by an officer, explain the basis it rests on. Do not make a decision.',
+};
+
+/**
+ * Run one task end to end.
+ *
+ * Never throws for a model problem. It throws only when the subject does not
+ * exist, because "there is no such pilot" is a caller error while "the model
+ * timed out" is a runtime condition the interface is built to show.
+ */
+async function runTask(
+  user: UserProfile | null,
+  task: AiTask,
+  args: ContextArgs,
+  provider: AIProvider = defaultAIProvider,
+): Promise<AiEnvelope> {
+  const ctx = await buildContext(args);
+
+  const base = {
+    task,
+    taskLabel: AI_TASK_LABELS[task],
+    generatedAt: new Date().toISOString(),
+    disclosure: AI_DISCLOSURE,
+  };
+
+  /* --- 2. no model, deterministic answer -------------------------------- */
+
+  const readiness = ollamaReadiness();
+  if (!readiness.ready) {
+    return {
+      ...base,
+      output: ctx.fallback,
+      assisted: false,
+      provider: 'DETERMINISTIC',
+      model: null,
+      fallbackReason: readiness.reason ?? 'AI provider not ready',
+      warnings: [],
+    };
+  }
+
+  /* --- 3. ask ----------------------------------------------------------- */
+
+  const prompt = [
+    TASK_INSTRUCTION[task],
+    '',
+    'FACTS:',
+    JSON.stringify(ctx.facts, null, 2),
+  ].join('\n');
+
+  let raw: unknown = null;
+  let failure: string | null = null;
+  try {
+    raw = await provider.generateStructured(prompt, AiOutputSchema, AI_SYSTEM_PROMPT);
+  } catch (err) {
+    failure = err instanceof Error ? err.message : String(err);
+  }
+
+  if (!raw) {
+    return {
+      ...base,
+      output: ctx.fallback,
+      assisted: false,
+      provider: 'DETERMINISTIC',
+      model: null,
+      fallbackReason:
+        failure ?? 'The model did not return a usable response; showing the platform reading of the same records.',
+      warnings: [],
+    };
+  }
+
+  /* --- 4. ground -------------------------------------------------------- */
+
+  const parsed = AiOutputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      ...base,
+      output: ctx.fallback,
+      assisted: false,
+      provider: 'DETERMINISTIC',
+      model: null,
+      fallbackReason: 'The model response did not match the required shape.',
+      warnings: [],
+    };
+  }
+
+  const { output, warnings } = groundOutput(parsed.data, ctx.index);
+
+  /* --- 5. record -------------------------------------------------------- */
+
+  // Best-effort: an audit write failing must not lose the officer's analysis.
+  // The event is advisory, and the analysis is regenerable from the same rows.
+  if (user) {
+    await prisma.auditEvent
+      .create({
+        data: {
+          actorUserId: user.id,
+          subjectType: ctx.subject.type,
+          subjectId: ctx.subject.id,
+          action: 'AI_ANALYSIS_GENERATED',
+          detail: `${AI_TASK_LABELS[task]} generated for ${ctx.subject.label} (${env.OLLAMA_MODEL}, ${readiness.mode})${
+            warnings.length ? ` — ${warnings.length} ungrounded citation(s) removed` : ''
+          }`,
+        },
+      })
+      .catch(() => undefined);
+  }
+
+  return {
+    ...base,
+    output,
+    assisted: true,
+    provider: 'OLLAMA',
+    model: env.OLLAMA_MODEL,
+    warnings,
+  };
+}
+
+/* --------------------------------------------------------------- surfaces */
+
+/** A. Brief the officer on a challenge before discovery. */
+export const briefChallenge = (u: UserProfile | null, challengeId: string) =>
+  runTask(u, 'CHALLENGE_BRIEFING', { kind: 'challenge', challengeId });
+
+/** B. Summarise a company profile. */
+export const summariseStartup = (u: UserProfile | null, startupId: string) =>
+  runTask(u, 'STARTUP_SUMMARY', { kind: 'startup', startupId });
+
+/** C. Explain a computed match. */
+export const explainMatch = (u: UserProfile | null, challengeId: string, startupId: string) =>
+  runTask(u, 'MATCH_EXPLANATION', { kind: 'match', challengeId, startupId });
+
+/** D. Summarise a company's filed evidence. */
+export const summariseEvidence = (u: UserProfile | null, startupId: string) =>
+  runTask(u, 'EVIDENCE_SUMMARY', { kind: 'startup', startupId });
+
+/** E. Draft the factual half of an evaluation note. */
+export const draftEvaluation = (u: UserProfile | null, challengeId: string, startupId: string) =>
+  runTask(u, 'EVALUATION_DRAFT', { kind: 'match', challengeId, startupId });
+
+/** F. Draft pilot design considerations. */
+export const draftPilotPlan = (u: UserProfile | null, challengeId: string, startupId: string) =>
+  runTask(u, 'PILOT_PLAN_DRAFT', { kind: 'match', challengeId, startupId });
+
+/** G. Analyse a running pilot. */
+export const analysePilotProgress = (u: UserProfile | null, pilotId: string) =>
+  runTask(u, 'PILOT_PROGRESS_ANALYSIS', { kind: 'pilot', pilotId });
+
+/** H. Explain the KPIs and their evidence. */
+export const explainKpis = (u: UserProfile | null, pilotId: string) =>
+  runTask(u, 'KPI_EXPLANATION', { kind: 'pilot', pilotId });
+
+/** I. Summarise how a pilot ended. */
+export const summarisePilotOutcome = (u: UserProfile | null, pilotId: string) =>
+  runTask(u, 'PILOT_OUTCOME_SUMMARY', { kind: 'pilot', pilotId });
+
+/** J. Explain what the evidence supports about scaling. */
+export const explainScaleRecommendation = (u: UserProfile | null, pilotId: string) =>
+  runTask(u, 'SCALE_RECOMMENDATION_EXPLANATION', { kind: 'pilot', pilotId });
+
+/* ---------------------------------------------------------------- status */
+
+/**
+ * When a model was last asked anything.
+ *
+ * Read from the audit trail rather than from a counter, so it survives a
+ * restart and cannot drift from what was actually recorded.
+ */
+export async function lastAiRequestAt(): Promise<string | null> {
+  const row = await prisma.auditEvent.findFirst({
+    where: { action: 'AI_ANALYSIS_GENERATED' },
+    orderBy: { at: 'desc' },
+    select: { at: true },
+  });
+  return row?.at.toISOString() ?? null;
+}
+
+/* --------------------------------------------------------- compatibility */
+
+/**
+ * The original single-purpose entry point, kept so existing callers do not
+ * break. New work should use the named surfaces above.
+ *
+ * @deprecated Use `summariseStartup` or `explainMatch`.
  */
 export async function analyzeStartupWithAI(
   u: UserProfile,
   startupId: string,
   challengeId?: string,
-  aiProvider: AIProvider = defaultAIProvider,
-): Promise<AIAnalysisOutput> {
-  // Fetch startup with documents, funding, participations, and optional match
-  const startup = await prisma.startup.findUnique({
-    where: { id: startupId },
-    include: {
-      documents: {
-        include: { document: { select: { title: true, kind: true, origin: true } } },
-      },
-      fundingRounds: true,
-      participations: { include: { program: true } },
-      matches: challengeId ? { where: { challengeId } } : false,
-    },
-  });
-
-  if (!startup) {
-    throw new Error('Startup not found');
-  }
-
-  // Fetch optional challenge details
-  const challenge = challengeId
-    ? await prisma.challenge.findUnique({ where: { id: challengeId } })
-    : null;
-
-  const match = startup.matches && startup.matches.length > 0 ? startup.matches[0] : null;
-
-  // Prepare structured facts payload for the LLM
-  const facts = {
-    startup: {
-      legalName: startup.legalName,
-      displayName: startup.displayName,
-      sector: startup.sector,
-      origin: startup.origin,
-      problemSolved: startup.problemSolved,
-      solutionSummary: startup.solutionSummary,
-      technologies: startup.technologies,
-      capabilities: startup.capabilities,
-      pilotDurationDays: startup.pilotDurationDays,
-      estimatedPilotBudget: startup.estimatedPilotBudget ? Number(startup.estimatedPilotBudget) : null,
-      complianceStatus: startup.complianceStatus,
-      cybersecurityStatus: startup.cybersecurityStatus,
-    },
-    challenge: challenge
-      ? {
-          title: challenge.title,
-          department: challenge.department,
-          domain: challenge.domain,
-          targetMetric: challenge.targetMetric,
-          targetValue: challenge.targetValue,
-        }
-      : null,
-    matchScores: match
-      ? {
-          overallScore: match.overallScore,
-          problemFitScore: match.problemFitScore,
-          technicalFitScore: match.technicalFitScore,
-          pilotReadinessScore: match.pilotReadinessScore,
-        }
-      : null,
-    evidenceDocuments: startup.documents.map((d) => ({
-      title: d.label || d.document.title,
-      category: d.category,
-      origin: d.document.origin,
-    })),
-  };
-
-  const userPrompt = `Analyze this startup based strictly on the following facts:\n\nFACTS:\n${JSON.stringify(facts, null, 2)}`;
-
-  // Attempt Ollama structured generation
-  const result = await aiProvider.generateStructured(userPrompt, AIAnalysisOutputSchema, SYSTEM_PROMPT);
-
-  if (result) {
-    // Record AI audit event
-    await prisma.auditEvent.create({
-      data: {
-        actorUserId: u.id,
-        subjectType: 'Startup',
-        subjectId: startup.id,
-        action: 'EVALUATION_SUBMITTED',
-        detail: `AI Analysis generated via Ollama for startup ${startup.displayName || startup.legalName}`,
-      },
-    });
-
-    return {
-      ...result,
-      isFallback: false,
-      provider: 'OLLAMA',
-      model: process.env.OLLAMA_MODEL || 'llama3.1',
-    };
-  }
-
-  // Deterministic Fallback if AI unavailable or parsing failed
-  const docCount = startup.documents.length;
-  const fallback: AIAnalysisOutput = {
-    summary: `${startup.displayName || startup.legalName} operates in ${startup.sector} and proposes ${startup.solutionSummary || 'its solution'}. (AI enhancement temporarily unavailable — showing deterministic snapshot).`,
-    strengths: [
-      `Dossier backed by ${docCount} ${startup.origin} documents.`,
-      `Stated technologies: ${startup.technologies.join(', ') || 'None specified'}.`,
-      `Proposed pilot duration: ${startup.pilotDurationDays ? `${startup.pilotDurationDays} days` : 'Not specified'}.`,
-    ],
-    limitations: [
-      startup.origin === DataOrigin.DEMO
-        ? 'All records are part of a DEMO simulation workspace and require formal verification.'
-        : 'Self-declared claims require independent verification.',
-    ],
-    evidenceUsed: startup.documents.slice(0, 3).map((d) => d.label || d.document.title),
-    isFallback: true,
-    provider: 'DETERMINISTIC_FALLBACK',
-  };
-
-  return fallback;
+): Promise<AiEnvelope> {
+  return challengeId ? explainMatch(u, challengeId, startupId) : summariseStartup(u, startupId);
 }
