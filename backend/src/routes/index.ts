@@ -4,6 +4,7 @@ import authRoutes from '../auth/auth.routes';
 import sarthiRoutes from '../sarthi/http/sarthi.routes';
 import workflowRoutes from '../workflow/http/workflow.routes';
 import aiRoutes from '../sarthi/ai/ai.routes';
+import pilotSimRoutes from '../sarthi/pilotsim/pilotsim.routes';
 
 const router = Router();
 
@@ -23,5 +24,9 @@ router.use('/sarthi', sarthiRoutes);
 
 // AI provider — status and test-connection. No secrets returned.
 router.use('/ai', aiRoutes);
+
+// Forward pilot simulation: run a synthetic pilot across the cohort and rank
+// who would deliver. Long-running and polled; government accounts only.
+router.use('/simulation', pilotSimRoutes);
 
 export default router;

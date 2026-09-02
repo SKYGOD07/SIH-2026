@@ -270,11 +270,21 @@ function ChallengeReview() {
                 ))}
               </div>
 
+              {/* Matching ranks the companies that applied. The simulation asks
+                  the wider question — who in the whole cohort could deliver
+                  this — so it belongs beside the ranking, not buried in a menu. */}
+              <Link
+                href={`/government/simulate?challenge=${params.id}`}
+                className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.12em] text-chalk/45 hover:text-signal"
+              >
+                Simulate the pilot ↗
+              </Link>
+
               <button
                 type="button"
                 onClick={generateMatches}
                 disabled={busy}
-                className="ml-auto font-mono text-[0.625rem] uppercase tracking-[0.12em] text-chalk/45 hover:text-signal disabled:opacity-40"
+                className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-chalk/45 hover:text-signal disabled:opacity-40"
               >
                 {busy ? 'Scoring…' : 'Re-run scoring'}
               </button>

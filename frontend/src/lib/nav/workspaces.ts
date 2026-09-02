@@ -57,6 +57,7 @@ const GOVERNMENT: Workspace = {
     { href: '/government/discover', label: 'Find solutions', icon: 'intelligence' },
     { href: '/challenges', label: 'Challenges', icon: 'target' },
     { href: '/startups', label: 'Startups', icon: 'users' },
+    { href: '/government/simulate', label: 'Simulate', icon: 'intelligence' },
     { href: '/pilots', label: 'Pilots', icon: 'flask' },
     { href: '/ledger', label: 'Evidence & ledger', icon: 'ledger' },
   ],
@@ -111,6 +112,7 @@ const ADMIN: Workspace = {
     { href: '/government/discover', label: 'Find solutions', icon: 'intelligence' },
     { href: '/challenges', label: 'Challenges', icon: 'target' },
     { href: '/startups', label: 'Startups', icon: 'users' },
+    { href: '/government/simulate', label: 'Simulate', icon: 'intelligence' },
     { href: '/pilots', label: 'Pilots', icon: 'flask' },
   ],
   secondary: [

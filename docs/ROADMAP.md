@@ -106,6 +106,7 @@ development network is IPv4-only, so it is unreachable. Two recurring traps:
 | AI credential CHECK constraints | done, negative-tested |
 | pgvector + `vector(768)` + HNSW cosine index | done, verified |
 | Database documentation | `docs/database/README.md` |
+| Pilot simulation engine | done — [`PILOT-SIMULATION.md`](PILOT-SIMULATION.md) |
 | Logistics domain removal | done, zero references remain |
 
 ### Not complete
