@@ -693,14 +693,14 @@ export async function closePilot(
     throw new AppError('The primary metric must be measured before the pilot can close', 409);
   }
 
-  const improving = (primary.baselineValue ?? 0) >= primary.targetValue;
-  const met = improving
-    ? primary.achievedValue <= primary.targetValue
-    : primary.achievedValue >= primary.targetValue;
-
-  const span = Math.abs((primary.baselineValue ?? 0) - primary.targetValue) || 1;
-  const progress = Math.abs((primary.baselineValue ?? 0) - primary.achievedValue) / span;
-  const outcome = met ? 'TARGET_MET' : progress >= 0.5 ? 'PARTIALLY_MET' : 'TARGET_MISSED';
+  // The same rule the pilot simulator judges its runs by. Shared deliberately:
+  // a simulation ranked on different arithmetic would be predicting something
+  // other than the outcome this function actually records.
+  const outcome = classifyOutcome(
+    primary.baselineValue ?? 0,
+    primary.targetValue,
+    primary.achievedValue,
+  );
 
   if (outcome !== 'TARGET_MET' && failureCauses.length === 0) {
     throw new AppError('A pilot that did not meet its target must record at least one cause', 422, {
