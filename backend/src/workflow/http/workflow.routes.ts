@@ -101,12 +101,19 @@ router.get('/startups/:startupId/documents', async (req: Request, res: Response,
   }
 });
 
-/* --- challenges --- */
+/* --- dashboard --- */
+router.get('/dashboard/metrics', h((_req, u) => svc.getDashboardMetrics(u)));
 
+/* --- challenges --- */
 router.post(
   '/challenges',
   validateRequest(s.createChallengeSchema),
   h((req, u) => svc.createChallenge(u, req.body), 201, 'Challenge created as a draft'),
+);
+router.put(
+  '/challenges/:challengeId',
+  validateRequest(s.updateChallengeSchema),
+  h((req, u) => svc.updateChallenge(u, req.params.challengeId, req.body), 200, 'Challenge draft updated'),
 );
 router.get('/challenges/mine', h((_req, u) => svc.listOwnChallenges(u)));
 router.get('/challenges/open', h((_req, u) => svc.listOpenChallenges(u)));

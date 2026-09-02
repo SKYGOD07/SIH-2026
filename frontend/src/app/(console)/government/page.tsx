@@ -24,6 +24,8 @@ export const dynamic = 'force-dynamic';
  * A startup never reaches this route: `RoleGate` turns it away in the browser
  * and the API refuses the underlying calls regardless.
  */
+import { DashboardMetricsOverview } from '@/components/console/DashboardMetricsOverview';
+
 export default function GovernmentDashboard() {
   return (
     <RoleGate roles={['GOVERNMENT_OFFICER', 'ADMIN']}>
@@ -32,6 +34,10 @@ export default function GovernmentDashboard() {
         subtitle="Challenges you own, and where each one sits in the pathway."
         source="demonstration"
       />
+
+      <section aria-label="Key Metrics" className="mb-6">
+        <DashboardMetricsOverview />
+      </section>
 
       <section aria-label="Decision queue">
         <SectionHead title="Decision queue" />

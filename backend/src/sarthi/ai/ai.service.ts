@@ -274,3 +274,119 @@ export async function analyzeStartupWithAI(
 ): Promise<AiEnvelope> {
   return challengeId ? explainMatch(u, challengeId, startupId) : summariseStartup(u, startupId);
 }
+
+/* ---------------------------------------------------------------- Phase 2 */
+
+import { z } from 'zod';
+
+const DraftChallengeSchema = z.object({
+  title: z.string().default(''),
+  problemStatement: z.string().default(''),
+  desiredOutcome: z.string().default(''),
+  currentBaseline: z.string().default(''),
+  targetMetric: z.string().default(''),
+  targetValue: z.number().default(0),
+  targetTolerance: z.string().default(''),
+  measurementMethod: z.string().default(''),
+  measurementOwner: z.string().default(''),
+  operatingConstraints: z.string().default(''),
+  geographicScope: z.string().default(''),
+  eligibilityRequirements: z.array(z.string()).default([]),
+  requiredCapabilities: z.array(z.string()).default([]),
+  dataRequirements: z.string().default(''),
+  cybersecurityRequirements: z.string().default(''),
+  deploymentRequirements: z.string().default(''),
+  ipDataConstraints: z.string().default(''),
+  evaluationCriteria: z.array(z.string()).default([]),
+  // Plus the AiEnvelope fields for the UI rendering
+  summary: z.string().default(''),
+  questions: z.array(z.string()).default([]),
+  missingEvidence: z.array(z.string()).default([]),
+});
+
+export async function draftChallengeProposal(
+  u: UserProfile | null,
+  problem: string,
+  provider: AIProvider = defaultAIProvider
+) {
+  const readiness = ollamaReadiness();
+  if (!env.AI_ENABLED || !readiness.ready) {
+    return {
+      assisted: false,
+      draft: {
+        title: problem.slice(0, 60) + (problem.length > 60 ? '...' : ''),
+        problemStatement: problem,
+        summary: "AI drafting is unavailable.",
+        questions: ["What is the specific baseline?"],
+        missingEvidence: ["Historical data"]
+      }
+    };
+  }
+
+  const prompt = `You are an AI assistant in the Sarthi public procurement platform.
+The user has provided a plain-language operational problem.
+You must draft an outcome-based challenge specification from it.
+
+PROBLEM:
+"""
+${problem}
+"""
+
+Return a single JSON object matching this structure exactly:
+{
+  "title": "A concise, professional title",
+  "problemStatement": "Expanded, clear statement of the problem",
+  "desiredOutcome": "What success looks like",
+  "currentBaseline": "What is the current state (if implicit, say 'Needs definition')",
+  "targetMetric": "The primary KPI (e.g., 'Efficiency Gain (%)')",
+  "targetValue": 20,
+  "targetTolerance": "e.g., +/- 5%",
+  "measurementMethod": "How the metric will be measured",
+  "measurementOwner": "Who measures it",
+  "operatingConstraints": "Any implied constraints",
+  "geographicScope": "Implied scope",
+  "eligibilityRequirements": ["Requirement 1"],
+  "requiredCapabilities": ["Capability 1"],
+  "dataRequirements": "Data needs",
+  "cybersecurityRequirements": "Cyber needs",
+  "deploymentRequirements": "Deployment context",
+  "ipDataConstraints": "IP considerations",
+  "evaluationCriteria": ["Criterion 1"],
+  "summary": "2 sentences explaining what you drafted",
+  "questions": ["A question about missing context"],
+  "missingEvidence": ["Missing data needed before pilot"]
+}`;
+
+  try {
+    const response = await provider.generate(prompt);
+    const parsed = DraftChallengeSchema.parse(response);
+    
+    // Audit the action
+    if (u) {
+      await prisma.auditEvent.create({
+        data: {
+          actorUserId: u.id,
+          action: 'AI_ANALYSIS_GENERATED',
+          detail: 'Generated Challenge Draft',
+          subjectType: 'CHALLENGE_DRAFT',
+          subjectId: 'new', // It's a new draft so there's no DB ID yet
+        },
+      });
+    }
+
+    return {
+      assisted: true,
+      draft: parsed
+    };
+  } catch (e) {
+    console.error('Failed to parse draft AI response', e);
+    return {
+      assisted: false,
+      draft: {
+        title: problem.slice(0, 60) + (problem.length > 60 ? '...' : ''),
+        problemStatement: problem,
+        summary: "Failed to parse AI output.",
+      }
+    };
+  }
+}

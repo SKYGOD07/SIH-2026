@@ -85,7 +85,7 @@ function Challenges() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <SectionHead title="Your challenges" meta={rows ? `${rows.length}` : undefined} />
           <Link
-            href="/challenges/new"
+            href="/government/challenges/new"
             className="rounded-[8px] bg-signal px-4 py-2 font-mono text-[0.6875rem] font-bold uppercase tracking-[0.1em] text-void transition-opacity hover:opacity-90"
           >
             + Create Challenge

@@ -570,6 +570,22 @@ model Challenge {
   budgetEnvelope    Decimal? @db.Decimal(14, 2)
   pilotDurationDays Int?
 
+  // Phase 2: Outcome-based detailed fields
+  currentBaseline   String?
+  desiredOutcome    String?
+  targetTolerance   String?
+  measurementMethod String?
+  measurementOwner  String?
+  operatingConstraints String?
+  geographicScope   String?
+  eligibilityRequirements String[]
+  requiredCapabilities String[]
+  dataRequirements  String?
+  cybersecurityRequirements String?
+  deploymentRequirements String?
+  ipDataConstraints String?
+  evaluationCriteria String[]
+
   status ChallengeStatus @default(DRAFT)
 
   origin       DataOrigin

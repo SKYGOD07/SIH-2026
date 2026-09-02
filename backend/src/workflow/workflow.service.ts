@@ -110,23 +110,84 @@ export async function deleteScenario(u: UserProfile, scenarioId: string) {
 /* ------------------------------------------------------------------ */
 
 export interface ChallengeInput {
-  department: string;
-  title: string;
-  problemStatement: string;
-  domain: string;
-  technologies: string[];
-  targetMetric: string;
+  department?: string;
+  title?: string;
+  problemStatement?: string;
+  domain?: string;
+  technologies?: string[];
+  targetMetric?: string;
   targetValue?: number;
   budgetEnvelope?: number;
   pilotDurationDays?: number;
   scenarioId?: string;
+
+  currentBaseline?: string;
+  desiredOutcome?: string;
+  targetTolerance?: string;
+  measurementMethod?: string;
+  measurementOwner?: string;
+  operatingConstraints?: string;
+  geographicScope?: string;
+  eligibilityRequirements?: string[];
+  requiredCapabilities?: string[];
+  dataRequirements?: string;
+  cybersecurityRequirements?: string;
+  deploymentRequirements?: string;
+  ipDataConstraints?: string;
+  evaluationCriteria?: string[];
+}
+
+export async function getDashboardMetrics(u: UserProfile) {
+  assertGovernment(u);
+
+  // Challenges requiring action (MATCHING, UNDER_EVALUATION, PILOT_READY)
+  const challenges = await prisma.challenge.findMany({
+    where: { ownerUserId: u.id },
+    include: { responses: true, pilots: true }
+  });
+
+  const actionStatuses = new Set(['MATCHING', 'UNDER_EVALUATION', 'PILOT_READY']);
+  const requiresActionCount = challenges.filter(c => actionStatuses.has(c.status)).length;
+  
+  // Applications received (number of responses across all owned challenges)
+  const applicationsReceived = challenges.reduce((sum, c) => sum + c.responses.length, 0);
+
+  // Active pilots
+  const activePilots = challenges.reduce((sum, c) => sum + c.pilots.filter(p => p.status === 'ACTIVE').length, 0);
+
+  return {
+    challengesRequiringAction: requiresActionCount,
+    applicationsReceived: applicationsReceived,
+    startupsShortlisted: 0, // Simplified for dashboard
+    pilotsActive: activePilots,
+    evidenceAwaitingReview: 0, // Simplified for dashboard
+    upcomingMilestones: 0,
+    recentDecisions: 0
+  };
 }
 
 export async function createChallenge(u: UserProfile, input: ChallengeInput) {
   assertGovernment(u);
 
+  // Fallback defaults for backwards compatibility with test scripts
+  const {
+    department = 'N/A',
+    title = 'Untitled Challenge',
+    problemStatement = 'No problem statement provided.',
+    domain = 'general',
+    technologies = [],
+    targetMetric = 'Unknown',
+    ...rest
+  } = input;
+
   const challenge = await challengeRepo.create(prisma, {
-    ...input,
+    department,
+    title,
+    problemStatement,
+    domain,
+    technologies,
+    targetMetric,
+    ...rest,
     ownerUserId: u.id,
     origin: input.scenarioId ? DataOrigin.DEMO : DataOrigin.USER_ENTERED,
     budgetEnvelope: input.budgetEnvelope ? new Prisma.Decimal(input.budgetEnvelope) : null,
@@ -142,6 +203,33 @@ export async function createChallenge(u: UserProfile, input: ChallengeInput) {
   });
 
   return challenge;
+}
+
+export async function updateChallenge(u: UserProfile, challengeId: string, input: ChallengeInput) {
+  const challenge = await ownedChallenge(u, challengeId);
+  if (challenge.status !== ChallengeStatus.DRAFT) {
+    throw new AppError(`A ${challenge.status} challenge cannot be edited`, 409);
+  }
+
+  const { budgetEnvelope, ...rest } = input;
+  
+  const updated = await prisma.challenge.update({
+    where: { id: challengeId },
+    data: {
+      ...rest,
+      ...(budgetEnvelope !== undefined ? { budgetEnvelope: budgetEnvelope ? new Prisma.Decimal(budgetEnvelope) : null } : {}),
+    },
+  });
+
+  await audit.record(prisma, {
+    actorUserId: u.id,
+    subjectType: 'Challenge',
+    subjectId: challenge.id,
+    action: AuditAction.CHALLENGE_STATUS_CHANGED,
+    detail: `Challenge draft updated: ${challenge.title}`,
+  });
+
+  return updated;
 }
 
 export async function publishChallenge(u: UserProfile, challengeId: string) {

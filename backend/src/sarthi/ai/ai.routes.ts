@@ -244,6 +244,17 @@ router.post(
   h(async (req, res) => sendSuccess(res, await briefChallenge(req.profile!, required(req, 'challengeId')))),
 );
 
+/** Challenge Drafting (Phase 2). */
+router.post(
+  '/draft-challenge-proposal',
+  ...requiresAi,
+  h(async (req, res) => {
+    // We dynamically import the service function to avoid circular/missing dependencies during refactor
+    const { draftChallengeProposal } = await import('./ai.service');
+    return sendSuccess(res, await draftChallengeProposal(req.profile!, required(req, 'problem')));
+  }),
+);
+
 /** B. Company summary. */
 router.post(
   '/summarise-startup',
